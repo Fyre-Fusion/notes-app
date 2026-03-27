@@ -2,7 +2,7 @@
 // CONFIG — move these to a .env file and add
 // .env to .gitignore. Never commit real keys!
 // ─────────────────────────────────────────────
-const SUPABASE_URL = "https://gcanfgcumemeesvlwfx.supabase.co";
+const SUPABASE_URL = "https://gcanfgcumemeeisvlwfx.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjYW5mZ2N1bWVtZWVpc3Zsd2Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1OTU2MjEsImV4cCI6MjA5MDE3MTYyMX0.7SfvfFfguaoSi58N9cuP26I-f4qYLgIXwLseUWBnQw4";
 
 const { createClient } = supabase;
