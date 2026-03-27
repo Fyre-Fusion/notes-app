@@ -9,7 +9,7 @@ const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ─── State ───────────────────────────────────
 let isSignUp = false;
-const MAX_NOTE_LENGTH = 3000;
+const MAX_NOTE_LENGTH = 1000;
 
 // ─── DOM refs ────────────────────────────────
 const $ = id => document.getElementById(id);
