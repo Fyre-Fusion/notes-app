@@ -1,129 +1,416 @@
-body {
-  font-family: Arial;
-  max-width: 600px;
-  margin: auto;
-  padding: 20px;
+/* ── Reset & Variables ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* ── Login screen ── */
+:root {
+  --bg: #faf9f7;
+  --surface: #ffffff;
+  --surface-alt: #f4f2ee;
+  --border: #e5e2db;
+  --text: #1a1916;
+  --text-muted: #7a7670;
+  --accent: #2d6a4f;
+  --accent-hover: #1b4332;
+  --danger: #c0392b;
+  --danger-hover: #96281b;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.09);
+  --radius: 8px;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-body: 'DM Sans', Arial, sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ── Login Screen ── */
 #loginScreen {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 60px;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  gap: 32px;
+}
+
+.brand {
+  text-align: center;
+}
+
+.brand-icon {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.brand h1 {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  color: var(--text);
+}
+
+.brand-sub {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--text-muted);
 }
 
 .auth-box {
   width: 100%;
   max-width: 380px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  padding: 30px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .auth-box h2 {
-  margin: 0 0 4px;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-bottom: 4px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
 }
 
 .auth-box input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   font-size: 14px;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  transition: border-color 0.15s, box-shadow 0.15s;
   width: 100%;
-  box-sizing: border-box;
 }
 
-.auth-box button {
-  padding: 10px;
-  background: #4f46e5;
+.auth-box input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(45,106,79,0.12);
+}
+
+.auth-box > button {
+  padding: 11px;
+  background: var(--accent);
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: var(--radius);
   cursor: pointer;
   font-size: 15px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s, transform 0.1s;
 }
 
-.auth-box button:hover {
-  background: #4338ca;
+.auth-box > button:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.auth-box > button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.auth-box > button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .error {
-  color: red;
+  color: var(--danger);
   font-size: 13px;
-  margin: 0;
+  min-height: 18px;
 }
 
 .toggle-text {
   font-size: 13px;
   text-align: center;
-  margin: 0;
+  color: var(--text-muted);
 }
 
-/* ── Notes screen ── */
+.toggle-text a {
+  color: var(--accent);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.toggle-text a:hover {
+  text-decoration: underline;
+}
+
+/* ── Notes Screen ── */
+#notesScreen {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
 .notes-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.notes-header h1 {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 400;
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   font-size: 13px;
-  color: #555;
+  color: var(--text-muted);
 }
 
 .logout-btn {
-  padding: 6px 12px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 5px;
+  padding: 6px 14px;
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
   cursor: pointer;
   font-size: 13px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
 }
 
 .logout-btn:hover {
-  background: #dc2626;
+  background: var(--danger);
+  color: white;
 }
 
-textarea {
+/* ── Note Composer ── */
+.note-composer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 24px;
+}
+
+.note-composer textarea {
   width: 100%;
-  height: 100px;
-  margin-bottom: 10px;
-  box-sizing: border-box;
-  padding: 10px;
+  min-height: 100px;
+  border: none;
+  outline: none;
+  resize: vertical;
+  font-size: 15px;
+  font-family: var(--font-body);
+  color: var(--text);
+  background: transparent;
+  line-height: 1.6;
 }
 
-button {
-  padding: 10px;
+.note-composer textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.composer-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.char-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.composer-actions button {
+  padding: 8px 20px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
   cursor: pointer;
+  font-size: 14px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s;
+}
+
+.composer-actions button:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.composer-actions button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* ── Notes List ── */
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 48px 0;
 }
 
 .note {
-  background: #f4f4f4;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s;
 }
 
-.note button {
-  margin-top: 5px;
-  background: #ef4444;
+.note:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.note-content {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+  outline: none;
+  min-height: 24px;
+  border-radius: 4px;
+  transition: background 0.1s;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  word-break: break-word;
+}
+
+.note-content:focus {
+  background: var(--surface-alt);
+}
+
+.note-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.note-date {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.note-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.save-note-btn {
+  padding: 4px 12px;
+  background: var(--accent);
   color: white;
   border: none;
-  border-radius: 4px;
-  padding: 6px 10px;
+  border-radius: 5px;
   cursor: pointer;
+  font-size: 12px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s, background 0.15s;
 }
 
-.note button:hover {
-  background: #dc2626;
+.save-note-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.save-note-btn:hover {
+  background: var(--accent-hover);
+}
+
+.delete-btn {
+  padding: 4px 12px;
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+
+.delete-btn:hover {
+  background: var(--danger);
+  color: white;
+}
+
+/* ── Spinner ── */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .notes-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .user-info span {
+    display: none;
+  }
+
+  .auth-box {
+    padding: 24px 20px;
+  }
 }
