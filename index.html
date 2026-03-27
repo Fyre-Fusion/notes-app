@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Notes App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen">
+    <h1>📝 Notes App</h1>
+    <div class="auth-box">
+      <h2 id="authTitle">Login</h2>
+
+      <input type="email" id="emailInput" placeholder="Email" />
+      <input type="password" id="passwordInput" placeholder="Password" />
+
+      <button onclick="handleAuth()">Continue</button>
+      <p id="authError" class="error"></p>
+      <p class="toggle-text">
+        <span id="toggleText">Don't have an account?</span>
+        <a href="#" onclick="toggleMode()"> <span id="toggleLink">Sign Up</span></a>
+      </p>
+    </div>
+  </div>
+
+  <!-- NOTES SCREEN -->
+  <div id="notesScreen" style="display:none;">
+    <div class="notes-header">
+      <h1>📝 My Notes</h1>
+      <div class="user-info">
+        <span id="userEmail"></span>
+        <button onclick="logout()" class="logout-btn">Logout</button>
+      </div>
+    </div>
+
+    <textarea id="noteInput" placeholder="Write a note..."></textarea>
+    <button onclick="addNote()">Save Note</button>
+
+    <div id="notesContainer"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
