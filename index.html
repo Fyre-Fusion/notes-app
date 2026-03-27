@@ -5,72 +5,96 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KlocVork Notes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Epilogue:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <!-- LOGIN SCREEN -->
   <div id="loginScreen">
-    <div class="brand">
-      <span class="brand-icon">📝</span>
-      <h1>KlocVork Notes</h1>
-      <p class="brand-sub">Your thoughts, beautifully kept.</p>
+    <div class="login-left">
+      <div class="login-left-inner">
+        <div class="brand-mark">✦</div>
+        <h1 class="brand-name">KlocVork</h1>
+        <p class="brand-tagline">Where thoughts<br><em>find their form.</em></p>
+      </div>
     </div>
 
-    <div class="auth-box">
-      <h2 id="authTitle">Welcome back</h2>
+    <div class="login-right">
+      <div class="auth-box">
+        <h2 id="authTitle">Sign in</h2>
+        <p class="auth-subtitle" id="authSubtitle">Welcome back. Your notes await.</p>
 
-      <div class="input-group">
-        <label for="emailInput">Email</label>
-        <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email" />
+        <div class="input-group">
+          <label for="emailInput">Email address</label>
+          <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email" />
+        </div>
+
+        <div class="input-group">
+          <label for="passwordInput">Password</label>
+          <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+
+        <button id="authBtn" onclick="handleAuth()">
+          <span id="authBtnText">Continue →</span>
+          <span id="authBtnSpinner" class="spinner hidden"></span>
+        </button>
+
+        <p id="authError" class="error" role="alert"></p>
+
+        <p class="toggle-text">
+          <span id="toggleText">No account yet?</span>
+          <a href="#" onclick="toggleMode()" id="toggleLink">Create one</a>
+        </p>
       </div>
-
-      <div class="input-group">
-        <label for="passwordInput">Password</label>
-        <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="current-password" />
-      </div>
-
-      <button id="authBtn" onclick="handleAuth()">
-        <span id="authBtnText">Sign In</span>
-        <span id="authBtnSpinner" class="spinner hidden"></span>
-      </button>
-
-      <p id="authError" class="error" role="alert"></p>
-
-      <p class="toggle-text">
-        <span id="toggleText">Don't have an account?</span>
-        <a href="#" onclick="toggleMode()" id="toggleLink">Sign Up</a>
-      </p>
     </div>
   </div>
 
   <!-- NOTES SCREEN -->
   <div id="notesScreen" class="hidden">
-    <header class="notes-header">
-      <h1>📝 My Notes</h1>
-      <div class="user-info">
-        <span id="userEmail"></span>
-        <button onclick="logout()" class="logout-btn">Logout</button>
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-brand">
+          <span class="brand-mark-small">✦</span>
+          <span class="sidebar-brand-name">KlocVork</span>
+        </div>
+        <div class="sidebar-user">
+          <div class="user-avatar" id="userAvatar"></div>
+          <div class="user-details">
+            <span class="user-label">Signed in as</span>
+            <span id="userEmail" class="user-email-display"></span>
+          </div>
+        </div>
+        <div class="note-count-wrap">
+          <span id="noteCount" class="note-count-label">— notes</span>
+        </div>
       </div>
-    </header>
+      <button onclick="logout()" class="logout-btn">↩ Sign out</button>
+    </aside>
 
-    <div class="note-composer">
-      <textarea id="noteInput" placeholder="What's on your mind?"></textarea>
-      <div class="composer-actions">
-        <span id="charCount" class="char-count">0 / 1000</span>
-        <button id="saveBtn" onclick="addNote()">
-          <span id="saveBtnText">Save Note</span>
-          <span id="saveBtnSpinner" class="spinner hidden"></span>
-        </button>
+    <main class="main-content">
+      <div class="main-header">
+        <h2 class="main-title">My Notes</h2>
+        <span class="main-date" id="todayDate"></span>
       </div>
-    </div>
 
-    <p id="notesError" class="error" role="alert"></p>
+      <div class="note-composer">
+        <textarea id="noteInput" placeholder="Start writing…"></textarea>
+        <div class="composer-footer">
+          <span id="charCount" class="char-count">0 / 1000</span>
+          <button id="saveBtn" onclick="addNote()">
+            <span id="saveBtnText">Save note</span>
+            <span id="saveBtnSpinner" class="spinner hidden"></span>
+          </button>
+        </div>
+      </div>
 
-    <div id="notesContainer">
-      <p id="emptyState" class="empty-state hidden">No notes yet. Write something!</p>
-    </div>
+      <p id="notesError" class="error" role="alert"></p>
+
+      <div id="notesContainer">
+        <p id="emptyState" class="empty-state hidden">Nothing here yet.<br>Write your first note above.</p>
+      </div>
+    </main>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

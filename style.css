@@ -6,28 +6,37 @@
 }
 
 :root {
-  --bg: #faf9f7;
-  --surface: #ffffff;
-  --surface-alt: #f4f2ee;
-  --border: #e5e2db;
-  --text: #1a1916;
-  --text-muted: #7a7670;
-  --accent: #2d6a4f;
-  --accent-hover: #1b4332;
-  --danger: #c0392b;
-  --danger-hover: #96281b;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.09);
-  --radius: 8px;
-  --font-display: 'Instrument Serif', Georgia, serif;
-  --font-body: 'DM Sans', Arial, sans-serif;
+  --bg:            #0f0e0c;
+  --bg-2:          #171613;
+  --bg-3:          #1e1c19;
+  --surface:       #242220;
+  --border:        #2e2c28;
+  --border-light:  #3a3835;
+  --text:          #f0ead8;
+  --text-muted:    #7a7060;
+  --text-dim:      #4a4540;
+  --accent:        #c9922a;
+  --accent-hover:  #e0a832;
+  --accent-glow:   rgba(201,146,42,0.15);
+  --danger:        #b84040;
+  --danger-hover:  #d04848;
+  --shadow:        0 8px 32px rgba(0,0,0,0.4);
+  --font-display:  'Playfair Display', Georgia, serif;
+  --font-body:     'Epilogue', sans-serif;
+  --radius:        6px;
+}
+
+html, body {
+  height: 100%;
 }
 
 body {
   font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
-  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
 .hidden {
@@ -37,108 +46,184 @@ body {
 /* ── Login Screen ── */
 #loginScreen {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   min-height: 100vh;
-  padding: 24px;
-  gap: 32px;
 }
 
-.brand {
+.login-left {
+  flex: 1;
+  background: var(--bg-2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative grid lines */
+.login-left::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.4;
+}
+
+/* Radial glow */
+.login-left::after {
+  content: '';
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.login-left-inner {
+  position: relative;
+  z-index: 1;
   text-align: center;
 }
 
-.brand-icon {
-  font-size: 40px;
+.brand-mark {
+  font-size: 2.5rem;
+  color: var(--accent);
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
+  animation: pulse 3s ease-in-out infinite;
 }
 
-.brand h1 {
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.95); }
+}
+
+.brand-name {
   font-family: var(--font-display);
-  font-size: 2.4rem;
-  font-weight: 400;
-  letter-spacing: -0.5px;
+  font-size: 3.8rem;
+  font-weight: 600;
+  letter-spacing: -1px;
   color: var(--text);
+  line-height: 1;
+  margin-bottom: 20px;
 }
 
-.brand-sub {
-  margin-top: 6px;
-  font-size: 14px;
+.brand-tagline {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 400;
   color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.brand-tagline em {
+  color: var(--accent);
+  font-style: italic;
+}
+
+/* ── Auth Box ── */
+.login-right {
+  width: 440px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 40px;
+  background: var(--bg);
 }
 
 .auth-box {
   width: 100%;
-  max-width: 380px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 32px;
-  box-shadow: var(--shadow-md);
+  max-width: 360px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+  animation: fadeUp 0.4s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .auth-box h2 {
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 400;
-  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.auth-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: -12px;
+  font-weight: 300;
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .input-group label {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--text-muted);
-  letter-spacing: 0.3px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
 }
 
 .auth-box input {
-  padding: 10px 12px;
+  padding: 12px 14px;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  color: var(--text);
   font-size: 14px;
   font-family: var(--font-body);
-  background: var(--bg);
-  color: var(--text);
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.2s, box-shadow 0.2s;
   width: 100%;
+}
+
+.auth-box input::placeholder {
+  color: var(--text-dim);
 }
 
 .auth-box input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(45,106,79,0.12);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .auth-box > button {
-  padding: 11px;
+  padding: 13px;
   background: var(--accent);
-  color: white;
+  color: #0f0e0c;
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
-  font-size: 15px;
+  font-size: 14px;
   font-family: var(--font-body);
   font-weight: 500;
+  letter-spacing: 0.3px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: background 0.15s, transform 0.1s;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  margin-top: 4px;
 }
 
 .auth-box > button:hover:not(:disabled) {
   background: var(--accent-hover);
+  box-shadow: 0 4px 20px var(--accent-glow);
 }
 
 .auth-box > button:active:not(:disabled) {
@@ -146,7 +231,7 @@ body {
 }
 
 .auth-box > button:disabled {
-  opacity: 0.65;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -154,187 +239,321 @@ body {
   color: var(--danger);
   font-size: 13px;
   min-height: 18px;
+  font-weight: 400;
 }
 
 .toggle-text {
   font-size: 13px;
-  text-align: center;
   color: var(--text-muted);
+  text-align: center;
+  font-weight: 300;
 }
 
 .toggle-text a {
   color: var(--accent);
-  font-weight: 500;
   text-decoration: none;
+  font-weight: 500;
+  margin-left: 4px;
 }
 
 .toggle-text a:hover {
-  text-decoration: underline;
+  color: var(--accent-hover);
 }
 
-/* ── Notes Screen ── */
+/* ── Notes App Layout ── */
 #notesScreen {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 24px 20px 60px;
-}
-
-.notes-header {
   display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 240px;
+  background: var(--bg-2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
   justify-content: space-between;
+  padding: 28px 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+}
+
+.sidebar-top {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.sidebar-brand {
+  display: flex;
   align-items: center;
-  margin-bottom: 28px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
+  gap: 10px;
 }
 
-.notes-header h1 {
+.brand-mark-small {
+  color: var(--accent);
+  font-size: 1.1rem;
+}
+
+.sidebar-brand-name {
   font-family: var(--font-display);
-  font-size: 1.8rem;
-  font-weight: 400;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.3px;
 }
 
-.user-info {
+.sidebar-user {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 14px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #8b5e1a);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 13px;
+  font-weight: 600;
+  color: #0f0e0c;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.user-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.user-email-display {
+  font-size: 12px;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note-count-wrap {
+  padding: 0 4px;
+}
+
+.note-count-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 300;
 }
 
 .logout-btn {
-  padding: 6px 14px;
+  padding: 10px 14px;
   background: transparent;
-  color: var(--danger);
-  border: 1px solid var(--danger);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
   font-size: 13px;
   font-family: var(--font-body);
-  font-weight: 500;
-  transition: background 0.15s, color 0.15s;
+  font-weight: 400;
+  text-align: left;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
 
 .logout-btn:hover {
-  background: var(--danger);
-  color: white;
+  color: var(--danger);
+  border-color: var(--danger);
+  background: rgba(184,64,64,0.06);
+}
+
+/* ── Main Content ── */
+.main-content {
+  margin-left: 240px;
+  flex: 1;
+  padding: 40px 48px;
+  max-width: 760px;
+}
+
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.main-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.main-date {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 300;
+  letter-spacing: 0.3px;
 }
 
 /* ── Note Composer ── */
 .note-composer {
-  background: var(--surface);
+  background: var(--bg-2);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: var(--shadow-sm);
-  margin-bottom: 24px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 36px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.note-composer:focus-within {
+  border-color: var(--border-light);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .note-composer textarea {
   width: 100%;
-  min-height: 100px;
+  min-height: 120px;
+  padding: 20px 22px;
+  background: transparent;
   border: none;
   outline: none;
   resize: vertical;
   font-size: 15px;
   font-family: var(--font-body);
+  font-weight: 300;
   color: var(--text);
-  background: transparent;
-  line-height: 1.6;
+  line-height: 1.7;
+  caret-color: var(--accent);
 }
 
 .note-composer textarea::placeholder {
-  color: var(--text-muted);
+  color: var(--text-dim);
+  font-style: italic;
 }
 
-.composer-actions {
+.composer-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 12px;
-  padding-top: 12px;
+  padding: 12px 22px;
   border-top: 1px solid var(--border);
+  background: var(--bg-3);
 }
 
 .char-count {
-  font-size: 12px;
-  color: var(--text-muted);
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 300;
 }
 
-.composer-actions button {
+.composer-footer button {
   padding: 8px 20px;
   background: var(--accent);
-  color: white;
+  color: #0f0e0c;
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-family: var(--font-body);
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: background 0.15s;
+  gap: 6px;
+  transition: background 0.2s, box-shadow 0.2s;
 }
 
-.composer-actions button:hover:not(:disabled) {
+.composer-footer button:hover:not(:disabled) {
   background: var(--accent-hover);
+  box-shadow: 0 2px 12px var(--accent-glow);
 }
 
-.composer-actions button:disabled {
-  opacity: 0.65;
+.composer-footer button:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 /* ── Notes List ── */
 .empty-state {
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text-dim);
   font-size: 14px;
-  padding: 48px 0;
+  font-weight: 300;
+  font-style: italic;
+  padding: 64px 0;
+  line-height: 1.8;
+  font-family: var(--font-display);
 }
 
 .note {
-  background: var(--surface);
+  background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 16px;
+  padding: 20px 22px;
   margin-bottom: 12px;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.15s;
+  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  animation: noteIn 0.25s ease both;
+}
+
+@keyframes noteIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .note:hover {
-  box-shadow: var(--shadow-md);
+  border-color: var(--border-light);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 
 .note-content {
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.7;
   color: var(--text);
   outline: none;
-  min-height: 24px;
-  border-radius: 4px;
-  transition: background 0.1s;
+  font-weight: 300;
+  word-break: break-word;
   padding: 2px 4px;
   margin: -2px -4px;
-  word-break: break-word;
+  border-radius: 3px;
+  transition: background 0.15s;
+  caret-color: var(--accent);
 }
 
 .note-content:focus {
-  background: var(--surface-alt);
+  background: var(--surface);
 }
 
 .note-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
 }
 
 .note-date {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-dim);
+  font-weight: 300;
+  letter-spacing: 0.3px;
 }
 
 .note-actions {
@@ -344,11 +563,11 @@ body {
 }
 
 .save-note-btn {
-  padding: 4px 12px;
+  padding: 4px 14px;
   background: var(--accent);
-  color: white;
+  color: #0f0e0c;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
   font-family: var(--font-body);
@@ -368,29 +587,30 @@ body {
 }
 
 .delete-btn {
-  padding: 4px 12px;
+  padding: 4px 14px;
   background: transparent;
-  color: var(--danger);
-  border: 1px solid var(--danger);
-  border-radius: 5px;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
   font-family: var(--font-body);
-  font-weight: 500;
-  transition: background 0.15s, color 0.15s;
+  font-weight: 400;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 
 .delete-btn:hover {
-  background: var(--danger);
-  color: white;
+  color: var(--danger);
+  border-color: var(--danger);
+  background: rgba(184,64,64,0.06);
 }
 
 /* ── Spinner ── */
 .spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255,255,255,0.4);
-  border-top-color: white;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(15,14,12,0.3);
+  border-top-color: #0f0e0c;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
   display: inline-block;
@@ -401,16 +621,33 @@ body {
 }
 
 /* ── Responsive ── */
-@media (max-width: 480px) {
-  .notes-header h1 {
-    font-size: 1.4rem;
+@media (max-width: 768px) {
+  #loginScreen {
+    flex-direction: column;
   }
 
-  .user-info span {
+  .login-left {
+    min-height: 220px;
+    flex: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 40px 24px;
+  }
+
+  .brand-name { font-size: 2.6rem; }
+  .brand-tagline { font-size: 1rem; }
+
+  .login-right {
+    width: 100%;
+    padding: 36px 24px;
+  }
+
+  .sidebar {
     display: none;
   }
 
-  .auth-box {
+  .main-content {
+    margin-left: 0;
     padding: 24px 20px;
   }
 }
