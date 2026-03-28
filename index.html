@@ -3,101 +3,245 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KlocVork Notes</title>
+  <title>KlocVork — Arena</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Epilogue:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- LOGIN SCREEN -->
-  <div id="loginScreen">
-    <div class="login-left">
-      <div class="login-left-inner">
-        <div class="brand-mark">✦</div>
-        <h1 class="brand-name">KlocVork</h1>
-        <p class="brand-tagline">Where thoughts<br><em>find their form.</em></p>
+<!-- AUTH SCREEN -->
+<div id="screen-auth" class="screen active">
+  <div class="auth-bg"><div class="auth-grid"></div><div class="auth-glow"></div></div>
+  <div class="auth-split">
+    <div class="auth-hero">
+      <div class="hero-emblem">⚔</div>
+      <h1 class="hero-title">KlocVork<br><em>Arena</em></h1>
+      <p class="hero-sub">A game of blades, shields,<br>and hidden intentions.</p>
+      <div class="hero-stats">
+        <div class="hstat"><span>7</span>Weapons</div>
+        <div class="hstat"><span>3</span>Rounds</div>
+        <div class="hstat"><span>30</span>HP Each</div>
       </div>
     </div>
-
-    <div class="login-right">
-      <div class="auth-box">
-        <h2 id="authTitle">Sign in</h2>
-        <p class="auth-subtitle" id="authSubtitle">Welcome back. Your notes await.</p>
-
+    <div class="auth-panel">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="setAuthTab('login')">Sign In</button>
+        <button class="auth-tab" id="tabSignup" onclick="setAuthTab('signup')">Sign Up</button>
+        <button class="auth-tab guest-tab" onclick="playAsGuest()">Guest ✦</button>
+      </div>
+      <div class="auth-form">
         <div class="input-group">
-          <label for="emailInput">Email address</label>
-          <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email" />
+          <label for="authUsername">Username</label>
+          <input type="text" id="authUsername" placeholder="your_username" maxlength="15" autocomplete="username" spellcheck="false"/>
+          <span class="input-hint">Letters, numbers &amp; underscores · 3–15 chars</span>
         </div>
-
         <div class="input-group">
-          <label for="passwordInput">Password</label>
-          <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="current-password" />
+          <label for="authPassword">Password</label>
+          <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password"/>
         </div>
-
-        <button id="authBtn" onclick="handleAuth()">
-          <span id="authBtnText">Continue →</span>
-          <span id="authBtnSpinner" class="spinner hidden"></span>
+        <button class="btn-primary" id="authSubmit" onclick="handleAuth()">
+          <span id="authSubmitText">Enter the Arena</span>
+          <span id="authSubmitSpinner" class="spinner hidden"></span>
         </button>
-
-        <p id="authError" class="error" role="alert"></p>
-
-        <p class="toggle-text">
-          <span id="toggleText">No account yet?</span>
-          <a href="#" onclick="toggleMode()" id="toggleLink">Create one</a>
-        </p>
+        <p id="authError" class="form-error"></p>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- NOTES SCREEN -->
-  <div id="notesScreen" class="hidden">
-    <aside class="sidebar">
-      <div class="sidebar-top">
-        <div class="sidebar-brand">
-          <span class="brand-mark-small">✦</span>
-          <span class="sidebar-brand-name">KlocVork</span>
-        </div>
-        <div class="sidebar-user">
-          <div class="user-avatar" id="userAvatar"></div>
-          <div class="user-details">
-            <span class="user-label">Signed in as</span>
-            <span id="userEmail" class="user-email-display"></span>
-          </div>
-        </div>
-        <div class="note-count-wrap">
-          <span id="noteCount" class="note-count-label">— notes</span>
-        </div>
-      </div>
-      <button onclick="logout()" class="logout-btn">↩ Sign out</button>
-    </aside>
-
-    <main class="main-content">
-      <div class="main-header">
-        <h2 class="main-title">My Notes</h2>
-        <span class="main-date" id="todayDate"></span>
-      </div>
-
-      <div class="note-composer">
-        <textarea id="noteInput" placeholder="Start writing…"></textarea>
-        <div class="composer-footer">
-          <span id="charCount" class="char-count">0 / 2500</span>
-          <button id="saveBtn" onclick="addNote()">
-            <span id="saveBtnText">Save note</span>
-            <span id="saveBtnSpinner" class="spinner hidden"></span>
-          </button>
-        </div>
-      </div>
-
-      <p id="notesError" class="error" role="alert"></p>
-
-      <div id="notesContainer">
-        <p id="emptyState" class="empty-state hidden">Nothing here yet.<br>Write your first note above.</p>
-      </div>
-    </main>
+<!-- MODE SELECT -->
+<div id="screen-mode" class="screen">
+  <div class="screen-header">
+    <div class="logo-small">⚔ KlocVork Arena</div>
+    <div class="header-right">
+      <div class="user-pill" id="userPill"></div>
+      <button class="btn-ghost-sm" id="logoutBtn" onclick="logout()" style="display:none">Sign out</button>
+    </div>
   </div>
+  <div class="mode-content">
+    <h2 class="section-title">Choose your battle</h2>
+    <div class="mode-cards">
+      <div class="mode-card" onclick="selectMode('hotseat')">
+        <div class="mode-icon">🎮</div>
+        <h3>Hot Seat</h3>
+        <p>Two players, one device. Pass and play.</p>
+        <div class="mode-badge">Same Device</div>
+      </div>
+      <div class="mode-card" onclick="selectMode('online')">
+        <div class="mode-icon">🌐</div>
+        <h3>Online</h3>
+        <p>Challenge a friend remotely in real-time.</p>
+        <div class="mode-badge">Multiplayer</div>
+      </div>
+      <div class="mode-card" onclick="selectMode('ai')">
+        <div class="mode-icon">🤖</div>
+        <h3>vs AI</h3>
+        <p>Face a cunning computer opponent alone.</p>
+        <div class="mode-badge">Single Player</div>
+      </div>
+    </div>
+  </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js"></script>
+<!-- ONLINE LOBBY -->
+<div id="screen-lobby" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="showScreen('screen-mode')">← Back</button>
+    <div class="logo-small">⚔ Arena</div>
+  </div>
+  <div class="lobby-content">
+    <h2 class="section-title">Online Lobby</h2>
+    <div id="lobbyCreate" class="lobby-box">
+      <p class="lobby-hint">Create a room and share the code, or join an existing one.</p>
+      <button class="btn-primary" onclick="createRoom()">Create Room</button>
+      <div class="divider">or</div>
+      <div class="join-row">
+        <input type="text" id="joinCode" placeholder="Enter room code" maxlength="6" style="text-transform:uppercase"/>
+        <button class="btn-secondary" onclick="joinRoom()">Join</button>
+      </div>
+      <p id="lobbyError" class="form-error"></p>
+    </div>
+    <div id="lobbyWaiting" class="lobby-box hidden">
+      <div class="room-code-display">
+        <span class="rcd-label">Room Code</span>
+        <span class="rcd-code" id="roomCodeDisplay"></span>
+        <button class="btn-copy" onclick="copyRoomCode()">Copy</button>
+      </div>
+      <div class="waiting-pulse">
+        <div class="pulse-ring"></div>
+        <span>Waiting for opponent…</span>
+      </div>
+      <button class="btn-ghost" onclick="cancelRoom()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- PASS DEVICE -->
+<div id="screen-pass" class="screen">
+  <div class="pass-content">
+    <div class="pass-icon">🛡</div>
+    <h2 id="passTitle">Pass the Device</h2>
+    <p id="passSubtitle">Player A has locked their choice.<br>Hand the device over.</p>
+    <button class="btn-primary" onclick="continueAfterPass()">I'm ready →</button>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="screen-game" class="screen">
+  <div class="game-statusbar">
+    <div class="gs-round" id="gsRound">Round 1 / 3</div>
+    <div class="gs-shot" id="gsShot">Shot 1 / 6</div>
+    <button class="btn-ghost-sm" onclick="confirmQuit()">Quit</button>
+  </div>
+  <div class="hp-bars">
+    <div class="hp-side">
+      <div class="hp-name" id="hpNameA">Player A</div>
+      <div class="hp-bar-wrap"><div class="hp-bar" id="hpBarA" style="width:100%"></div></div>
+      <div class="hp-num" id="hpNumA">30</div>
+    </div>
+    <div class="hp-vs">VS</div>
+    <div class="hp-side right">
+      <div class="hp-name" id="hpNameB">Player B</div>
+      <div class="hp-bar-wrap"><div class="hp-bar enemy" id="hpBarB" style="width:100%"></div></div>
+      <div class="hp-num" id="hpNumB">30</div>
+    </div>
+  </div>
+  <div class="available-weapons">
+    <span class="aw-label">Available this round:</span>
+    <div id="availableWeaponsList" class="aw-list"></div>
+  </div>
+  <div class="turn-panel">
+    <div class="turn-header">
+      <div class="turn-player-badge" id="turnBadge">Player A's Turn</div>
+      <div class="turn-phase" id="turnPhase">Choose your weapon &amp; shield</div>
+    </div>
+    <div class="choice-section">
+      <label class="choice-label">Weapon</label>
+      <div class="weapon-grid" id="weaponGrid"></div>
+    </div>
+    <div class="choice-section">
+      <label class="choice-label">Shield Points <span class="shield-hint">(5–11)</span></label>
+      <div class="shield-grid" id="shieldGrid"></div>
+    </div>
+    <div class="choice-section hidden" id="guessSection">
+      <label class="choice-label">Guess opponent's weapon</label>
+      <div class="weapon-grid" id="guessGrid"></div>
+    </div>
+    <button class="btn-confirm" id="confirmBtn" onclick="confirmChoice()" disabled>Confirm →</button>
+    <p id="gameError" class="form-error"></p>
+  </div>
+</div>
+
+<!-- SHOT RESULT -->
+<div id="screen-result" class="screen">
+  <div class="result-content">
+    <div class="result-title">Shot Result</div>
+    <div class="result-duel">
+      <div class="rd-side">
+        <div class="rd-name" id="rdNameA">Player A</div>
+        <div class="rd-weapon" id="rdWeaponA">—</div>
+        <div class="rd-shield" id="rdShieldA">Shield: —</div>
+        <div class="rd-dmg" id="rdDmgA">−0 HP</div>
+      </div>
+      <div class="rd-cross">⚔</div>
+      <div class="rd-side">
+        <div class="rd-name" id="rdNameB">Player B</div>
+        <div class="rd-weapon" id="rdWeaponB">—</div>
+        <div class="rd-shield" id="rdShieldB">Shield: —</div>
+        <div class="rd-dmg" id="rdDmgB">−0 HP</div>
+      </div>
+    </div>
+    <div class="result-guess" id="resultGuess"></div>
+    <div class="result-hp-summary" id="resultHpSummary"></div>
+    <button class="btn-primary" id="resultNextBtn" onclick="nextAfterResult()">Next Shot →</button>
+  </div>
+</div>
+
+<!-- ROUND OVER -->
+<div id="screen-roundover" class="screen">
+  <div class="roundover-content">
+    <div class="ro-label" id="roLabel">Round 1 Complete</div>
+    <div class="ro-scores">
+      <div class="ro-score">
+        <div id="roNameA">Player A</div>
+        <div class="ro-hp" id="roHpA">30 HP</div>
+      </div>
+      <div class="ro-vs">—</div>
+      <div class="ro-score">
+        <div id="roNameB">Player B</div>
+        <div class="ro-hp" id="roHpB">30 HP</div>
+      </div>
+    </div>
+    <button class="btn-primary" id="roNextBtn" onclick="startNextRound()">Next Round →</button>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div id="screen-gameover" class="screen">
+  <div class="gameover-content">
+    <div class="go-emblem" id="goEmblem">🏆</div>
+    <div class="go-result" id="goResult">Player A Wins!</div>
+    <div class="go-subtitle" id="goSubtitle"></div>
+    <div class="go-final-hp">
+      <div class="go-hp-side">
+        <div id="goNameA">Player A</div>
+        <div class="go-hp-num" id="goHpA">— HP</div>
+      </div>
+      <div class="go-hp-vs">vs</div>
+      <div class="go-hp-side">
+        <div id="goNameB">Player B</div>
+        <div class="go-hp-num" id="goHpB">— HP</div>
+      </div>
+    </div>
+    <div class="go-actions">
+      <button class="btn-primary" onclick="playAgain()">Play Again</button>
+      <button class="btn-ghost" onclick="showScreen('screen-mode')">Main Menu</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="game.js"></script>
 </body>
 </html>
