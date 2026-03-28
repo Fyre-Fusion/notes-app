@@ -587,6 +587,7 @@ function playAgain() { initGame(gameMode); showScreen("screen-game"); }
 
 function confirmQuit() {
   if (confirm("Quit and return to the menu?")) {
+    if (lobbyPoll) { clearInterval(lobbyPoll); lobbyPoll = null; }
     if (onlineSub) { onlineSub.unsubscribe(); onlineSub = null; }
     showScreen("screen-mode");
   }
@@ -595,7 +596,7 @@ function confirmQuit() {
 // ══════════════════════════════════════════════
 // ONLINE MULTIPLAYER
 // ══════════════════════════════════════════════
-let onlineRoom = null, onlineSub = null, onlineRole = null;
+let onlineRoom = null, onlineSub = null, onlineRole = null, lobbyPoll = null;
 
 function genCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -618,6 +619,17 @@ async function createRoom() {
   document.getElementById("lobbyCreate").classList.add("hidden");
   document.getElementById("lobbyWaiting").classList.remove("hidden");
   subscribeToRoom(code);
+  // Polling fallback in case realtime misses the join event
+  lobbyPoll = setInterval(async () => {
+    const { data } = await db.from("game_rooms").select("status, state").eq("code", code).single();
+    if (data && data.status === "active") {
+      clearInterval(lobbyPoll); lobbyPoll = null;
+      gs = JSON.parse(data.state);
+      if (currentUser) gs.names.A = currentUser.username;
+      initGame("online", gs.names);
+      showScreen("screen-game");
+    }
+  }, 2000);
 }
 
 async function joinRoom() {
@@ -658,8 +670,8 @@ function subscribeToRoom(code) {
 
 function handleOnlineUpdate(row) {
   if (row.status === "active" && onlineRole === "A") {
+    if (lobbyPoll) { clearInterval(lobbyPoll); lobbyPoll = null; }
     gs = JSON.parse(row.state);
-    // Set player A's name from their username
     if (currentUser) gs.names.A = currentUser.username;
     initGame("online", gs.names);
     showScreen("screen-game");
@@ -692,6 +704,7 @@ async function submitOnlineMoveB() {
 }
 
 async function cancelRoom() {
+  if (lobbyPoll) { clearInterval(lobbyPoll); lobbyPoll = null; }
   if (onlineRoom) await db.from("game_rooms").delete().eq("code", onlineRoom);
   if (onlineSub) { onlineSub.unsubscribe(); onlineSub = null; }
   onlineRoom = null;
