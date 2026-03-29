@@ -422,19 +422,29 @@ function nextAfterResult() {
   if (gs.shot >= SHOTS_PER_ROUND) { endRound(); }
   else {
     gs.shot++; gs.phase = "A";
-    showScreen("screen-game");
-    renderGame();
     if (gameMode === "online") {
       if (onlineRole === "A") {
-        // A resets turn_status so B's poll stops seeing "resolved"
+        showScreen("screen-game");
+        renderGame();
+        // Reset turn_status so B's poll cycle starts fresh
         db.from("game_rooms").update({ turn_status: "a_choosing" }).eq("code", onlineRoom);
-        // A can now pick — polling watches for resolved
         startAPolling();
       } else {
-        // B waits for A to pick again
+        // B: show waiting without rendering turn panel
+        bTurnReady = false; // must see a_choosing again before acting
+        showScreen("screen-game");
+        document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "⚡ Sudden Death" : `Round ${gs.round} / ${TOTAL_ROUNDS}`;
+        document.getElementById("gsShot").textContent  = `Shot ${gs.shot} / ${SHOTS_PER_ROUND}`;
+        document.getElementById("hpNameA").textContent = gs.names.A;
+        document.getElementById("hpNameB").textContent = gs.names.B;
+        updateHPBars();
+        renderAvailableWeapons();
         showOnlineWaiting("Waiting for " + gs.names.A + " to choose…");
         startBPolling();
       }
+    } else {
+      showScreen("screen-game");
+      renderGame();
     }
   }
 }
@@ -469,16 +479,27 @@ function startNextRound() {
   if (gs.hpA === gs.hpB && gs.round >= TOTAL_ROUNDS) gs.isSuddenDeath = true;
   else gs.round++;
   gs.shot = 1; gs.phase = "A"; gs.usedWeapons = []; gs.pendingA = null;
-  showScreen("screen-game");
-  renderGame();
   if (gameMode === "online") {
     if (onlineRole === "A") {
+      showScreen("screen-game");
+      renderGame();
       db.from("game_rooms").update({ turn_status: "a_choosing" }).eq("code", onlineRoom);
       startAPolling();
     } else {
+      showScreen("screen-game");
+      bTurnReady = false; // must see a_choosing again before acting
+      document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "⚡ Sudden Death" : `Round ${gs.round} / ${TOTAL_ROUNDS}`;
+      document.getElementById("gsShot").textContent  = `Shot ${gs.shot} / ${SHOTS_PER_ROUND}`;
+      document.getElementById("hpNameA").textContent = gs.names.A;
+      document.getElementById("hpNameB").textContent = gs.names.B;
+      updateHPBars();
+      renderAvailableWeapons();
       showOnlineWaiting("Waiting for " + gs.names.A + " to choose…");
       startBPolling();
     }
+  } else {
+    showScreen("screen-game");
+    renderGame();
   }
 }
 
@@ -516,10 +537,13 @@ function confirmQuit() {
 // ONLINE MULTIPLAYER
 // ══════════════════════════════════════════════
 let onlineRoom = null, onlineSub = null, onlineRole = null, lobbyPoll = null;
+let bTurnReady = false; // set true only after we see turn_status=a_choosing post-join
 
 // ── Polling for Player B: watches for b_choosing and resolved ──
+// seenAChoosing prevents acting on a stale "resolved" from the previous shot
 function startBPolling() {
   if (lobbyPoll) { clearInterval(lobbyPoll); lobbyPoll = null; }
+  let seenAChoosing = false;
   lobbyPoll = setInterval(async () => {
     if (!onlineRoom) { clearInterval(lobbyPoll); lobbyPoll = null; return; }
     const { data } = await db.from("game_rooms")
@@ -527,7 +551,12 @@ function startBPolling() {
       .eq("code", onlineRoom).maybeSingle();
     if (!data) return;
 
-    if (data.turn_status === "b_choosing") {
+    if (data.turn_status === "a_choosing") {
+      seenAChoosing = true; // mark that the new shot cycle has begun
+      return;
+    }
+
+    if (data.turn_status === "b_choosing" && seenAChoosing) {
       clearInterval(lobbyPoll); lobbyPoll = null;
       if (!document.getElementById("onlineWaitingOverlay").classList.contains("hidden")) {
         if (data.state) { try { const s = JSON.parse(data.state); gs.names = s.names || gs.names; } catch(e) {} }
@@ -535,7 +564,8 @@ function startBPolling() {
       }
       return;
     }
-    if (data.turn_status === "resolved") {
+
+    if (data.turn_status === "resolved" && seenAChoosing) {
       clearInterval(lobbyPoll); lobbyPoll = null;
       const onResult = document.getElementById("screen-result").classList.contains("active");
       if (!onResult) {
@@ -581,7 +611,7 @@ function startAPolling() {
 function cleanupOnline() {
   if (lobbyPoll) { clearInterval(lobbyPoll); lobbyPoll = null; }
   if (onlineSub) { onlineSub.unsubscribe(); onlineSub = null; }
-  onlineRoom = null; onlineRole = null;
+  onlineRoom = null; onlineRole = null; bTurnReady = false;
 }
 
 function genCode() { return Math.random().toString(36).substring(2,8).toUpperCase(); }
@@ -684,6 +714,7 @@ async function joinRoom() {
   }
 
   onlineRoom = code; onlineRole = "B";
+  bTurnReady = true; // room starts as a_choosing, so B is ready for the first shot
   startOnlineGame({ state: JSON.stringify(roomState) }, "B");
   subscribeToRoom(code); // subscribe AFTER onlineRole is set
 
@@ -706,9 +737,15 @@ function startOnlineGame(row, role) {
   gs.phase = "A";
   showScreen("screen-game");
   if (role === "A") {
-    renderGame(); // A picks first
-  } else {
     renderGame();
+  } else {
+    // B: just update status bar and HP — do NOT render turn panel
+    document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "⚡ Sudden Death" : `Round ${gs.round} / ${TOTAL_ROUNDS}`;
+    document.getElementById("gsShot").textContent  = `Shot ${gs.shot} / ${SHOTS_PER_ROUND}`;
+    document.getElementById("hpNameA").textContent = gs.names.A;
+    document.getElementById("hpNameB").textContent = gs.names.B;
+    updateHPBars();
+    renderAvailableWeapons();
     showOnlineWaiting("Waiting for " + gs.names.A + " to choose…");
   }
 }
@@ -739,7 +776,7 @@ function handleOnlineUpdate(row) {
   }
 
   // ── A locked in → B's turn ──
-  if (ts === "b_choosing" && onlineRole === "B") {
+  if (ts === "b_choosing" && onlineRole === "B" && bTurnReady) {
     if (lobbyPoll) { clearInterval(lobbyPoll); lobbyPoll = null; }
     if (!document.getElementById("onlineWaitingOverlay").classList.contains("hidden")) {
       if (row.state) { try { const s = JSON.parse(row.state); gs.names = s.names || gs.names; } catch(e) {} }
@@ -748,8 +785,14 @@ function handleOnlineUpdate(row) {
     return;
   }
 
+  // Track when A's turn begins so we know B's turn is valid next
+  if (ts === "a_choosing" && onlineRole === "B") {
+    bTurnReady = true;
+    return;
+  }
+
   // ── Shot resolved → show result on BOTH devices ──
-  if (ts === "resolved") {
+  if (ts === "resolved" && (onlineRole === "A" || bTurnReady)) {
     if (lobbyPoll) { clearInterval(lobbyPoll); lobbyPoll = null; }
     // Only process if we're still waiting (not already on result screen)
     const onResult = document.getElementById("screen-result").classList.contains("active");
