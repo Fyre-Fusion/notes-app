@@ -275,9 +275,21 @@ function renderPlayerBTurn() {
   document.getElementById("turnPhase").textContent = "Guess your opponent's weapon, then pick yours & your shield.";
   document.getElementById("guessSection").classList.remove("hidden");
   document.getElementById("confirmBtn").disabled = true;
+  // guessGrid always shows ALL 7 weapons (opponent could have picked any, including "used" ones from prior shots)
   renderWeaponGrid("guessGrid",  WEAPONS,               w => { selGuessB  = w; checkBReady(); });
+  // weaponGrid shows only available (unused) weapons for B's own pick
   renderWeaponGrid("weaponGrid", getAvailableWeapons(), w => { selWeaponB = w; checkBReady(); });
   renderShieldGrid("shieldGrid", v => { selShieldB = v; checkBReady(); });
+
+  // Visual hint: mark guess grid weapons that are already used this round
+  const guessGrid = document.getElementById("guessGrid");
+  guessGrid.querySelectorAll(".weapon-btn").forEach(btn => {
+    const wName = btn.querySelector("span")?.textContent?.split(" ").slice(1).join(" ");
+    if (gs.usedWeapons.includes(wName)) {
+      btn.style.opacity = "0.55";
+      btn.title = "Already used this round — but you can still guess it";
+    }
+  });
 }
 function checkBReady() { document.getElementById("confirmBtn").disabled = !(selWeaponB && selShieldB !== null && selGuessB); }
 
@@ -426,9 +438,9 @@ function nextAfterResult() {
       if (onlineRole === "A") {
         showScreen("screen-game");
         renderGame();
-        // Reset turn_status so B's poll cycle starts fresh
-        db.from("game_rooms").update({ turn_status: "a_choosing" }).eq("code", onlineRoom);
-        startAPolling();
+        // Reset turn_status FIRST, then start polling — prevents stale "resolved" re-triggering result screen
+        db.from("game_rooms").update({ turn_status: "a_choosing", move_a: null, move_b: null }).eq("code", onlineRoom)
+          .then(() => startAPolling());
       } else {
         // B: show waiting without rendering turn panel
         bTurnReady = false; // must see a_choosing again before acting
@@ -483,8 +495,9 @@ function startNextRound() {
     if (onlineRole === "A") {
       showScreen("screen-game");
       renderGame();
-      db.from("game_rooms").update({ turn_status: "a_choosing" }).eq("code", onlineRoom);
-      startAPolling();
+      // Update DB first, then start polling — prevents stale "resolved" re-triggering result screen
+      db.from("game_rooms").update({ turn_status: "a_choosing", move_a: null, move_b: null }).eq("code", onlineRoom)
+        .then(() => startAPolling());
     } else {
       showScreen("screen-game");
       bTurnReady = false; // must see a_choosing again before acting
@@ -585,27 +598,36 @@ function startBPolling() {
 // ── Polling for Player A: watches for resolved shots after game starts ──
 function startAPolling() {
   if (lobbyPoll) { clearInterval(lobbyPoll); lobbyPoll = null; }
-  lobbyPoll = setInterval(async () => {
-    if (!onlineRoom) { clearInterval(lobbyPoll); lobbyPoll = null; return; }
-    const { data } = await db.from("game_rooms")
-      .select("turn_status, state, last_result")
-      .eq("code", onlineRoom).maybeSingle();
-    if (!data) return;
+  // Snapshot the shot number at poll-start; only act on "resolved" for THIS shot
+  const pollingShotSnapshot = gs.shot;
+  // Brief delay so DB update to a_choosing propagates before we start reading
+  setTimeout(() => {
+    if (lobbyPoll) { clearInterval(lobbyPoll); lobbyPoll = null; }
+    lobbyPoll = setInterval(async () => {
+      if (!onlineRoom) { clearInterval(lobbyPoll); lobbyPoll = null; return; }
+      const { data } = await db.from("game_rooms")
+        .select("turn_status, state, last_result")
+        .eq("code", onlineRoom).maybeSingle();
+      if (!data) return;
 
-    if (data.turn_status === "resolved") {
-      const onResult = document.getElementById("screen-result").classList.contains("active");
-      if (!onResult) {
-        try {
-          const newGs = JSON.parse(data.state);
-          const result = JSON.parse(data.last_result);
-          gs.hpA = newGs.hpA; gs.hpB = newGs.hpB;
-          gs.usedWeapons = newGs.usedWeapons; gs.names = newGs.names;
-          gs.round = newGs.round; gs.shot = newGs.shot; gs.isSuddenDeath = newGs.isSuddenDeath;
-          showShotResult(result.cA, result.cB, result.dmgA, result.dmgB, result.guessB, result.correct);
-        } catch(e) {}
+      if (data.turn_status === "resolved") {
+        const onResult = document.getElementById("screen-result").classList.contains("active");
+        if (!onResult) {
+          try {
+            const newGs = JSON.parse(data.state);
+            // Only handle if it matches the shot we're waiting on
+            if (newGs.shot !== pollingShotSnapshot) return;
+            const result = JSON.parse(data.last_result);
+            gs.hpA = newGs.hpA; gs.hpB = newGs.hpB;
+            gs.usedWeapons = newGs.usedWeapons; gs.names = newGs.names;
+            gs.round = newGs.round; gs.shot = newGs.shot; gs.isSuddenDeath = newGs.isSuddenDeath;
+            clearInterval(lobbyPoll); lobbyPoll = null;
+            showShotResult(result.cA, result.cB, result.dmgA, result.dmgB, result.guessB, result.correct);
+          } catch(e) {}
+        }
       }
-    }
-  }, 2000);
+    }, 2000);
+  }, 600);
 }
 
 function cleanupOnline() {
@@ -800,6 +822,8 @@ function handleOnlineUpdate(row) {
       try {
         const newGs = JSON.parse(row.state);
         const result = JSON.parse(row.last_result);
+        // Guard: if the resolved state's shot is behind what we already have, skip it (stale event)
+        if (newGs.shot < gs.shot) return;
         // Sync the full game state from DB
         gs.hpA = newGs.hpA; gs.hpB = newGs.hpB;
         gs.usedWeapons = newGs.usedWeapons;
