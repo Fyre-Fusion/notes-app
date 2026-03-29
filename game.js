@@ -607,13 +607,13 @@ async function createRoom() {
     last_result:   null,
   });
 
-  const isSchemaMissing = error.message?.includes('last_result') || error.message?.includes('turn_status');
-  if (isSchemaMissing) {
-    errEl.innerHTML = '⚠️ DB schema outdated. Run <strong>migration.sql</strong> in Supabase SQL Editor, then refresh.';
-  } else {
-    errEl.textContent = 'Failed to create room: ' + error.message;
+  if (error) {
+    const isSchemaMissing = error.message?.includes('last_result') || error.message?.includes('turn_status');
+    errEl.innerHTML = isSchemaMissing
+      ? '⚠️ DB schema outdated. Run <strong>migration.sql</strong> in Supabase SQL Editor, then refresh.'
+      : 'Failed to create room: ' + error.message;
+    return;
   }
-  return;
 
   onlineRoom = code; onlineRole = "A";
   document.getElementById("roomCodeDisplay").textContent = code;
