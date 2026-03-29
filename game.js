@@ -219,6 +219,9 @@ function updateHPBars() {
   // B bar same logic
   barB.style.background = pctB > 50 ? "var(--green)" : pctB > 25 ? "#facc15" : "var(--red)";
   barB.style.boxShadow  = pctB > 50 ? "0 0 8px var(--green-glow)" : pctB > 25 ? "0 0 8px rgba(250,204,21,0.3)" : "0 0 8px var(--red-glow)";
+  // Low HP pulse (≤30%)
+  barA.classList.toggle("low-hp", pctA <= 30 && pctA > 0);
+  barB.classList.toggle("low-hp", pctB <= 30 && pctB > 0);
 }
 
 function renderAvailableWeapons() {
@@ -254,45 +257,54 @@ function renderPlayerATurn() {
   selWeaponA = null; selShieldA = null;
   document.getElementById("turnBadge").textContent = `${gs.names.A}'s Turn`;
   document.getElementById("turnPhase").textContent = "Choose your weapon & shield — hidden from your opponent.";
-  // BUG FIX 3: always hide guessSection on A's turn
   document.getElementById("guessSection").classList.add("hidden");
   document.getElementById("confirmBtn").disabled = true;
-  renderWeaponGrid("weaponGrid", getAvailableWeapons(), w => { selWeaponA = w; checkAReady(); });
+  // A can pick any weapon — no restriction per shot for A
+  renderWeaponGrid("weaponGrid", WEAPONS, w => { selWeaponA = w; checkAReady(); });
   renderShieldGrid("shieldGrid", v => { selShieldA = v; checkAReady(); });
 }
 function checkAReady() { document.getElementById("confirmBtn").disabled = !(selWeaponA && selShieldA !== null); }
 
 // ══════════════════════════════════════════════
 // PLAYER B TURN
-// BUG FIX 3: weaponGrid = B's weapon (available only)
-//            guessGrid  = B's guess at A's weapon (all 7, shown in guessSection)
-//            These are separate grids — no double row.
 // ══════════════════════════════════════════════
 let selWeaponB = null, selShieldB = null, selGuessB = null;
 
 function renderPlayerBTurn() {
   selWeaponB = null; selShieldB = null; selGuessB = null;
   document.getElementById("turnBadge").textContent = `${gs.names.B}'s Turn`;
-  document.getElementById("turnPhase").textContent = "Guess your opponent's weapon, then pick yours & your shield.";
-  document.getElementById("guessSection").classList.remove("hidden");
-  document.getElementById("confirmBtn").disabled = true;
-  // guessGrid always shows ALL 7 weapons (opponent could have picked any, including "used" ones from prior shots)
-  renderWeaponGrid("guessGrid",  WEAPONS,               w => { selGuessB  = w; checkBReady(); });
-  // weaponGrid shows only available (unused) weapons for B's own pick
-  renderWeaponGrid("weaponGrid", getAvailableWeapons(), w => { selWeaponB = w; checkBReady(); });
-  renderShieldGrid("shieldGrid", v => { selShieldB = v; checkBReady(); });
+  document.getElementById("turnPhase").textContent = "Pick your weapon &amp; shield.";
 
-  // Visual hint: mark guess grid weapons that are already used this round
-  const guessGrid = document.getElementById("guessGrid");
-  guessGrid.querySelectorAll(".weapon-btn").forEach(btn => {
-    const wName = btn.querySelector("span")?.textContent?.split(" ").slice(1).join(" ");
-    if (gs.usedWeapons.includes(wName)) {
-      btn.style.opacity = "0.55";
-      btn.title = "Already used this round — but you can still guess it";
-    }
-  });
+  // Only show guess section in online mode
+  const showGuess = gameMode === "online";
+  document.getElementById("guessSection").classList.toggle("hidden", !showGuess);
+
+  document.getElementById("confirmBtn").disabled = true;
+
+  if (showGuess) {
+    renderWeaponGrid("guessGrid", WEAPONS, w => { selGuessB = w; checkBReady(); });
+    // Mark already-used weapons in guess grid as faded hints
+    const guessGrid = document.getElementById("guessGrid");
+    guessGrid.querySelectorAll(".weapon-btn").forEach(btn => {
+      const wName = btn.querySelector("span")?.textContent?.split(" ").slice(1).join(" ");
+      if (gs.usedWeapons.includes(wName)) {
+        btn.style.opacity = "0.55";
+        btn.title = "Already used this round — but you can still guess it";
+      }
+    });
+  } else {
+    selGuessB = null; // no guess needed in hotseat/AI
+  }
+
+  // B picks from all weapons except the one A just locked this shot
+  const bAvailable = WEAPONS.filter(w => w.name !== (gs.pendingA?.weapon?.name));
+  renderWeaponGrid("weaponGrid", bAvailable, w => { selWeaponB = w; checkBReady(); });
+  renderShieldGrid("shieldGrid", v => { selShieldB = v; checkBReady(); });
 }
-function checkBReady() { document.getElementById("confirmBtn").disabled = !(selWeaponB && selShieldB !== null && selGuessB); }
+function checkBReady() {
+  const guessOk = gameMode === "online" ? !!selGuessB : true;
+  document.getElementById("confirmBtn").disabled = !(selWeaponB && selShieldB !== null && guessOk);
+}
 
 // ══════════════════════════════════════════════
 // GRID BUILDERS
@@ -316,10 +328,14 @@ function renderWeaponGrid(gridId, weapons, onSelect) {
 function renderShieldGrid(gridId, onSelect) {
   const grid = document.getElementById(gridId);
   grid.innerHTML = "";
+  // Map shield value → matching weapon name for tooltip
+  const weaponByVal = {};
+  WEAPONS.forEach(w => { weaponByVal[w.dmg] = w.emoji + " " + w.name; });
   SHIELD_VALUES.forEach(v => {
     const btn = document.createElement("button");
     btn.className = "shield-btn";
     btn.textContent = v;
+    if (weaponByVal[v]) btn.setAttribute("data-weapon", "blocks " + weaponByVal[v]);
     btn.onclick = () => {
       grid.querySelectorAll(".shield-btn").forEach(b => b.classList.remove("selected"));
       btn.classList.add("selected");
@@ -337,9 +353,14 @@ function renderShieldGrid(gridId, onSelect) {
 function confirmChoice() {
   if (gs.phase === "A") {
     gs.pendingA = { weapon: selWeaponA, shield: selShieldA };
+    // Lock-in animation on confirm button
+    const cb = document.getElementById("confirmBtn");
+    cb.classList.add("locked-in");
+    cb.textContent = "✓ Locked In!";
+    cb.disabled = true;
+    setTimeout(() => { cb.classList.remove("locked-in"); cb.textContent = "Confirm →"; }, 600);
     if (gameMode === "hotseat") {
-      gs.phase = "B";
-      showPassScreen();
+      setTimeout(() => { gs.phase = "B"; showPassScreen(); }, 400);
     } else if (gameMode === "ai") {
       gs.phase = "B";
       resolveAITurn();
@@ -377,13 +398,10 @@ function continueAfterPass() {
 // AI TURN
 // ══════════════════════════════════════════════
 function resolveAITurn() {
-  const avail = getAvailableWeapons();
-  const notA  = avail.filter(w => w.name !== gs.pendingA.weapon.name);
-  const pool  = notA.length > 0 ? notA : avail;
-  const aiW   = pool[Math.floor(Math.random() * pool.length)];
-  const aiS   = SHIELD_VALUES[Math.floor(Math.random() * SHIELD_VALUES.length)];
-  const aiG   = WEAPONS[Math.floor(Math.random() * WEAPONS.length)];
-  resolveShot(gs.pendingA, { weapon: aiW, shield: aiS }, aiG);
+  const pool = WEAPONS.filter(w => w.name !== gs.pendingA.weapon.name);
+  const aiW  = pool[Math.floor(Math.random() * pool.length)];
+  const aiS  = SHIELD_VALUES[Math.floor(Math.random() * SHIELD_VALUES.length)];
+  resolveShot(gs.pendingA, { weapon: aiW, shield: aiS }, null);
 }
 
 // ══════════════════════════════════════════════
@@ -394,6 +412,7 @@ function resolveShot(choiceA, choiceB, guessB) {
   const dmgToA = Math.abs(choiceA.shield - choiceB.weapon.dmg);
   gs.hpA = Math.max(0, gs.hpA - dmgToA);
   gs.hpB = Math.max(0, gs.hpB - dmgToB);
+  // Track used weapons for the round chip display only — does not restrict future picks
   if (!gs.usedWeapons.includes(choiceA.weapon.name)) gs.usedWeapons.push(choiceA.weapon.name);
   if (!gs.usedWeapons.includes(choiceB.weapon.name)) gs.usedWeapons.push(choiceB.weapon.name);
   gs.phase = "A";
@@ -414,10 +433,36 @@ function showShotResult(cA, cB, dmgA, dmgB, guessB, correct) {
 
   const eA = document.getElementById("rdDmgA");
   const eB = document.getElementById("rdDmgB");
-  eA.textContent = dmgA === 0 ? "✦ Perfect Block!" : `−${dmgA} HP`;
-  eB.textContent = dmgB === 0 ? "✦ Perfect Block!" : `−${dmgB} HP`;
-  eA.className = "rd-dmg" + (dmgA === 0 ? " no-dmg" : "");
-  eB.className = "rd-dmg" + (dmgB === 0 ? " no-dmg" : "");
+
+  // Animate damage numbers counting up from 0
+  function animateDmg(el, finalVal, isPerfect) {
+    el.className = "rd-dmg" + (isPerfect ? " no-dmg" : "");
+    if (isPerfect) { el.textContent = "✦ Perfect Block!"; return; }
+    el.textContent = "−0 HP";
+    const duration = 600, steps = 20, interval = duration / steps;
+    let current = 0;
+    const timer = setInterval(() => {
+      current = Math.min(current + Math.ceil(finalVal / steps), finalVal);
+      el.textContent = `−${current} HP`;
+      if (current >= finalVal) clearInterval(timer);
+    }, interval);
+  }
+
+  animateDmg(eA, dmgA, dmgA === 0);
+  animateDmg(eB, dmgB, dmgB === 0);
+
+  // Re-trigger CSS animation by cloning nodes
+  [eA, eB].forEach(el => {
+    const clone = el.cloneNode(true);
+    el.parentNode.replaceChild(clone, el);
+  });
+  // Re-apply after clone
+  setTimeout(() => {
+    const fa = document.getElementById("rdDmgA");
+    const fb = document.getElementById("rdDmgB");
+    animateDmg(fa, dmgA, dmgA === 0);
+    animateDmg(fb, dmgB, dmgB === 0);
+  }, 10);
 
   const gEl = document.getElementById("resultGuess");
   if (guessB) {
@@ -548,6 +593,36 @@ function showGameOver() {
     document.getElementById("goSubtitle").textContent = aWins ? `${gs.names.B} has been defeated.` : `${gs.names.A} has been defeated.`;
   }
   showScreen("screen-gameover");
+
+  // Screen flash overlay
+  const flash = document.createElement("div");
+  flash.className = "go-flash " + (tie ? "draw" : "win");
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 800);
+
+  // Particle burst on win
+  if (!tie) {
+    const colors = ["#a855f7","#c084fc","#22d3ee","#4ade80","#facc15","#f43f5e"];
+    const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    for (let i = 0; i < 28; i++) {
+      const p = document.createElement("div");
+      p.className = "go-particle";
+      const angle = (Math.PI * 2 * i) / 28 + (Math.random() - 0.5) * 0.4;
+      const dist  = 120 + Math.random() * 180;
+      const tx    = Math.cos(angle) * dist;
+      const ty    = Math.sin(angle) * dist - 60;
+      p.style.cssText = `
+        left:${cx - 4}px; top:${cy - 4}px;
+        background:${colors[i % colors.length]};
+        --tx:${tx}px; --ty:${ty}px;
+        --dur:${0.7 + Math.random() * 0.6}s;
+        --delay:${Math.random() * 0.15}s;
+        box-shadow: 0 0 6px ${colors[i % colors.length]};
+      `;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 1500);
+    }
+  }
 }
 
 function playAgain() { initGame(gameMode); showScreen("screen-game"); }
