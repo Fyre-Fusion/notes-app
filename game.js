@@ -607,7 +607,13 @@ async function createRoom() {
     last_result:   null,
   });
 
-  if (error) { errEl.textContent = "Failed to create room: " + error.message; return; }
+  const isSchemaMissing = error.message?.includes('last_result') || error.message?.includes('turn_status');
+  if (isSchemaMissing) {
+    errEl.innerHTML = '⚠️ DB schema outdated. Run <strong>migration.sql</strong> in Supabase SQL Editor, then refresh.';
+  } else {
+    errEl.textContent = 'Failed to create room: ' + error.message;
+  }
+  return;
 
   onlineRoom = code; onlineRole = "A";
   document.getElementById("roomCodeDisplay").textContent = code;
@@ -669,7 +675,13 @@ async function joinRoom() {
     state:         JSON.stringify(roomState),
   }).eq("code", code);
 
-  if (ue) { errEl.textContent = "Failed to join room."; return; }
+  if (ue) {
+    const isSchemaMissing = ue.message?.includes('last_result') || ue.message?.includes('turn_status');
+    errEl.innerHTML = isSchemaMissing
+      ? '⚠️ DB schema outdated. Run <strong>migration.sql</strong> in Supabase SQL Editor, then refresh.'
+      : 'Failed to join room: ' + ue.message;
+    return;
+  }
 
   onlineRoom = code; onlineRole = "B";
   startOnlineGame({ state: JSON.stringify(roomState) }, "B");
