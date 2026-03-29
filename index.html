@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<!-- AUTH -->
+<!-- ═══════ AUTH ═══════ -->
 <div id="screen-auth" class="screen active">
   <div class="auth-bg"><div class="auth-grid"></div><div class="auth-glow"></div></div>
   <div class="auth-split">
@@ -50,7 +50,7 @@
   </div>
 </div>
 
-<!-- MODE SELECT -->
+<!-- ═══════ MODE SELECT ═══════ -->
 <div id="screen-mode" class="screen">
   <div class="screen-header">
     <div class="logo-small">⚔ KlocVork Arena</div>
@@ -88,8 +88,8 @@
   </div>
 </div>
 
-<!-- RULEBOOK MODAL -->
-<div id="rulebookModal" class="modal-overlay hidden" onclick="hideRulebook(event)">
+<!-- ═══════ RULEBOOK MODAL — id must match game.js: "modal-rulebook" ═══════ -->
+<div id="modal-rulebook" class="modal-overlay hidden" onclick="closeRulebookIfOutside(event)">
   <div class="modal-box">
     <div class="modal-header">
       <h2 class="modal-title">📖 Rulebook</h2>
@@ -98,7 +98,7 @@
     <div class="modal-body">
       <div class="rule-section">
         <h3>Overview</h3>
-        <p>2 players · 30 HP each · 3 rounds · 6 shots per round. The player with the most HP after all rounds wins.</p>
+        <p>2 players · 30 HP each · 3 rounds · 6 shots per round. Most HP after all rounds wins.</p>
       </div>
       <div class="rule-section">
         <h3>⚔ Weapons &amp; Damage</h3>
@@ -113,39 +113,39 @@
         </div>
       </div>
       <div class="rule-section">
-        <h3>🎯 Each Shot — Two Phases</h3>
+        <h3>🎯 Each Shot</h3>
         <ol>
-          <li><strong>Player A</strong> secretly picks a weapon &amp; a shield value (5–11)</li>
+          <li><strong>Player A</strong> secretly picks a weapon &amp; shield value (5–11)</li>
           <li><strong>Player B</strong> guesses Player A's weapon, then picks their own weapon &amp; shield (5–11)</li>
-          <li>Both players attack each other simultaneously</li>
+          <li>Both players attack simultaneously</li>
         </ol>
       </div>
       <div class="rule-section">
         <h3>💥 Damage Formula</h3>
-        <div class="formula-box">Damage taken = |Your Shield − Opponent's Weapon Damage|</div>
-        <p>Perfectly matching your shield to your opponent's weapon deals <span class="gold-text">0 damage (Perfect Block!)</span>. Both over- and under-estimating are equally punished.</p>
+        <div class="formula-box">Damage = |Your Shield − Opponent's Weapon Damage|</div>
+        <p>Match your shield exactly = <span class="neon-text">0 damage (Perfect Block!)</span>. Any mismatch causes damage equal to the difference.</p>
       </div>
       <div class="rule-section">
         <h3>🔒 Weapon Restriction</h3>
-        <p>Only 6 of 7 weapons are available per round. Once either player uses a weapon, it is locked for the rest of that round.</p>
+        <p>Only 6 of 7 weapons are used per round. Once a weapon is used by either player, it is locked for that round.</p>
       </div>
       <div class="rule-section">
         <h3>🏆 Winning &amp; Sudden Death</h3>
-        <p>After 3 rounds, highest HP wins. On a tie, a <strong>Sudden Death</strong> round (6 more shots) decides the winner.</p>
+        <p>After 3 rounds, most HP wins. On a tie, a <strong>Sudden Death</strong> round decides it.</p>
       </div>
       <div class="rule-section">
         <h3>🎮 Game Modes</h3>
         <ul>
-          <li><strong>Hot Seat</strong> — Same device. After Player A picks, the screen blanks and you pass the device to Player B.</li>
-          <li><strong>Online</strong> — Create a room, share the 6-letter code, play on separate devices in real-time.</li>
-          <li><strong>vs AI</strong> — Solo play. The AI picks randomly from available weapons — can you read it?</li>
+          <li><strong>Hot Seat</strong> — Same device. Screen blanks after Player A picks, pass to Player B.</li>
+          <li><strong>Online</strong> — Create a room, share the 6-letter code, play on separate devices.</li>
+          <li><strong>vs AI</strong> — AI picks randomly from available weapons each shot.</li>
         </ul>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ONLINE LOBBY -->
+<!-- ═══════ ONLINE LOBBY ═══════ -->
 <div id="screen-lobby" class="screen">
   <div class="screen-header">
     <button class="btn-back" onclick="showScreen('screen-mode')">← Back</button>
@@ -156,13 +156,10 @@
     <h2 class="section-title">Online Lobby</h2>
     <div id="lobbyCreate" class="lobby-box">
       <p class="lobby-hint">Create a room and share the code,<br>or join a friend's room.</p>
-      <button class="btn-primary" id="createRoomBtn" onclick="createRoom()">
-        <span id="createRoomText">Create Room</span>
-        <span id="createRoomSpinner" class="spinner hidden"></span>
-      </button>
+      <button class="btn-primary" onclick="createRoom()">Create Room</button>
       <div class="divider">or</div>
       <div class="join-row">
-        <input type="text" id="joinCode" placeholder="Enter code" maxlength="6"/>
+        <input type="text" id="joinCode" placeholder="Enter code" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;text-align:center"/>
         <button class="btn-secondary" onclick="joinRoom()">Join</button>
       </div>
       <p id="lobbyError" class="form-error"></p>
@@ -179,25 +176,27 @@
   </div>
 </div>
 
-<!-- PASS DEVICE -->
+<!-- ═══════ PASS DEVICE ═══════ -->
 <div id="screen-pass" class="screen">
   <div class="pass-content">
     <div class="pass-icon">🛡</div>
     <h2 id="passTitle">Pass the Device</h2>
-    <p id="passSubtitle">Player A has locked their choice.<br>Hand the device over.</p>
-    <button class="btn-primary btn-large" onclick="continueAfterPass()">I'm ready →</button>
+    <p id="passSubtitle">Player A has locked their choice. Hand the device over.</p>
+    <button class="btn-primary" onclick="continueAfterPass()">I'm ready →</button>
   </div>
 </div>
 
-<!-- GAME -->
+<!-- ═══════ GAME ═══════ -->
 <div id="screen-game" class="screen">
   <div class="game-statusbar">
     <div class="gs-left">
       <div class="gs-round" id="gsRound">Round 1 / 3</div>
       <div class="gs-shot" id="gsShot">Shot 1 / 6</div>
     </div>
-    <button class="btn-ghost-sm quit-btn" onclick="confirmQuit()">✕ Quit</button>
+    <button class="btn-ghost-sm" onclick="confirmQuit()">✕ Quit</button>
   </div>
+
+  <!-- HP bars -->
   <div class="hp-bars">
     <div class="hp-side">
       <div class="hp-name" id="hpNameA">Player A</div>
@@ -211,14 +210,50 @@
       <div class="hp-num" id="hpNumB">30</div>
     </div>
   </div>
+
+  <!-- Available weapons -->
   <div class="available-weapons">
     <span class="aw-label">Round weapons:</span>
     <div id="availableWeaponsList" class="aw-list"></div>
   </div>
-  <div class="turn-panel" id="turnPanel"></div>
+
+  <!-- Online waiting overlay (inside game screen) -->
+  <div id="onlineWaitingOverlay" class="online-waiting hidden">
+    <div class="pulse-ring large"></div>
+    <p id="onlineWaitingText">Waiting for opponent…</p>
+  </div>
+
+  <!-- Turn panel — static IDs that game.js references -->
+  <div class="turn-panel" id="turnPanel">
+    <div class="turn-header">
+      <div class="turn-player-badge" id="turnBadge">Player A's Turn</div>
+      <div class="turn-phase" id="turnPhase">Choose your weapon &amp; shield</div>
+    </div>
+
+    <!-- Guess section (Player B only) -->
+    <div class="choice-section hidden" id="guessSection">
+      <label class="choice-label">Guess opponent's weapon</label>
+      <div class="weapon-grid" id="guessGrid"></div>
+    </div>
+
+    <!-- Weapon selection -->
+    <div class="choice-section">
+      <label class="choice-label">Your Weapon</label>
+      <div class="weapon-grid" id="weaponGrid"></div>
+    </div>
+
+    <!-- Shield selection -->
+    <div class="choice-section">
+      <label class="choice-label">Shield Points <span class="shield-hint">(5–11)</span></label>
+      <div class="shield-grid" id="shieldGrid"></div>
+    </div>
+
+    <button class="btn-confirm" id="confirmBtn" onclick="confirmChoice()" disabled>Confirm →</button>
+    <p id="gameError" class="form-error"></p>
+  </div>
 </div>
 
-<!-- SHOT RESULT -->
+<!-- ═══════ SHOT RESULT ═══════ -->
 <div id="screen-result" class="screen">
   <div class="result-content">
     <div class="result-eyebrow">Shot Result</div>
@@ -239,11 +274,11 @@
     </div>
     <div class="result-guess" id="resultGuess"></div>
     <div class="result-hp-summary" id="resultHpSummary"></div>
-    <button class="btn-primary btn-large" id="resultNextBtn" onclick="nextAfterResult()">Next Shot →</button>
+    <button class="btn-primary" id="resultNextBtn" onclick="nextAfterResult()">Next Shot →</button>
   </div>
 </div>
 
-<!-- ROUND OVER -->
+<!-- ═══════ ROUND OVER ═══════ -->
 <div id="screen-roundover" class="screen">
   <div class="roundover-content">
     <div class="ro-eyebrow" id="roLabel">Round 1 Complete</div>
@@ -258,11 +293,11 @@
         <div class="ro-hp" id="roHpB">30 HP</div>
       </div>
     </div>
-    <button class="btn-primary btn-large" id="roNextBtn" onclick="startNextRound()">Next Round →</button>
+    <button class="btn-primary" id="roNextBtn" onclick="startNextRound()">Next Round →</button>
   </div>
 </div>
 
-<!-- GAME OVER -->
+<!-- ═══════ GAME OVER ═══════ -->
 <div id="screen-gameover" class="screen">
   <div class="gameover-content">
     <div class="go-emblem" id="goEmblem">🏆</div>
@@ -283,14 +318,6 @@
       <button class="btn-primary" onclick="playAgain()">Play Again</button>
       <button class="btn-ghost" onclick="showScreen('screen-mode')">Main Menu</button>
     </div>
-  </div>
-</div>
-
-<!-- ONLINE WAITING OVERLAY -->
-<div id="waitingOverlay" class="waiting-overlay hidden">
-  <div class="waiting-overlay-inner">
-    <div class="pulse-ring large"></div>
-    <p id="waitingMsg">Waiting for opponent…</p>
   </div>
 </div>
 

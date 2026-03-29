@@ -35,10 +35,10 @@ function loadSession()   { try { const r = localStorage.getItem(SESSION_KEY); re
 function clearSession()  { currentUser = null; try { localStorage.removeItem(SESSION_KEY); } catch(e) {} }
 
 // ══════════════════════════════════════════════
-// PASSWORD HASHING
+// PASSWORD HASHING (SHA-256 + salt)
 // ══════════════════════════════════════════════
-async function hashPassword(p) {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(p + "klocvork_salt_2025"));
+async function hashPassword(pw) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(pw + "klocvork_salt_2025"));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
 }
 
@@ -63,10 +63,10 @@ function showScreen(id) {
 }
 
 // ══════════════════════════════════════════════
-// RULEBOOK
+// RULEBOOK — IDs match index.html "modal-rulebook"
 // ══════════════════════════════════════════════
-function showRulebook()  { document.getElementById("modal-rulebook").classList.remove("hidden"); }
-function hideRulebook()  { document.getElementById("modal-rulebook").classList.add("hidden"); }
+function showRulebook() { document.getElementById("modal-rulebook").classList.remove("hidden"); }
+function hideRulebook() { document.getElementById("modal-rulebook").classList.add("hidden"); }
 function closeRulebookIfOutside(e) { if (e.target === document.getElementById("modal-rulebook")) hideRulebook(); }
 
 // ══════════════════════════════════════════════
@@ -102,7 +102,9 @@ async function signUp(username, password) {
     const { data: ex } = await db.from("players").select("id").eq("username", username.toLowerCase()).maybeSingle();
     if (ex) { setAuthError("Username already taken."); return; }
     const hashed = await hashPassword(password);
-    const { data, error } = await db.from("players").insert({ username: username.toLowerCase(), password_hash: hashed }).select("id, username").single();
+    const { data, error } = await db.from("players")
+      .insert({ username: username.toLowerCase(), password_hash: hashed })
+      .select("id, username").single();
     if (error) { setAuthError("Sign up failed: " + error.message); return; }
     setAuthError("Account created! Signing you in…", true);
     setTimeout(() => { saveSession({ id: data.id, username: data.username }); updateUserPill(); showScreen("screen-mode"); }, 800);
@@ -114,8 +116,8 @@ async function signIn(username, password) {
   if (!username || !password) { setAuthError("Fill in all fields."); return; }
   setAuthLoading(true);
   try {
-    const { data, error } = await db.from("players").select("id, username, password_hash").eq("username", username.toLowerCase()).maybeSingle();
-    if (error || !data) { setAuthError("Username not found."); return; }
+    const { data } = await db.from("players").select("id, username, password_hash").eq("username", username.toLowerCase()).maybeSingle();
+    if (!data) { setAuthError("Username not found."); return; }
     if (await hashPassword(password) !== data.password_hash) { setAuthError("Incorrect password."); return; }
     saveSession({ id: data.id, username: data.username });
     updateUserPill();
@@ -137,8 +139,15 @@ function updateUserPill() {
   const pill = document.getElementById("userPill");
   const btn  = document.getElementById("logoutBtn");
   if (!pill) return;
-  if (currentUser) { pill.textContent = `⚔ ${currentUser.username}`; if (btn) btn.style.display = ""; }
-  else             { pill.textContent = "Playing as Guest";           if (btn) btn.style.display = "none"; }
+  if (currentUser) {
+    pill.textContent = `⚔ ${currentUser.username}`;
+    if (btn) btn.style.display = "";
+    const mw = document.getElementById("modeWelcome");
+    if (mw) mw.textContent = `Welcome, ${currentUser.username}`;
+  } else {
+    pill.textContent = "Playing as Guest";
+    if (btn) btn.style.display = "none";
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -182,7 +191,7 @@ function initGame(mode, names) {
 // RENDER
 // ══════════════════════════════════════════════
 function renderGame() {
-  document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "Sudden Death" : `Round ${gs.round} / ${TOTAL_ROUNDS}`;
+  document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "⚡ Sudden Death" : `Round ${gs.round} / ${TOTAL_ROUNDS}`;
   document.getElementById("gsShot").textContent  = `Shot ${gs.shot} / ${SHOTS_PER_ROUND}`;
   document.getElementById("hpNameA").textContent = gs.names.A;
   document.getElementById("hpNameB").textContent = gs.names.B;
@@ -193,20 +202,22 @@ function renderGame() {
   else renderPlayerBTurn();
 }
 
-// BUG FIX 1 — both HP bars update with correct dynamic color
+// BUG FIX: both HP bars get dynamic color
 function updateHPBars() {
   const pctA = Math.max(0, gs.hpA / MAX_HP * 100);
   const pctB = Math.max(0, gs.hpB / MAX_HP * 100);
   const barA = document.getElementById("hpBarA");
   const barB = document.getElementById("hpBarB");
-
   barA.style.width = pctA + "%";
   barB.style.width = pctB + "%";
   document.getElementById("hpNumA").textContent = gs.hpA;
   document.getElementById("hpNumB").textContent = gs.hpB;
-
-  barA.style.backgroundColor = pctA > 50 ? "var(--green2)" : pctA > 25 ? "var(--gold)" : "var(--red2)";
-  barB.style.backgroundColor = pctB > 50 ? "var(--green2)" : pctB > 25 ? "var(--gold)" : "var(--red2)";
+  // A bar: green=healthy, yellow=warning, red=critical
+  barA.style.background = pctA > 50 ? "var(--green)" : pctA > 25 ? "#facc15" : "var(--red)";
+  barA.style.boxShadow  = pctA > 50 ? "0 0 8px var(--green-glow)" : pctA > 25 ? "0 0 8px rgba(250,204,21,0.3)" : "0 0 8px var(--red-glow)";
+  // B bar same logic
+  barB.style.background = pctB > 50 ? "var(--green)" : pctB > 25 ? "#facc15" : "var(--red)";
+  barB.style.boxShadow  = pctB > 50 ? "0 0 8px var(--green-glow)" : pctB > 25 ? "0 0 8px rgba(250,204,21,0.3)" : "0 0 8px var(--red-glow)";
 }
 
 function renderAvailableWeapons() {
@@ -222,6 +233,7 @@ function renderAvailableWeapons() {
 
 function getAvailableWeapons() { return WEAPONS.filter(w => !gs.usedWeapons.includes(w.name)); }
 
+// Online waiting overlay
 function showOnlineWaiting(msg) {
   document.getElementById("onlineWaitingText").textContent = msg || "Waiting for opponent…";
   document.getElementById("onlineWaitingOverlay").classList.remove("hidden");
@@ -241,7 +253,7 @@ function renderPlayerATurn() {
   selWeaponA = null; selShieldA = null;
   document.getElementById("turnBadge").textContent = `${gs.names.A}'s Turn`;
   document.getElementById("turnPhase").textContent = "Choose your weapon & shield — hidden from your opponent.";
-  // BUG FIX 3 — always hide guessSection on A's turn (prevents phantom weapon row)
+  // BUG FIX 3: always hide guessSection on A's turn
   document.getElementById("guessSection").classList.add("hidden");
   document.getElementById("confirmBtn").disabled = true;
   renderWeaponGrid("weaponGrid", getAvailableWeapons(), w => { selWeaponA = w; checkAReady(); });
@@ -251,10 +263,9 @@ function checkAReady() { document.getElementById("confirmBtn").disabled = !(selW
 
 // ══════════════════════════════════════════════
 // PLAYER B TURN
-// BUG FIX 3 — weaponGrid and guessGrid are separate DOM nodes.
-// weaponGrid = B's own weapon (available weapons only).
-// guessGrid  = B's guess at A's weapon (all 7, no restriction).
-// They never share a container so no double row.
+// BUG FIX 3: weaponGrid = B's weapon (available only)
+//            guessGrid  = B's guess at A's weapon (all 7, shown in guessSection)
+//            These are separate grids — no double row.
 // ══════════════════════════════════════════════
 let selWeaponB = null, selShieldB = null, selGuessB = null;
 
@@ -264,8 +275,8 @@ function renderPlayerBTurn() {
   document.getElementById("turnPhase").textContent = "Guess your opponent's weapon, then pick yours & your shield.";
   document.getElementById("guessSection").classList.remove("hidden");
   document.getElementById("confirmBtn").disabled = true;
-  renderWeaponGrid("weaponGrid", getAvailableWeapons(), w => { selWeaponB = w; checkBReady(); });
   renderWeaponGrid("guessGrid",  WEAPONS,               w => { selGuessB  = w; checkBReady(); });
+  renderWeaponGrid("weaponGrid", getAvailableWeapons(), w => { selWeaponB = w; checkBReady(); });
   renderShieldGrid("shieldGrid", v => { selShieldB = v; checkBReady(); });
 }
 function checkBReady() { document.getElementById("confirmBtn").disabled = !(selWeaponB && selShieldB !== null && selGuessB); }
@@ -307,10 +318,8 @@ function renderShieldGrid(gridId, onSelect) {
 
 // ══════════════════════════════════════════════
 // CONFIRM CHOICE
-// BUG FIX 2 — online Player A: don't set gs.phase = "B" locally.
-// Just submit the move and show waiting. Phase B starts when
-// the realtime update tells B to go. Both devices resolve together
-// when both moves are present.
+// BUG FIX 2: online Player A — don't set gs.phase="B" locally.
+// Just submit the move and show waiting. DB drives the transition.
 // ══════════════════════════════════════════════
 function confirmChoice() {
   if (gs.phase === "A") {
@@ -331,22 +340,23 @@ function confirmChoice() {
 }
 
 // ══════════════════════════════════════════════
-// PASS SCREEN
+// PASS SCREEN (hot seat)
 // ══════════════════════════════════════════════
 function showPassScreen() {
   document.getElementById("passTitle").textContent    = `Pass to ${gs.names.B}`;
-  document.getElementById("passSubtitle").textContent = `${gs.names.A} has locked in their choice. Hand the device to ${gs.names.B}.`;
+  document.getElementById("passSubtitle").textContent = `${gs.names.A} has locked their choice. Hand the device to ${gs.names.B}.`;
   showScreen("screen-pass");
 }
 
 function continueAfterPass() {
   showScreen("screen-game");
-  document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "Sudden Death" : `Round ${gs.round} / ${TOTAL_ROUNDS}`;
+  document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "⚡ Sudden Death" : `Round ${gs.round} / ${TOTAL_ROUNDS}`;
   document.getElementById("gsShot").textContent  = `Shot ${gs.shot} / ${SHOTS_PER_ROUND}`;
   document.getElementById("hpNameA").textContent = gs.names.A;
   document.getElementById("hpNameB").textContent = gs.names.B;
   updateHPBars();
   renderAvailableWeapons();
+  // BUG FIX 3: call renderPlayerBTurn directly — never renderGame here
   renderPlayerBTurn();
 }
 
@@ -354,12 +364,12 @@ function continueAfterPass() {
 // AI TURN
 // ══════════════════════════════════════════════
 function resolveAITurn() {
-  const avail  = getAvailableWeapons();
-  const notA   = avail.filter(w => w.name !== gs.pendingA.weapon.name);
-  const pool   = notA.length > 0 ? notA : avail;
-  const aiW    = pool[Math.floor(Math.random() * pool.length)];
-  const aiS    = SHIELD_VALUES[Math.floor(Math.random() * SHIELD_VALUES.length)];
-  const aiG    = WEAPONS[Math.floor(Math.random() * WEAPONS.length)];
+  const avail = getAvailableWeapons();
+  const notA  = avail.filter(w => w.name !== gs.pendingA.weapon.name);
+  const pool  = notA.length > 0 ? notA : avail;
+  const aiW   = pool[Math.floor(Math.random() * pool.length)];
+  const aiS   = SHIELD_VALUES[Math.floor(Math.random() * SHIELD_VALUES.length)];
+  const aiG   = WEAPONS[Math.floor(Math.random() * WEAPONS.length)];
   resolveShot(gs.pendingA, { weapon: aiW, shield: aiS }, aiG);
 }
 
@@ -371,13 +381,10 @@ function resolveShot(choiceA, choiceB, guessB) {
   const dmgToA = Math.abs(choiceA.shield - choiceB.weapon.dmg);
   gs.hpA = Math.max(0, gs.hpA - dmgToA);
   gs.hpB = Math.max(0, gs.hpB - dmgToB);
-
   if (!gs.usedWeapons.includes(choiceA.weapon.name)) gs.usedWeapons.push(choiceA.weapon.name);
   if (!gs.usedWeapons.includes(choiceB.weapon.name)) gs.usedWeapons.push(choiceB.weapon.name);
-
   gs.phase = "A";
   gs.pendingA = null;
-
   showShotResult(choiceA, choiceB, dmgToA, dmgToB, guessB, guessB && guessB.name === choiceA.weapon.name);
 }
 
@@ -413,7 +420,7 @@ function showShotResult(cA, cB, dmgA, dmgB, guessB, correct) {
 
 function nextAfterResult() {
   if (gs.shot >= SHOTS_PER_ROUND) { endRound(); }
-  else { gs.shot++; showScreen("screen-game"); renderGame(); }
+  else { gs.shot++; gs.phase = "A"; showScreen("screen-game"); renderGame(); }
 }
 
 // ══════════════════════════════════════════════
@@ -425,14 +432,16 @@ function endRound() {
   document.getElementById("roHpA").textContent   = `${gs.hpA} HP`;
   document.getElementById("roHpB").textContent   = `${gs.hpB} HP`;
 
-  const last = (gs.round >= TOTAL_ROUNDS && !gs.isSuddenDeath) || gs.isSuddenDeath;
+  const lastRound = (gs.round >= TOTAL_ROUNDS && !gs.isSuddenDeath) || gs.isSuddenDeath;
 
-  if (last) {
+  if (lastRound) {
     if (gs.hpA === gs.hpB && !gs.isSuddenDeath) {
-      document.getElementById("roLabel").textContent   = "It's a Tie! Sudden Death Awaits";
-      document.getElementById("roNextBtn").textContent = "Begin Sudden Death →";
+      document.getElementById("roLabel").textContent   = "It's a Tie!";
+      document.getElementById("roNextBtn").textContent = "⚡ Begin Sudden Death →";
       showScreen("screen-roundover");
-    } else { showGameOver(); }
+    } else {
+      showGameOver();
+    }
   } else {
     document.getElementById("roLabel").textContent   = `Round ${gs.round} Complete`;
     document.getElementById("roNextBtn").textContent = `Begin Round ${gs.round + 1} →`;
@@ -441,55 +450,45 @@ function endRound() {
 }
 
 function startNextRound() {
-  if (gs.hpA === gs.hpB && gs.round >= TOTAL_ROUNDS) { gs.isSuddenDeath = true; }
-  else { gs.round++; }
+  if (gs.hpA === gs.hpB && gs.round >= TOTAL_ROUNDS) gs.isSuddenDeath = true;
+  else gs.round++;
   gs.shot = 1; gs.phase = "A"; gs.usedWeapons = []; gs.pendingA = null;
-  showScreen("screen-game"); renderGame();
+  showScreen("screen-game");
+  renderGame();
 }
 
 // ══════════════════════════════════════════════
 // GAME OVER
 // ══════════════════════════════════════════════
 function showGameOver() {
-  const aW = gs.hpA > gs.hpB, tie = gs.hpA === gs.hpB;
-  document.getElementById("goEmblem").textContent = tie ? "🤝" : "🏆";
-  document.getElementById("goNameA").textContent  = gs.names.A;
-  document.getElementById("goNameB").textContent  = gs.names.B;
-  document.getElementById("goHpA").textContent    = `${gs.hpA} HP`;
-  document.getElementById("goHpB").textContent    = `${gs.hpB} HP`;
+  const aWins = gs.hpA > gs.hpB, tie = gs.hpA === gs.hpB;
+  document.getElementById("goEmblem").textContent   = tie ? "🤝" : "🏆";
+  document.getElementById("goNameA").textContent    = gs.names.A;
+  document.getElementById("goNameB").textContent    = gs.names.B;
+  document.getElementById("goHpA").textContent      = `${gs.hpA} HP`;
+  document.getElementById("goHpB").textContent      = `${gs.hpB} HP`;
   if (tie) {
     document.getElementById("goResult").textContent   = "It's a Draw!";
     document.getElementById("goSubtitle").textContent = "Both warriors fought with equal fury.";
   } else {
-    document.getElementById("goResult").textContent   = `${aW ? gs.names.A : gs.names.B} Wins!`;
-    document.getElementById("goSubtitle").textContent = aW ? `${gs.names.B} has been defeated.` : `${gs.names.A} has been defeated.`;
+    const w = aWins ? gs.names.A : gs.names.B;
+    document.getElementById("goResult").textContent   = `${w} Wins!`;
+    document.getElementById("goSubtitle").textContent = aWins ? `${gs.names.B} has been defeated.` : `${gs.names.A} has been defeated.`;
   }
   showScreen("screen-gameover");
 }
 
-function playAgain()     { initGame(gameMode); showScreen("screen-game"); }
-function confirmQuit()   { if (confirm("Quit and return to the menu?")) { cleanupOnline(); showScreen("screen-mode"); } }
+function playAgain() { initGame(gameMode); showScreen("screen-game"); }
+
+function confirmQuit() {
+  if (confirm("Quit and return to the menu?")) {
+    cleanupOnline();
+    showScreen("screen-mode");
+  }
+}
 
 // ══════════════════════════════════════════════
-// ONLINE MULTIPLAYER — FIXED FLOW
-//
-// A's device:
-//   createRoom() → waits in lobby
-//   B joins → status="active" fires → A's game starts (A's turn)
-//   A picks, confirmChoice() → submitOnlineMoveA() → shows waiting overlay
-//   B submits → both moves present → resolveShot() fires on BOTH devices
-//
-// B's device:
-//   joinRoom() → game starts, waiting overlay shown
-//   Realtime: move_a set, no move_b → B's turn shown
-//   B picks, confirmChoice() → submitOnlineMoveB() → waiting overlay
-//   Both moves present → resolveShot() fires on BOTH devices
-//   After resolve, role A clears moves in DB
-//
-// Names:
-//   A's name stored in DB when room is created (player_a_name col)
-//   B's name written to DB when B joins (player_b_name col)
-//   Both names stored in the state JSON so both devices show them
+// ONLINE MULTIPLAYER
 // ══════════════════════════════════════════════
 let onlineRoom = null, onlineSub = null, onlineRole = null, lobbyPoll = null;
 
@@ -507,7 +506,7 @@ async function createRoom() {
   const errEl  = document.getElementById("lobbyError");
   errEl.textContent = "";
 
-  const aName = currentUser ? currentUser.username : "Player A";
+  const aName     = currentUser ? currentUser.username : "Player A";
   const initState = freshGameState({ A: aName, B: "Player B" });
 
   const { error } = await db.from("game_rooms").insert({
@@ -528,7 +527,7 @@ async function createRoom() {
   document.getElementById("lobbyWaiting").classList.remove("hidden");
   subscribeToRoom(code);
 
-  // Polling fallback for when realtime misses the "B joined" event
+  // Polling fallback in case realtime misses the join event
   lobbyPoll = setInterval(async () => {
     const { data } = await db.from("game_rooms").select("status, state").eq("code", code).maybeSingle();
     if (data?.status === "active") {
@@ -548,11 +547,10 @@ async function joinRoom() {
   if (error || !data) { errEl.textContent = "Room not found."; return; }
   if (data.status !== "waiting") { errEl.textContent = "Room is already full or in progress."; return; }
 
-  const userId = currentUser?.id || ("guest_" + Math.random().toString(36).slice(2,8));
-  const bName  = currentUser ? currentUser.username : "Player B";
-
+  const userId    = currentUser?.id || ("guest_" + Math.random().toString(36).slice(2,8));
+  const bName     = currentUser ? currentUser.username : "Player B";
   const roomState = JSON.parse(data.state);
-  // FIX: set B's name in state. A's name is already in state from createRoom.
+  // BUG FIX 1: only set B's name — A's name already in state from createRoom
   roomState.names.B = bName;
 
   const { error: ue } = await db.from("game_rooms").update({
@@ -573,15 +571,10 @@ function startOnlineGame(row, role) {
   gameMode = "online";
   gs = JSON.parse(row.state);
   showScreen("screen-game");
-
-  if (role === "A") {
-    // A goes first — show A's turn
-    gs.phase = "A";
-    renderGame();
-  } else {
-    // B waits — A hasn't moved yet
-    gs.phase = "A";
-    renderGame(); // renders statusbar, HP, available weapons
+  gs.phase = "A";
+  renderGame();
+  if (role === "B") {
+    // B waits for A to move first
     showOnlineWaiting("Waiting for " + gs.names.A + " to choose…");
   }
 }
@@ -596,7 +589,7 @@ function subscribeToRoom(code) {
 }
 
 function handleOnlineUpdate(row) {
-  // ── Room became active: start game for Player A ──
+  // Room became active → start game for Player A
   if (row.status === "active" && onlineRole === "A") {
     if (lobbyPoll) { clearInterval(lobbyPoll); lobbyPoll = null; }
     if (!document.getElementById("screen-game").classList.contains("active")) {
@@ -605,34 +598,27 @@ function handleOnlineUpdate(row) {
     return;
   }
 
-  // ── Both moves present: resolve shot on BOTH devices ──
+  // Both moves present → resolve shot on BOTH devices
   if (row.move_a && row.move_b) {
     const mA = JSON.parse(row.move_a);
     const mB = JSON.parse(row.move_b);
-
-    // Sync used weapons if state was updated
-    if (row.state) {
-      try { const s = JSON.parse(row.state); if (s.usedWeapons) gs.usedWeapons = s.usedWeapons; } catch(e) {}
-    }
-
+    if (row.state) { try { const s = JSON.parse(row.state); if (s.usedWeapons) gs.usedWeapons = s.usedWeapons; } catch(e) {} }
     gs.pendingA = mA;
     gs.phase = "B";
     resolveShot(mA, mB.choice, mB.guess);
-
-    // Only Player A clears the moves to avoid race condition
+    // Only Player A clears moves to avoid race condition
     if (onlineRole === "A") {
       db.from("game_rooms").update({ move_a: null, move_b: null, state: JSON.stringify(gs) }).eq("code", onlineRoom);
     }
     return;
   }
 
-  // ── A submitted, waiting for B: show B's turn ──
+  // BUG FIX 2: A submitted → show B's turn on B's device
   if (row.move_a && !row.move_b && onlineRole === "B") {
-    // Sync names in case they changed
     if (row.state) { try { const s = JSON.parse(row.state); gs.names = s.names || gs.names; } catch(e) {} }
     gs.phase = "B";
     showScreen("screen-game");
-    document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "Sudden Death" : `Round ${gs.round} / ${TOTAL_ROUNDS}`;
+    document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "⚡ Sudden Death" : `Round ${gs.round} / ${TOTAL_ROUNDS}`;
     document.getElementById("gsShot").textContent  = `Shot ${gs.shot} / ${SHOTS_PER_ROUND}`;
     document.getElementById("hpNameA").textContent = gs.names.A;
     document.getElementById("hpNameB").textContent = gs.names.B;
@@ -644,6 +630,7 @@ function handleOnlineUpdate(row) {
   }
 }
 
+// BUG FIX 2: submitOnlineMoveA locks UI immediately with waiting overlay
 async function submitOnlineMoveA() {
   const move = JSON.stringify({ weapon: selWeaponA, shield: selShieldA });
   const { error } = await db.from("game_rooms").update({ move_a: move }).eq("code", onlineRoom);
