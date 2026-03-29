@@ -420,7 +420,16 @@ function showShotResult(cA, cB, dmgA, dmgB, guessB, correct) {
 
 function nextAfterResult() {
   if (gs.shot >= SHOTS_PER_ROUND) { endRound(); }
-  else { gs.shot++; gs.phase = "A"; showScreen("screen-game"); renderGame(); }
+  else {
+    gs.shot++; gs.phase = "A";
+    showScreen("screen-game");
+    renderGame();
+    // In online mode, B needs to wait for A's move again
+    if (gameMode === "online" && onlineRole === "B") {
+      showOnlineWaiting("Waiting for " + gs.names.A + " to choose…");
+      startBPolling();
+    }
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -455,6 +464,11 @@ function startNextRound() {
   gs.shot = 1; gs.phase = "A"; gs.usedWeapons = []; gs.pendingA = null;
   showScreen("screen-game");
   renderGame();
+  // In online mode, B needs to wait for A's move
+  if (gameMode === "online" && onlineRole === "B") {
+    showOnlineWaiting("Waiting for " + gs.names.A + " to choose…");
+    startBPolling();
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -491,6 +505,22 @@ function confirmQuit() {
 // ONLINE MULTIPLAYER
 // ══════════════════════════════════════════════
 let onlineRoom = null, onlineSub = null, onlineRole = null, lobbyPoll = null;
+
+// Polling helper for Player B — starts a poll to detect A's move for the current shot
+function startBPolling() {
+  if (lobbyPoll) { clearInterval(lobbyPoll); lobbyPoll = null; }
+  lobbyPoll = setInterval(async () => {
+    const { data } = await db.from("game_rooms").select("move_a, move_b, state").eq("code", onlineRoom).maybeSingle();
+    if (data?.move_a && !data.move_b) {
+      clearInterval(lobbyPoll); lobbyPoll = null;
+      if (!document.getElementById("onlineWaitingOverlay").classList.contains("hidden")) {
+        let names = null;
+        if (data.state) { try { const s = JSON.parse(data.state); names = s.names || null; } catch(e) {} }
+        activateBTurn(names);
+      }
+    }
+  }, 2000);
+}
 
 function cleanupOnline() {
   if (lobbyPoll) { clearInterval(lobbyPoll); lobbyPoll = null; }
@@ -563,8 +593,21 @@ async function joinRoom() {
   if (ue) { errEl.textContent = "Failed to join room."; return; }
 
   onlineRoom = code; onlineRole = "B";
-  subscribeToRoom(code);
   startOnlineGame({ state: JSON.stringify(roomState) }, "B");
+  subscribeToRoom(code);  // subscribe AFTER onlineRole is set and game is started
+
+  // Polling fallback: if A's move arrives before realtime subscription is ready
+  lobbyPoll = setInterval(async () => {
+    const { data } = await db.from("game_rooms").select("move_a, move_b, state").eq("code", code).maybeSingle();
+    if (data?.move_a && !data.move_b) {
+      clearInterval(lobbyPoll); lobbyPoll = null;
+      if (!document.getElementById("onlineWaitingOverlay").classList.contains("hidden")) {
+        let names = null;
+        if (data.state) { try { const s = JSON.parse(data.state); names = s.names || null; } catch(e) {} }
+        activateBTurn(names);
+      }
+    }
+  }, 2000);
 }
 
 function startOnlineGame(row, role) {
@@ -588,6 +631,20 @@ function subscribeToRoom(code) {
     .subscribe();
 }
 
+function activateBTurn(namesOverride) {
+  if (namesOverride) gs.names = namesOverride;
+  gs.phase = "B";
+  showScreen("screen-game");
+  document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "⚡ Sudden Death" : `Round ${gs.round} / ${TOTAL_ROUNDS}`;
+  document.getElementById("gsShot").textContent  = `Shot ${gs.shot} / ${SHOTS_PER_ROUND}`;
+  document.getElementById("hpNameA").textContent = gs.names.A;
+  document.getElementById("hpNameB").textContent = gs.names.B;
+  updateHPBars();
+  renderAvailableWeapons();
+  hideOnlineWaiting();
+  renderPlayerBTurn();
+}
+
 function handleOnlineUpdate(row) {
   // Room became active → start game for Player A
   if (row.status === "active" && onlineRole === "A") {
@@ -600,6 +657,7 @@ function handleOnlineUpdate(row) {
 
   // Both moves present → resolve shot on BOTH devices
   if (row.move_a && row.move_b) {
+    if (lobbyPoll) { clearInterval(lobbyPoll); lobbyPoll = null; }
     const mA = JSON.parse(row.move_a);
     const mB = JSON.parse(row.move_b);
     if (row.state) { try { const s = JSON.parse(row.state); if (s.usedWeapons) gs.usedWeapons = s.usedWeapons; } catch(e) {} }
@@ -613,19 +671,15 @@ function handleOnlineUpdate(row) {
     return;
   }
 
-  // BUG FIX 2: A submitted → show B's turn on B's device
+  // A submitted → show B's turn on B's device (realtime path)
   if (row.move_a && !row.move_b && onlineRole === "B") {
-    if (row.state) { try { const s = JSON.parse(row.state); gs.names = s.names || gs.names; } catch(e) {} }
-    gs.phase = "B";
-    showScreen("screen-game");
-    document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "⚡ Sudden Death" : `Round ${gs.round} / ${TOTAL_ROUNDS}`;
-    document.getElementById("gsShot").textContent  = `Shot ${gs.shot} / ${SHOTS_PER_ROUND}`;
-    document.getElementById("hpNameA").textContent = gs.names.A;
-    document.getElementById("hpNameB").textContent = gs.names.B;
-    updateHPBars();
-    renderAvailableWeapons();
-    hideOnlineWaiting();
-    renderPlayerBTurn();
+    if (lobbyPoll) { clearInterval(lobbyPoll); lobbyPoll = null; }
+    // Only activate if B is still waiting (prevents double-render)
+    if (!document.getElementById("onlineWaitingOverlay").classList.contains("hidden")) {
+      let names = null;
+      if (row.state) { try { const s = JSON.parse(row.state); names = s.names || null; } catch(e) {} }
+      activateBTurn(names);
+    }
     return;
   }
 }
