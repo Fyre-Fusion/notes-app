@@ -447,24 +447,12 @@ function endRound() {
     document.getElementById("roNextBtn").textContent = `Begin Round ${gs.round + 1} →`;
     showScreen("screen-roundover");
   }
-  
+}
 
 function startNextRound() {
   if (gs.hpA === gs.hpB && gs.round >= TOTAL_ROUNDS) gs.isSuddenDeath = true;
   else gs.round++;
-
-  gs.shot = 1;
-  gs.phase = "A";
-  gs.usedWeapons = [];   // reset used weapons
-  gs.pendingA = null;
-
-  // Reset AI selections so it can pick freely next round
-  if (gameMode === "ai") {
-    selWeaponB = null;
-    selShieldB = null;
-    selGuessB  = null;
-  }
-
+  gs.shot = 1; gs.phase = "A"; gs.usedWeapons = []; gs.pendingA = null;
   showScreen("screen-game");
   renderGame();
 }
