@@ -175,6 +175,7 @@ function freshGameState(names) {
     pendingA: null,
     isSuddenDeath: false,
     names: names || { A: "Player A", B: "Player B" },
+    totalHpA: 0, totalHpB: 0, // cumulative HP remaining after each round
   };
 }
 
@@ -465,22 +466,36 @@ function nextAfterResult() {
 // ROUND END
 // ══════════════════════════════════════════════
 function endRound() {
-  document.getElementById("roNameA").textContent = gs.names.A;
-  document.getElementById("roNameB").textContent = gs.names.B;
-  document.getElementById("roHpA").textContent   = `${gs.hpA} HP`;
-  document.getElementById("roHpB").textContent   = `${gs.hpB} HP`;
+  // Accumulate HP remaining this round into totals
+  gs.totalHpA = (gs.totalHpA || 0) + gs.hpA;
+  gs.totalHpB = (gs.totalHpB || 0) + gs.hpB;
 
   const lastRound = (gs.round >= TOTAL_ROUNDS && !gs.isSuddenDeath) || gs.isSuddenDeath;
 
+  document.getElementById("roNameA").textContent = gs.names.A;
+  document.getElementById("roNameB").textContent = gs.names.B;
+
   if (lastRound) {
-    if (gs.hpA === gs.hpB && !gs.isSuddenDeath) {
-      document.getElementById("roLabel").textContent   = "It's a Tie!";
+    if (gs.isSuddenDeath) {
+      // Sudden death: winner is whoever had more HP this round
+      document.getElementById("roHpA").textContent = `${gs.hpA} HP`;
+      document.getElementById("roHpB").textContent = `${gs.hpB} HP`;
+    } else {
+      // Show cumulative totals on final round
+      document.getElementById("roHpA").textContent = `${gs.totalHpA} HP total`;
+      document.getElementById("roHpB").textContent = `${gs.totalHpB} HP total`;
+    }
+
+    if (gs.totalHpA === gs.totalHpB && !gs.isSuddenDeath) {
+      document.getElementById("roLabel").textContent   = "It's a Tie after 3 Rounds!";
       document.getElementById("roNextBtn").textContent = "⚡ Begin Sudden Death →";
       showScreen("screen-roundover");
     } else {
       showGameOver();
     }
   } else {
+    document.getElementById("roHpA").textContent = `${gs.hpA} HP  (total: ${gs.totalHpA})`;
+    document.getElementById("roHpB").textContent = `${gs.hpB} HP  (total: ${gs.totalHpB})`;
     document.getElementById("roLabel").textContent   = `Round ${gs.round} Complete`;
     document.getElementById("roNextBtn").textContent = `Begin Round ${gs.round + 1} →`;
     showScreen("screen-roundover");
@@ -488,8 +503,10 @@ function endRound() {
 }
 
 function startNextRound() {
-  if (gs.hpA === gs.hpB && gs.round >= TOTAL_ROUNDS) gs.isSuddenDeath = true;
+  if (gs.totalHpA === gs.totalHpB && gs.round >= TOTAL_ROUNDS) gs.isSuddenDeath = true;
   else gs.round++;
+  // Reset HP to full for each new round; totals are preserved in totalHpA/totalHpB
+  gs.hpA = MAX_HP; gs.hpB = MAX_HP;
   gs.shot = 1; gs.phase = "A"; gs.usedWeapons = []; gs.pendingA = null;
   if (gameMode === "online") {
     if (onlineRole === "A") {
@@ -520,12 +537,15 @@ function startNextRound() {
 // GAME OVER
 // ══════════════════════════════════════════════
 function showGameOver() {
-  const aWins = gs.hpA > gs.hpB, tie = gs.hpA === gs.hpB;
+  // Winner is determined by cumulative HP across all rounds
+  const finalA = gs.totalHpA || gs.hpA;
+  const finalB = gs.totalHpB || gs.hpB;
+  const aWins = finalA > finalB, tie = finalA === finalB;
   document.getElementById("goEmblem").textContent   = tie ? "🤝" : "🏆";
   document.getElementById("goNameA").textContent    = gs.names.A;
   document.getElementById("goNameB").textContent    = gs.names.B;
-  document.getElementById("goHpA").textContent      = `${gs.hpA} HP`;
-  document.getElementById("goHpB").textContent      = `${gs.hpB} HP`;
+  document.getElementById("goHpA").textContent      = gs.isSuddenDeath ? `${gs.hpA} HP` : `${gs.totalHpA || gs.hpA} HP total`;
+  document.getElementById("goHpB").textContent      = gs.isSuddenDeath ? `${gs.hpB} HP` : `${gs.totalHpB || gs.hpB} HP total`;
   if (tie) {
     document.getElementById("goResult").textContent   = "It's a Draw!";
     document.getElementById("goSubtitle").textContent = "Both warriors fought with equal fury.";

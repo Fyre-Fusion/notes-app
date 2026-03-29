@@ -293,7 +293,7 @@ input::placeholder { color: var(--text3); }
 .hp-side { flex: 1; display: flex; flex-direction: column; gap: 6px; }
 .hp-side.right { align-items: flex-end; text-align: right; }
 .hp-name { font-family: var(--font-d); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
-.hp-bar-wrap { height: 7px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+.hp-bar-wrap { height: 7px; background: var(--surface2); border-radius: 4px; overflow: hidden; width: 100%; }
 .hp-bar { height: 100%; background: var(--green); border-radius: 4px; transition: width .5s ease, background .3s; box-shadow: 0 0 8px var(--green-glow); }
 .hp-bar.enemy { background: var(--red); box-shadow: 0 0 8px var(--red-glow); }
 .hp-num { font-family: var(--font-d); font-size: 1.2rem; color: var(--text); }
