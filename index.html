@@ -19,7 +19,7 @@
       <h1 class="hero-title">KlocVork<br><em>Arena</em></h1>
       <p class="hero-sub">A game of blades, shields,<br>and hidden intentions.</p>
       <div class="hero-stats">
-        <div class="hstat"><span>7</span>Weapons</div>
+        <div class="hstat"><span>12</span>Weapons</div>
         <div class="hstat"><span>3</span>Rounds</div>
         <div class="hstat"><span>30</span>HP Each</div>
       </div>
@@ -55,6 +55,9 @@
   <div class="screen-header">
     <div class="logo-small">⚔ KlocVork Arena</div>
     <div class="header-right">
+      <span class="token-count header-tokens">0 🪙</span>
+      <span class="potion-count header-potions">0 🧪</span>
+      <button class="btn-shop" onclick="showShop()">🛒 Shop</button>
       <button class="btn-rulebook" onclick="showRulebook()">📖 Rules</button>
       <div class="user-pill" id="userPill"></div>
       <button class="btn-ghost-sm" id="logoutBtn" onclick="logout()" style="display:none">Sign out</button>
@@ -84,11 +87,17 @@
         <p>Face a cunning<br>computer opponent.</p>
         <div class="mode-badge">Single Player</div>
       </div>
+      <div class="mode-card mode-card-boss" onclick="selectMode('boss')">
+        <div class="mode-icon">💀</div>
+        <h3>Boss Battle</h3>
+        <p>Both players face the<br>Warlord. Slay it first.</p>
+        <div class="mode-badge mode-badge-boss">+20 🪙 Reward</div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ═══════ RULEBOOK MODAL — id must match game.js: "modal-rulebook" ═══════ -->
+<!-- ═══════ RULEBOOK MODAL ═══════ -->
 <div id="modal-rulebook" class="modal-overlay hidden" onclick="closeRulebookIfOutside(event)">
   <div class="modal-box">
     <div class="modal-header">
@@ -104,10 +113,15 @@
         <h3>⚔ Weapons &amp; Damage</h3>
         <div class="weapon-table">
           <div class="wt-row"><span>💣 TNT</span><span class="wt-dmg">11 dmg</span></div>
+          <div class="wt-row"><span>🗡️ Odachi</span><span class="wt-dmg">11 dmg</span></div>
           <div class="wt-row"><span>🪓 Axe</span><span class="wt-dmg">10 dmg</span></div>
+          <div class="wt-row"><span>⛓️ Kusarigama</span><span class="wt-dmg">10 dmg</span></div>
           <div class="wt-row"><span>🔨 Mace</span><span class="wt-dmg">9 dmg</span></div>
+          <div class="wt-row"><span>🔰 Spear</span><span class="wt-dmg">9 dmg</span></div>
           <div class="wt-row"><span>🏹 Bow</span><span class="wt-dmg">8 dmg</span></div>
+          <div class="wt-row"><span>🔫 Musket</span><span class="wt-dmg">8 dmg</span></div>
           <div class="wt-row"><span>⚔️ Sword</span><span class="wt-dmg">7 dmg</span></div>
+          <div class="wt-row"><span>🥷 Katana</span><span class="wt-dmg">7 dmg</span></div>
           <div class="wt-row"><span>🔱 Trident</span><span class="wt-dmg">6 dmg</span></div>
           <div class="wt-row"><span>🎯 Crossbow</span><span class="wt-dmg">5 dmg</span></div>
         </div>
@@ -116,18 +130,35 @@
         <h3>🎯 Each Shot</h3>
         <ol>
           <li><strong>Player A</strong> secretly picks a weapon &amp; shield value (5–11)</li>
-          <li><strong>Player B</strong> picks their own weapon &amp; shield (5–11)</li>
+          <li><strong>Player B</strong> picks their own weapon &amp; shield</li>
           <li>Both players attack simultaneously</li>
         </ol>
       </div>
       <div class="rule-section">
         <h3>💥 Damage Formula</h3>
         <div class="formula-box">Damage = |Your Shield − Opponent's Weapon Damage|</div>
-        <p>Match your shield exactly = <span class="neon-text">0 damage (Perfect Block!)</span>. Any mismatch causes damage equal to the difference.</p>
+        <p>Match your shield exactly = <span class="neon-text">0 damage (Perfect Block!)</span>.</p>
       </div>
       <div class="rule-section">
-        <h3>🔒 Weapon Restriction</h3>
-        <p>Each shot, both players pick from all 7 weapons — but you cannot pick the same weapon as your opponent that shot.</p>
+        <h3>🧪 Potions</h3>
+        <p>Buy potions in the Shop for <strong>15 🪙</strong> each. During combat, use one instead of attacking to restore <strong>+10 HP</strong>. You are still vulnerable to your opponent's attack.</p>
+      </div>
+      <div class="rule-section">
+        <h3>✨ Special Shot (0.1% chance)</h3>
+        <p>Any shot has a 0.1% chance to become a Special Shot. Players alternate guessing each other's hidden weapon. First to <strong>3 correct guesses</strong> wins <strong>30 🪙</strong>. Normal combat resumes after.</p>
+      </div>
+      <div class="rule-section">
+        <h3>💀 Boss Battle</h3>
+        <p>Both players team up against The Warlord (60 HP). Attack the boss every shot — the player who lands the <strong>killing blow</strong> wins <strong>20 🪙</strong>. The boss hits back each shot with a random weapon.</p>
+      </div>
+      <div class="rule-section">
+        <h3>🪙 Tokens</h3>
+        <ul>
+          <li>Win a match → <strong>+10 🪙</strong></li>
+          <li>Lose a match → <strong>+2 🪙</strong></li>
+          <li>Special Round win → <strong>+30 🪙</strong></li>
+          <li>Boss kill → <strong>+20 🪙</strong></li>
+        </ul>
       </div>
       <div class="rule-section">
         <h3>🏆 Winning &amp; Sudden Death</h3>
@@ -137,10 +168,43 @@
         <h3>🎮 Game Modes</h3>
         <ul>
           <li><strong>Hot Seat</strong> — Same device. Screen blanks after Player A picks, pass to Player B.</li>
-          <li><strong>Online</strong> — Create a room, share the 6-letter code, play on separate devices. Player B can guess Player A's weapon for bonus info.</li>
-          <li><strong>vs AI</strong> — AI picks randomly from available weapons each shot.</li>
+          <li><strong>Online</strong> — Create a room, share the 6-letter code, play on separate devices.</li>
+          <li><strong>vs AI</strong> — AI picks randomly each shot.</li>
+          <li><strong>Boss Battle</strong> — Co-op vs The Warlord. Killing blow earns 20 🪙.</li>
         </ul>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SHOP MODAL ═══════ -->
+<div id="modal-shop" class="modal-overlay hidden" onclick="closeShopIfOutside(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title">🛒 Shop</h2>
+      <button class="modal-close" onclick="hideShop()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="shop-balance">
+        <div class="shop-bal-item">
+          <span class="shop-bal-label">Your Tokens</span>
+          <span class="shop-bal-value" id="shopTokenBalance">0</span> 🪙
+        </div>
+        <div class="shop-bal-item">
+          <span class="shop-bal-label">Potions Owned</span>
+          <span class="shop-bal-value" id="shopPotionOwned">0</span> 🧪
+        </div>
+      </div>
+      <div class="shop-item-card">
+        <div class="shop-item-icon">🧪</div>
+        <div class="shop-item-info">
+          <div class="shop-item-name">Health Potion</div>
+          <div class="shop-item-desc">Use during combat instead of attacking to restore +10 HP. You can still take damage. Max 9 potions.</div>
+          <div class="shop-item-cost">15 🪙 each</div>
+        </div>
+        <button class="btn-primary" id="shopBuyBtn" onclick="buyPotion()">Buy Potion</button>
+      </div>
+      <p class="shop-hint">Earn tokens by playing: +10 for wins, +2 for losses, +30 for Special Rounds, +20 for Boss kills.</p>
     </div>
   </div>
 </div>
@@ -213,41 +277,31 @@
 
   <!-- Available weapons -->
   <div class="available-weapons">
-    <span class="aw-label">Round weapons:</span>
+    <span class="aw-label">Weapons:</span>
     <div id="availableWeaponsList" class="aw-list"></div>
   </div>
 
-  <!-- Online waiting overlay (inside game screen) -->
+  <!-- Online waiting overlay -->
   <div id="onlineWaitingOverlay" class="online-waiting hidden">
     <div class="pulse-ring large"></div>
     <p id="onlineWaitingText">Waiting for opponent…</p>
   </div>
 
-  <!-- Turn panel — static IDs that game.js references -->
+  <!-- Turn panel -->
   <div class="turn-panel" id="turnPanel">
     <div class="turn-header">
       <div class="turn-player-badge" id="turnBadge">Player A's Turn</div>
       <div class="turn-phase" id="turnPhase">Choose your weapon &amp; shield</div>
     </div>
-
-    <!-- Guess section (Player B only) -->
-    <div class="choice-section hidden" id="guessSection">
-      <label class="choice-label">Guess opponent's weapon</label>
-      <div class="weapon-grid" id="guessGrid"></div>
-    </div>
-
-    <!-- Weapon selection -->
     <div class="choice-section">
       <label class="choice-label">Your Weapon</label>
       <div class="weapon-grid" id="weaponGrid"></div>
     </div>
-
-    <!-- Shield selection -->
     <div class="choice-section">
       <label class="choice-label">Shield Points <span class="shield-hint">(5–11)</span></label>
       <div class="shield-grid" id="shieldGrid"></div>
     </div>
-
+    <div class="choice-section" id="potionRow"></div>
     <button class="btn-confirm" id="confirmBtn" onclick="confirmChoice()" disabled>Confirm →</button>
     <p id="gameError" class="form-error"></p>
   </div>
@@ -272,7 +326,6 @@
         <div class="rd-dmg" id="rdDmgB">−0 HP</div>
       </div>
     </div>
-    <div class="result-guess" id="resultGuess"></div>
     <div class="result-hp-summary" id="resultHpSummary"></div>
     <button class="btn-primary" id="resultNextBtn" onclick="nextAfterResult()">Next Shot →</button>
   </div>

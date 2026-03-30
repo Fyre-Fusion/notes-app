@@ -444,3 +444,92 @@ input::placeholder { color: var(--text3); }
   .header-right { gap: 8px; }
   .btn-rulebook { font-size: 11px; padding: 6px 10px; }
 }
+/* ══════════ TOKEN / POTION HEADER ══════════ */
+.header-tokens, .header-potions {
+  font-family: var(--font-d); font-size: 12px; color: var(--accent2);
+  background: var(--surface); border: 1px solid var(--border2);
+  padding: 5px 10px; border-radius: 20px; letter-spacing: 0.5px;
+}
+.header-potions { color: var(--cyan); border-color: var(--border); }
+
+/* ══════════ SHOP BUTTON ══════════ */
+.btn-shop {
+  padding: 7px 14px; background: transparent; color: #facc15;
+  border: 1px solid rgba(250,204,21,0.4); border-radius: var(--r);
+  font-family: var(--font-b); font-size: 13px; cursor: pointer;
+  transition: background .2s, box-shadow .2s;
+}
+.btn-shop:hover { background: rgba(250,204,21,0.08); box-shadow: 0 0 10px rgba(250,204,21,0.2); }
+
+/* ══════════ BOSS MODE CARD ══════════ */
+.mode-card-boss { border-color: rgba(244,63,94,0.3); }
+.mode-card-boss:hover { border-color: var(--red); box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 20px var(--red-glow); }
+.mode-card-boss:hover::before { background: linear-gradient(135deg, var(--red-glow), transparent); }
+.mode-badge-boss { color: #facc15; border-color: rgba(250,204,21,0.3); }
+.mode-card-boss:hover .mode-badge-boss { border-color: #facc15; box-shadow: 0 0 8px rgba(250,204,21,0.25); }
+
+/* ══════════ SHOP MODAL CONTENT ══════════ */
+.shop-balance {
+  display: flex; gap: 20px; background: var(--surface); border: 1px solid var(--border2);
+  border-radius: var(--r); padding: 16px 20px; justify-content: space-around;
+}
+.shop-bal-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.shop-bal-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; font-family: var(--font-d); }
+.shop-bal-value { font-family: var(--font-d); font-size: 1.8rem; color: var(--accent2); }
+.shop-item-card {
+  display: flex; gap: 16px; align-items: center; background: var(--bg3);
+  border: 1px solid var(--border2); border-radius: 12px; padding: 20px;
+}
+.shop-item-icon { font-size: 2.4rem; flex-shrink: 0; }
+.shop-item-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.shop-item-name { font-family: var(--font-d); font-size: 0.95rem; color: var(--accent2); letter-spacing: 0.5px; }
+.shop-item-desc { font-size: 13px; color: var(--text2); line-height: 1.6; }
+.shop-item-cost { font-family: var(--font-d); font-size: 12px; color: #facc15; }
+.shop-hint { font-size: 12px; color: var(--text3); font-style: italic; line-height: 1.7; text-align: center; }
+
+/* ══════════ POTION ROW ══════════ */
+.btn-potion {
+  padding: 10px 18px; background: rgba(34,211,238,0.08); color: var(--cyan);
+  border: 1px solid var(--cyan); border-radius: var(--r);
+  font-family: var(--font-b); font-size: 14px; cursor: pointer;
+  transition: background .2s, box-shadow .2s; width: 100%;
+}
+.btn-potion:hover { background: rgba(34,211,238,0.16); box-shadow: 0 0 12px var(--cyan-glow); }
+.btn-potion.potion-active {
+  background: rgba(34,211,238,0.22); box-shadow: 0 0 18px var(--cyan-glow);
+  border-color: var(--cyan);
+}
+.weapon-dimmed { opacity: 0.25 !important; pointer-events: none !important; }
+
+/* ══════════ SPECIAL SHOT BADGE ══════════ */
+.special-badge {
+  color: #facc15 !important;
+  text-shadow: 0 0 16px rgba(250,204,21,0.5) !important;
+  animation: special-pulse 1.4s ease-in-out infinite;
+}
+@keyframes special-pulse {
+  0%,100% { text-shadow: 0 0 10px rgba(250,204,21,0.4); }
+  50%      { text-shadow: 0 0 28px rgba(250,204,21,0.8); }
+}
+
+/* ══════════ TOAST NOTIFICATIONS ══════════ */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+  padding: 12px 24px; border-radius: 30px; font-family: var(--font-d);
+  font-size: 13px; letter-spacing: 0.5px; pointer-events: none;
+  z-index: 9999; opacity: 0; transition: opacity .3s, transform .3s;
+  white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+.toast-show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast-gold  { background: #78350f; color: #facc15; border: 1px solid rgba(250,204,21,0.4); }
+.toast-green { background: #14532d; color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+.toast-red   { background: #450a0a; color: var(--red);   border: 1px solid rgba(244,63,94,0.3); }
+.toast-info  { background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); }
+
+/* ══════════ RESPONSIVE ADDITIONS ══════════ */
+@media (max-width: 700px) {
+  .header-tokens, .header-potions { display: none; }
+  .btn-shop { font-size: 11px; padding: 6px 10px; }
+  .shop-item-card { flex-direction: column; text-align: center; align-items: flex-start; }
+  .mode-cards { gap: 14px; }
+}
