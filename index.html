@@ -58,6 +58,7 @@
       <span class="token-count header-tokens">0 🪙</span>
       <span class="potion-count header-potions">0 🧪</span>
       <button class="btn-shop" onclick="showShop()">🛒 Shop</button>
+      <button class="btn-settings" onclick="showArsenal()">⚔️ Arsenal</button>
       <button class="btn-rulebook" onclick="showRulebook()">📖 Rules</button>
       <div class="user-pill" id="userPill"></div>
       <button class="btn-ghost-sm" id="logoutBtn" onclick="logout()" style="display:none">Sign out</button>
@@ -110,21 +111,16 @@
         <p>2 players · 30 HP each · 3 rounds · 6 shots per round. Most HP after all rounds wins.</p>
       </div>
       <div class="rule-section">
-        <h3>⚔ Weapons &amp; Damage</h3>
+        <h3>⚔ Weapons &amp; Tiers</h3>
+        <p>There are <strong>5 tiers</strong> of weapons. Tier 1 is free. Unlock higher tiers in the Shop.</p>
         <div class="weapon-table">
-          <div class="wt-row"><span>💣 TNT</span><span class="wt-dmg">11 dmg</span></div>
-          <div class="wt-row"><span>🗡️ Odachi</span><span class="wt-dmg">11 dmg</span></div>
-          <div class="wt-row"><span>🪓 Axe</span><span class="wt-dmg">10 dmg</span></div>
-          <div class="wt-row"><span>⛓️ Kusarigama</span><span class="wt-dmg">10 dmg</span></div>
-          <div class="wt-row"><span>🔨 Mace</span><span class="wt-dmg">9 dmg</span></div>
-          <div class="wt-row"><span>🔰 Spear</span><span class="wt-dmg">9 dmg</span></div>
-          <div class="wt-row"><span>🏹 Bow</span><span class="wt-dmg">8 dmg</span></div>
-          <div class="wt-row"><span>🔫 Musket</span><span class="wt-dmg">8 dmg</span></div>
-          <div class="wt-row"><span>⚔️ Sword</span><span class="wt-dmg">7 dmg</span></div>
-          <div class="wt-row"><span>🥷 Katana</span><span class="wt-dmg">7 dmg</span></div>
-          <div class="wt-row"><span>🔱 Trident</span><span class="wt-dmg">6 dmg</span></div>
-          <div class="wt-row"><span>🎯 Crossbow</span><span class="wt-dmg">5 dmg</span></div>
+          <div class="wt-row"><span style="color:#9b92c8">T1 Starter</span><span class="wt-dmg">5–6 dmg · Free</span></div>
+          <div class="wt-row"><span style="color:#94a3b8">T2 Iron</span><span class="wt-dmg">7–8 dmg · 80 🪙</span></div>
+          <div class="wt-row"><span style="color:#22d3ee">T3 Steel</span><span class="wt-dmg">9–10 dmg · 200 🪙</span></div>
+          <div class="wt-row"><span style="color:#a855f7">T4 Shadow</span><span class="wt-dmg">11–12 dmg · 400 🪙</span></div>
+          <div class="wt-row"><span style="color:#facc15">T5 Legendary</span><span class="wt-dmg">13–15 dmg · 800 🪙</span></div>
         </div>
+        <p>Equip up to <strong>6 weapons</strong> in the Loadout settings. Your equipped weapons determine which shield values you can choose.</p>
       </div>
       <div class="rule-section">
         <h3>🎯 Each Shot</h3>
@@ -154,10 +150,10 @@
       <div class="rule-section">
         <h3>🪙 Tokens</h3>
         <ul>
-          <li>Win a match → <strong>+10 🪙</strong></li>
-          <li>Lose a match → <strong>+2 🪙</strong></li>
+          <li>Win a match → <strong>+200 🪙</strong></li>
+          <li>Lose a match → <strong>+50 🪙</strong></li>
           <li>Special Round win → <strong>+30 🪙</strong></li>
-          <li>Boss kill → <strong>+20 🪙</strong></li>
+          <li>Boss kill → <strong>+400 🪙</strong></li>
         </ul>
       </div>
       <div class="rule-section">
@@ -179,33 +175,44 @@
 
 <!-- ═══════ SHOP MODAL ═══════ -->
 <div id="modal-shop" class="modal-overlay hidden" onclick="closeShopIfOutside(event)">
-  <div class="modal-box">
+  <div class="modal-box modal-box-wide">
     <div class="modal-header">
       <h2 class="modal-title">🛒 Shop</h2>
       <button class="modal-close" onclick="hideShop()">✕</button>
     </div>
-    <div class="modal-body">
-      <div class="shop-balance">
-        <div class="shop-bal-item">
-          <span class="shop-bal-label">Your Tokens</span>
-          <span class="shop-bal-value" id="shopTokenBalance">0</span> 🪙
-        </div>
-        <div class="shop-bal-item">
-          <span class="shop-bal-label">Potions Owned</span>
-          <span class="shop-bal-value" id="shopPotionOwned">0</span> 🧪
-        </div>
-      </div>
-      <div class="shop-item-card">
-        <div class="shop-item-icon">🧪</div>
-        <div class="shop-item-info">
-          <div class="shop-item-name">Health Potion</div>
-          <div class="shop-item-desc">Use during combat instead of attacking to restore +10 HP. You can still take damage. Max 9 potions.</div>
-          <div class="shop-item-cost">15 🪙 each</div>
-        </div>
-        <button class="btn-primary" id="shopBuyBtn" onclick="buyPotion()">Buy Potion</button>
-      </div>
-      <p class="shop-hint">Earn tokens by playing: +10 for wins, +2 for losses, +30 for Special Rounds, +20 for Boss kills.</p>
+    <div class="modal-body" id="shopBody">
+      <!-- rendered by renderShopUI() -->
     </div>
+  </div>
+</div>
+
+<!-- ═══════ ARSENAL (full-screen loadout panel) ═══════ -->
+<div id="screen-arsenal" class="screen">
+  <div class="arsenal-header">
+    <button class="btn-back" onclick="hideArsenal()">← Back</button>
+    <div class="arsenal-title">
+      <span class="arsenal-title-icon">⚔️</span>
+      <div>
+        <div class="arsenal-title-text">Arsenal</div>
+        <div class="arsenal-title-sub" id="arsenalEquippedCount">0 / 15 equipped</div>
+      </div>
+    </div>
+    <button class="btn-shop-sm" onclick="showShopFromArsenal()">🛒 Shop</button>
+  </div>
+
+  <!-- Shield preview strip -->
+  <div class="arsenal-shield-bar">
+    <div class="arsenal-shield-label">🛡️ Active Shields</div>
+    <div class="arsenal-shield-list" id="arsenalShieldPreview"></div>
+    <div class="arsenal-hint" id="arsenalHint"></div>
+  </div>
+
+  <!-- Tier filter tabs -->
+  <div class="arsenal-filter-bar" id="arsenalFilterBar"></div>
+
+  <!-- Weapon grid -->
+  <div class="arsenal-grid-wrap">
+    <div class="arsenal-grid" id="arsenalGrid"></div>
   </div>
 </div>
 
@@ -279,6 +286,13 @@
   <div class="available-weapons">
     <span class="aw-label">Weapons:</span>
     <div id="availableWeaponsList" class="aw-list"></div>
+  </div>
+
+  <!-- Emoji Chat -->
+  <div id="emojiChat" class="emoji-chat" style="display:none">
+    <div class="emoji-chat-log" id="emojiChatLog"></div>
+    <div class="emoji-chat-toggle" id="emojiChatToggle" onclick="toggleEmojiPicker()">💬</div>
+    <div class="emoji-picker hidden" id="emojiPicker"></div>
   </div>
 
   <!-- Online waiting overlay -->
