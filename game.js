@@ -10,67 +10,76 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 // CONSTANTS
 // ══════════════════════════════════════════════
 
-// ── WEAPON CATALOGUE (all weapons across all tiers) ──
-// tier 1 = free starter, tiers 2-5 must be purchased
+// ── WEAPON CATALOGUE (all 50 weapons across all tiers) ──
+// tier 1 = free default (10 starter weapons), tiers 2-5 must be purchased
 const ALL_WEAPONS = [
-  // ── TIER 1 – Starter (free, always unlocked) ──
-  { name: "Crossbow",       emoji: "🎯", dmg: 5,  tier: 1, cost: 0   },
-  { name: "Kunai",          emoji: "🔪", dmg: 5,  tier: 1, cost: 0   },
-  { name: "Shuriken",       emoji: "⭐", dmg: 5,  tier: 1, cost: 0   },
-  { name: "Bō",             emoji: "🪄", dmg: 6,  tier: 1, cost: 0   },
-  { name: "Tonfa",          emoji: "🥋", dmg: 6,  tier: 1, cost: 0   },
-  { name: "Kama",           emoji: "🌙", dmg: 6,  tier: 1, cost: 0   },
-  { name: "Trident",        emoji: "🔱", dmg: 6,  tier: 1, cost: 0   },
+  // ── TIER 1 – Starter (free, always unlocked · dmg 5–6) ──
+  { name: "Shuriken",        emoji: "⭐", dmg: 5,  tier: 1, cost: 0   },
+  { name: "Kunai",           emoji: "🔪", dmg: 5,  tier: 1, cost: 0   },
+  { name: "Senban-shuriken", emoji: "🌟", dmg: 5,  tier: 1, cost: 0   },
+  { name: "Hira-shuriken",   emoji: "💠", dmg: 5,  tier: 1, cost: 0   },
+  { name: "Makibishi",       emoji: "🔘", dmg: 5,  tier: 1, cost: 0   },
+  { name: "Kama",            emoji: "🌙", dmg: 6,  tier: 1, cost: 0   },
+  { name: "Tekko",           emoji: "🥊", dmg: 6,  tier: 1, cost: 0   },
+  { name: "Sai",             emoji: "🔱", dmg: 6,  tier: 1, cost: 0   },
+  { name: "Fukiya",          emoji: "🎋", dmg: 6,  tier: 1, cost: 0   },
+  { name: "Tessen",          emoji: "🪭", dmg: 6,  tier: 1, cost: 0   },
 
-  // ── TIER 2 – Iron (cost: 80 🪙) ──
-  { name: "Katana",         emoji: "🥷", dmg: 7,  tier: 2, cost: 80  },
-  { name: "Sword",          emoji: "⚔️",  dmg: 7,  tier: 2, cost: 80  },
-  { name: "Sai",            emoji: "🔀", dmg: 7,  tier: 2, cost: 80  },
-  { name: "Tessen",         emoji: "🪭", dmg: 7,  tier: 2, cost: 80  },
-  { name: "Chokutō",        emoji: "🗡️",  dmg: 7,  tier: 2, cost: 80  },
-  { name: "Kaiken",         emoji: "🔺", dmg: 8,  tier: 2, cost: 80  },
-  { name: "Bow",            emoji: "🏹", dmg: 8,  tier: 2, cost: 80  },
-  { name: "Musket",         emoji: "🔫", dmg: 8,  tier: 2, cost: 80  },
+  // ── TIER 2 – Iron (cost: 80 🪙 · dmg 7–8) ──
+  { name: "Katana",          emoji: "🥷", dmg: 7,  tier: 2, cost: 80  },
+  { name: "Kodachi",         emoji: "🗡️",  dmg: 7,  tier: 2, cost: 80  },
+  { name: "Kaiken",          emoji: "🔺", dmg: 7,  tier: 2, cost: 80  },
+  { name: "Jitte",           emoji: "🔀", dmg: 7,  tier: 2, cost: 80  },
+  { name: "Bo-shuriken",     emoji: "📍", dmg: 7,  tier: 2, cost: 80  },
+  { name: "Yari",            emoji: "📌", dmg: 8,  tier: 2, cost: 80  },
+  { name: "Naginata",        emoji: "🌀", dmg: 8,  tier: 2, cost: 80  },
+  { name: "Tachi",           emoji: "🌊", dmg: 8,  tier: 2, cost: 80  },
+  { name: "Hanbo",           emoji: "🪄", dmg: 8,  tier: 2, cost: 80  },
+  { name: "Manriki-gusari",  emoji: "⛓️",  dmg: 8,  tier: 2, cost: 80  },
 
-  // ── TIER 3 – Steel (cost: 200 🪙) ──
-  { name: "Mace",           emoji: "🔨", dmg: 9,  tier: 3, cost: 200 },
-  { name: "Spear",          emoji: "🔰",  dmg: 9,  tier: 3, cost: 200 },
-  { name: "Yari",           emoji: "📌", dmg: 9,  tier: 3, cost: 200 },
-  { name: "Uchigatana",     emoji: "🌸", dmg: 9,  tier: 3, cost: 200 },
-  { name: "Manriki-gusari", emoji: "⛓️",  dmg: 9,  tier: 3, cost: 200 },
-  { name: "Kusarigama",     emoji: "🔗", dmg: 10, tier: 3, cost: 200 },
-  { name: "Axe",            emoji: "🪓", dmg: 10, tier: 3, cost: 200 },
-  { name: "Kanabō",         emoji: "🏏", dmg: 10, tier: 3, cost: 200 },
-  { name: "Nagamaki",       emoji: "🌿", dmg: 10, tier: 3, cost: 200 },
+  // ── TIER 3 – Steel (cost: 200 🪙 · dmg 9–10) ──
+  { name: "Uchigatana",      emoji: "🌸", dmg: 9,  tier: 3, cost: 200 },
+  { name: "Kusarigama",      emoji: "🔗", dmg: 9,  tier: 3, cost: 200 },
+  { name: "Kanabo",          emoji: "🏏", dmg: 9,  tier: 3, cost: 200 },
+  { name: "Tetsubo",         emoji: "🪵", dmg: 9,  tier: 3, cost: 200 },
+  { name: "Rokushakubo",     emoji: "🎴", dmg: 9,  tier: 3, cost: 200 },
+  { name: "Nagamaki",        emoji: "🌿", dmg: 10, tier: 3, cost: 200 },
+  { name: "Nodachi",         emoji: "🌑", dmg: 10, tier: 3, cost: 200 },
+  { name: "Kyoketsu-shoge",  emoji: "🕸️",  dmg: 10, tier: 3, cost: 200 },
+  { name: "Chigiriki",       emoji: "🔩", dmg: 10, tier: 3, cost: 200 },
+  { name: "Ono",             emoji: "🪓", dmg: 10, tier: 3, cost: 200 },
 
-  // ── TIER 4 – Shadow (cost: 400 🪙) ──
-  { name: "Odachi",         emoji: "⚡", dmg: 11, tier: 4, cost: 400 },
-  { name: "Tachi",          emoji: "🌊", dmg: 11, tier: 4, cost: 400 },
-  { name: "Naginata",       emoji: "🌀", dmg: 11, tier: 4, cost: 400 },
-  { name: "Wakizashi",      emoji: "💫", dmg: 11, tier: 4, cost: 400 },
-  { name: "Tanto",          emoji: "🩸", dmg: 11, tier: 4, cost: 400 },
-  { name: "Nodachi",        emoji: "🌑", dmg: 11, tier: 4, cost: 400 },
-  { name: "Kyoketsu-shoge", emoji: "🕸️",  dmg: 12, tier: 4, cost: 400 },
-  { name: "Hoko yari",      emoji: "☄️",  dmg: 12, tier: 4, cost: 400 },
-  { name: "Scythe",         emoji: "☠️",  dmg: 12, tier: 4, cost: 400 },
-  { name: "Bo shuriken",    emoji: "🌟", dmg: 12, tier: 4, cost: 400 },
+  // ── TIER 4 – Shadow (cost: 400 🪙 · dmg 11–12) ──
+  { name: "Odachi",          emoji: "⚡", dmg: 11, tier: 4, cost: 400 },
+  { name: "Yumi",            emoji: "🏹", dmg: 11, tier: 4, cost: 400 },
+  { name: "Hankyu",          emoji: "🎯", dmg: 11, tier: 4, cost: 400 },
+  { name: "Daikyu",          emoji: "🎑", dmg: 11, tier: 4, cost: 400 },
+  { name: "Hoko Yari",       emoji: "☄️",  dmg: 11, tier: 4, cost: 400 },
+  { name: "Jumonji Yari",    emoji: "✚",  dmg: 12, tier: 4, cost: 400 },
+  { name: "Sankaku Yari",    emoji: "🔻", dmg: 12, tier: 4, cost: 400 },
+  { name: "Sasaho Yari",     emoji: "🪬", dmg: 12, tier: 4, cost: 400 },
+  { name: "Tanegashima",     emoji: "🔫", dmg: 12, tier: 4, cost: 400 },
+  { name: "Nunchaku",        emoji: "🔄", dmg: 12, tier: 4, cost: 400 },
 
-  // ── TIER 5 – Legendary (cost: 800 🪙) ──
-  { name: "Bisento",        emoji: "🐉", dmg: 13, tier: 5, cost: 800 },
-  { name: "Hachiwari",      emoji: "💎", dmg: 13, tier: 5, cost: 800 },
-  { name: "Kabutowari",     emoji: "👑", dmg: 13, tier: 5, cost: 800 },
-  { name: "Kanamuchi",      emoji: "🔥", dmg: 14, tier: 5, cost: 800 },
-  { name: "Sasumata",       emoji: "🦅", dmg: 14, tier: 5, cost: 800 },
-  { name: "Makura yari",    emoji: "🌙", dmg: 14, tier: 5, cost: 800 },
-  { name: "Shikomizue",     emoji: "🐍", dmg: 14, tier: 5, cost: 800 },
-  { name: "TNT",            emoji: "💣", dmg: 15, tier: 5, cost: 800 },
-  { name: "Metsubushi",     emoji: "💥", dmg: 15, tier: 5, cost: 800 },
-  { name: "Kiseru",         emoji: "🪬", dmg: 15, tier: 5, cost: 800 },
+  // ── TIER 5 – Legendary (cost: 800 🪙 · dmg 13–14) ──
+  { name: "Kabutowari",      emoji: "👑", dmg: 13, tier: 5, cost: 800 },
+  { name: "Hachiwari",       emoji: "💎", dmg: 13, tier: 5, cost: 800 },
+  { name: "Kusari-fundo",    emoji: "💫", dmg: 13, tier: 5, cost: 800 },
+  { name: "Shikomizue",      emoji: "🐍", dmg: 13, tier: 5, cost: 800 },
+  { name: "Gunbai",          emoji: "🛡️",  dmg: 13, tier: 5, cost: 800 },
+  { name: "Metsubushi",      emoji: "💥", dmg: 14, tier: 5, cost: 800 },
+  { name: "Kanemuchi",       emoji: "🔥", dmg: 14, tier: 5, cost: 800 },
+  { name: "Wakizashi",       emoji: "🩸", dmg: 14, tier: 5, cost: 800 },
+  { name: "Tanto",           emoji: "🌙", dmg: 14, tier: 5, cost: 800 },
+  { name: "Masakari",        emoji: "🐉", dmg: 14, tier: 5, cost: 800 },
 ];
 
-// Default starter loadout (first 6 tier-1 weapons)
-const STARTER_WEAPON_NAMES = ["Crossbow","Kunai","Shuriken","Bō","Tonfa","Kama"];
-const LOADOUT_SIZE = 15; // max weapons each player can equip
+// Default starter loadout — all 10 tier-1 weapons
+const STARTER_WEAPON_NAMES = [
+  "Shuriken","Kunai","Senban-shuriken","Hira-shuriken","Makibishi",
+  "Kama","Tekko","Sai","Fukiya","Tessen"
+];
+const LOADOUT_SIZE = 50; // max weapons each player can equip (full arsenal)
 
 const TIER_INFO = {
   1: { name: "Starter",   color: "#9b92c8", glow: "rgba(155,146,200,0.3)" },
@@ -220,6 +229,10 @@ function showScreen(id) {
   const el = document.getElementById(id);
   el.classList.add("active");
   el.style.display = "flex";
+  // Always close emoji picker on any screen transition
+  emojiPickerOpen = false;
+  const picker = document.getElementById("emojiPicker");
+  if (picker) picker.classList.add("hidden");
 }
 
 // ══════════════════════════════════════════════
@@ -915,7 +928,7 @@ function renderPlayerATurn(isBoss) {
   const cb = document.getElementById("confirmBtn");
   if (cb) cb.disabled = true;
   renderWeaponGrid("weaponGrid", WEAPONS, function(w) { selWeaponA = w; usingPotionA = false; checkAReady(); });
-  renderShieldGrid("shieldGrid", function(v) { selShieldA = v; checkAReady(); });
+  renderShieldGrid("shieldGrid", function(v) { selShieldA = v; checkAReady(); }, null);
   renderPotionRow("potionRow", "A");
 }
 function checkAReady() {
@@ -933,14 +946,18 @@ function renderPlayerBTurn(isBoss) {
   const badge = document.getElementById("turnBadge");
   const phase = document.getElementById("turnPhase");
   if (badge) badge.textContent = gs.names.B + "'s Turn";
+  // Tell Player B what weapon A locked in so they can see the perfect counter
+  const aWeapon = gs.pendingA && gs.pendingA.weapon ? gs.pendingA.weapon : null;
   if (phase) phase.textContent = isBoss
     ? "Choose your weapon & shield to attack the Boss!"
-    : "Pick your weapon &amp; shield.";
+    : aWeapon
+      ? gs.names.A + " has locked in. Pick your weapon & shield \u2014 shield " + aWeapon.dmg + " perfectly counters their weapon!"
+      : "Pick your weapon & shield.";
   const cb = document.getElementById("confirmBtn");
   if (cb) cb.disabled = true;
   const bAvail = isBoss ? WEAPONS : WEAPONS.filter(function(w) { return w.name !== (gs.pendingA && gs.pendingA.weapon ? gs.pendingA.weapon.name : null); });
   renderWeaponGrid("weaponGrid", bAvail, function(w) { selWeaponB = w; usingPotionB = false; checkBReady(); });
-  renderShieldGrid("shieldGrid", function(v) { selShieldB = v; checkBReady(); });
+  renderShieldGrid("shieldGrid", function(v) { selShieldB = v; checkBReady(); }, aWeapon ? aWeapon.dmg : null);
   renderPotionRow("potionRow", "B");
 }
 function checkBReady() {
@@ -1008,7 +1025,7 @@ function renderWeaponGrid(gridId, weapons, onSelect) {
   });
 }
 
-function renderShieldGrid(gridId, onSelect) {
+function renderShieldGrid(gridId, onSelect, perfectCounterDmg) {
   const grid = document.getElementById(gridId);
   if (!grid) return;
   grid.innerHTML = "";
@@ -1020,9 +1037,12 @@ function renderShieldGrid(gridId, onSelect) {
   });
   SHIELD_VALUES.forEach(function(v) {
     const btn = document.createElement("button");
-    btn.className = "shield-btn";
+    const isPerfect = (perfectCounterDmg !== null && perfectCounterDmg !== undefined && v === perfectCounterDmg);
+    btn.className = "shield-btn" + (isPerfect ? " perfect-counter" : "");
     btn.textContent = v;
-    if (weaponByVal[v] && weaponByVal[v].length) {
+    if (isPerfect) {
+      btn.title = "Perfect counter — blocks opponent\u2019s weapon!";
+    } else if (weaponByVal[v] && weaponByVal[v].length) {
       btn.setAttribute("data-weapon", "blocks " + weaponByVal[v].join(", "));
     }
     btn.onclick = function() {
@@ -1076,6 +1096,9 @@ function confirmChoice() {
       if (gameMode !== "online") {
         gs.potionsB = Math.max(0, gs.potionsB - 1);
         gs.hpB = Math.min(MAX_HP, gs.hpB + POTION_HEAL);
+        localPotions = Math.max(0, localPotions - 1);
+        saveTokenData();
+        updateTokenDisplay();
       }
     }
 
@@ -1449,7 +1472,7 @@ async function createRoom() {
   });
 
   if (ins.error) {
-    var isSM = ins.error.message && (ins.error.message.includes("last_result") || ins.error.message.includes("turn_status"));
+    var isSM = ins.error.message && (ins.error.message.includes("last_result") || ins.error.message.includes("turn_status") || ins.error.message.includes("last_emoji"));
     errEl.innerHTML = isSM ? "\u26A0\uFE0F DB schema outdated. Run <strong>migration.sql</strong> in Supabase SQL Editor, then refresh." : "Failed to create room: " + ins.error.message;
     return;
   }
@@ -1491,7 +1514,7 @@ async function joinRoom() {
   }).eq("code", code);
 
   if (ue.error) {
-    var isSM = ue.error.message && (ue.error.message.includes("last_result") || ue.error.message.includes("turn_status"));
+    var isSM = ue.error.message && (ue.error.message.includes("last_result") || ue.error.message.includes("turn_status") || ue.error.message.includes("last_emoji"));
     errEl.innerHTML = isSM ? "\u26A0\uFE0F DB schema outdated. Run <strong>migration.sql</strong> in Supabase SQL Editor, then refresh." : "Failed to join room: " + ue.error.message;
     return;
   }
@@ -1673,7 +1696,19 @@ function toggleEmojiPicker() {
   emojiPickerOpen = !emojiPickerOpen;
   const picker = document.getElementById("emojiPicker");
   const toggle = document.getElementById("emojiChatToggle");
-  if (picker) picker.classList.toggle("hidden", !emojiPickerOpen);
+  if (picker) {
+    picker.classList.toggle("hidden", !emojiPickerOpen);
+    // Re-render picker buttons each open in case DOM was wiped
+    if (emojiPickerOpen && picker.children.length === 0) {
+      CHAT_EMOJIS.forEach(function(emoji) {
+        var btn = document.createElement("button");
+        btn.className = "ep-btn";
+        btn.textContent = emoji;
+        btn.onclick = function() { sendChatEmoji(emoji); };
+        picker.appendChild(btn);
+      });
+    }
+  }
   if (toggle) toggle.classList.remove("has-new");
 }
 
@@ -1697,11 +1732,14 @@ function sendChatEmoji(emoji) {
 
   // Broadcast if online
   if (gameMode === "online" && onlineRoom) {
-    try {
-      db.from("game_rooms").update({
-        last_emoji: JSON.stringify({ from: senderName, emoji: emoji, ts: Date.now() })
-      }).eq("code", onlineRoom).then(() => {});
-    } catch(e) {}
+    db.from("game_rooms").update({
+      last_emoji: JSON.stringify({ from: senderName, emoji: emoji, ts: Date.now() })
+    }).eq("code", onlineRoom).then(function(res) {
+      if (res.error) {
+        var col = res.error.message && res.error.message.includes("last_emoji");
+        if (col) showToast("⚠️ Run migration.sql in Supabase to enable emoji chat!", "red");
+      }
+    });
   }
 }
 
