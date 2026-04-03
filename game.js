@@ -11,75 +11,95 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 // ══════════════════════════════════════════════
 
 // ── WEAPON CATALOGUE (all 50 weapons across all tiers) ──
-// tier 1 = free default (10 starter weapons), tiers 2-5 must be purchased
+// tier 1 = free default (10 weapons · 2 per dmg 5–10 → shields 5–10)
+// tiers 2–5 = purchasable upgrades (2 per dmg 11–14, plus extras at 5–10 for loadout swaps)
 const ALL_WEAPONS = [
-  // ── TIER 1 – Starter (free, always unlocked · dmg 5–6) ──
+  // ── TIER 1 – Starter (free, always unlocked · 2× each dmg 5–10) ──
   { name: "Shuriken",        emoji: "⭐", dmg: 5,  tier: 1, cost: 0   },
   { name: "Kunai",           emoji: "🔪", dmg: 5,  tier: 1, cost: 0   },
-  { name: "Senban-shuriken", emoji: "🌟", dmg: 5,  tier: 1, cost: 0   },
-  { name: "Hira-shuriken",   emoji: "💠", dmg: 5,  tier: 1, cost: 0   },
-  { name: "Makibishi",       emoji: "🔘", dmg: 5,  tier: 1, cost: 0   },
   { name: "Kama",            emoji: "🌙", dmg: 6,  tier: 1, cost: 0   },
   { name: "Tekko",           emoji: "🥊", dmg: 6,  tier: 1, cost: 0   },
-  { name: "Sai",             emoji: "🔱", dmg: 6,  tier: 1, cost: 0   },
-  { name: "Fukiya",          emoji: "🎋", dmg: 6,  tier: 1, cost: 0   },
-  { name: "Tessen",          emoji: "🪭", dmg: 6,  tier: 1, cost: 0   },
+  { name: "Sai",             emoji: "🔱", dmg: 7,  tier: 1, cost: 0   },
+  { name: "Fukiya",          emoji: "🎋", dmg: 7,  tier: 1, cost: 0   },
+  { name: "Tessen",          emoji: "🪭", dmg: 8,  tier: 1, cost: 0   },
+  { name: "Jitte",           emoji: "🔀", dmg: 8,  tier: 1, cost: 0   },
+  { name: "Hanbo",           emoji: "🪄", dmg: 9,  tier: 1, cost: 0   },
+  { name: "Rokushakubo",     emoji: "🎴", dmg: 9,  tier: 1, cost: 0   },
+  { name: "Kanabo",          emoji: "🏏", dmg: 10, tier: 1, cost: 0   },
+  { name: "Tetsubo",         emoji: "🪵", dmg: 10, tier: 1, cost: 0   },
+  // ── TIER 1 extras — same dmg range, buy to swap into loadout ──
+  { name: "Hira-shuriken",   emoji: "💠", dmg: 5,  tier: 1, cost: 0   },
+  { name: "Senban-shuriken", emoji: "🌟", dmg: 5,  tier: 1, cost: 0   },
+  { name: "Makibishi",       emoji: "🔘", dmg: 6,  tier: 1, cost: 0   },
+  { name: "Tekagi",          emoji: "🤚", dmg: 6,  tier: 1, cost: 0   },
+  { name: "Bo-shuriken",     emoji: "📍", dmg: 7,  tier: 1, cost: 0   },
+  { name: "Kaiken",          emoji: "🔺", dmg: 7,  tier: 1, cost: 0   },
+  { name: "Manriki-gusari",  emoji: "⛓️",  dmg: 8,  tier: 1, cost: 0   },
+  { name: "Chigiriki",       emoji: "🔩", dmg: 8,  tier: 1, cost: 0   },
+  { name: "Kusarigama",      emoji: "🔗", dmg: 9,  tier: 1, cost: 0   },
+  { name: "Nunchaku",        emoji: "🔄", dmg: 9,  tier: 1, cost: 0   },
 
-  // ── TIER 2 – Iron (cost: 80 🪙 · dmg 7–8) ──
-  { name: "Katana",          emoji: "🥷", dmg: 7,  tier: 2, cost: 80  },
-  { name: "Kodachi",         emoji: "🗡️",  dmg: 7,  tier: 2, cost: 80  },
-  { name: "Kaiken",          emoji: "🔺", dmg: 7,  tier: 2, cost: 80  },
-  { name: "Jitte",           emoji: "🔀", dmg: 7,  tier: 2, cost: 80  },
-  { name: "Bo-shuriken",     emoji: "📍", dmg: 7,  tier: 2, cost: 80  },
-  { name: "Yari",            emoji: "📌", dmg: 8,  tier: 2, cost: 80  },
-  { name: "Naginata",        emoji: "🌀", dmg: 8,  tier: 2, cost: 80  },
-  { name: "Tachi",           emoji: "🌊", dmg: 8,  tier: 2, cost: 80  },
-  { name: "Hanbo",           emoji: "🪄", dmg: 8,  tier: 2, cost: 80  },
-  { name: "Manriki-gusari",  emoji: "⛓️",  dmg: 8,  tier: 2, cost: 80  },
+  // ── TIER 2 – Iron (cost: 80 🪙 · dmg 10–11) ──
+  { name: "Katana",          emoji: "🥷", dmg: 10, tier: 2, cost: 80  },
+  { name: "Kodachi",         emoji: "🗡️",  dmg: 10, tier: 2, cost: 80  },
+  { name: "Yari",            emoji: "📌", dmg: 10, tier: 2, cost: 80  },
+  { name: "Naginata",        emoji: "🌀", dmg: 10, tier: 2, cost: 80  },
+  { name: "Tachi",           emoji: "🌊", dmg: 11, tier: 2, cost: 80  },
+  { name: "Uchigatana",      emoji: "🌸", dmg: 11, tier: 2, cost: 80  },
+  { name: "Ono",             emoji: "🪓", dmg: 11, tier: 2, cost: 80  },
+  { name: "Nagamaki",        emoji: "🌿", dmg: 11, tier: 2, cost: 80  },
+  { name: "Manriki",         emoji: "⛓️",  dmg: 10, tier: 2, cost: 80  },
+  { name: "Chokuto",         emoji: "🗡️",  dmg: 11, tier: 2, cost: 80  },
 
-  // ── TIER 3 – Steel (cost: 200 🪙 · dmg 9–10) ──
-  { name: "Uchigatana",      emoji: "🌸", dmg: 9,  tier: 3, cost: 200 },
-  { name: "Kusarigama",      emoji: "🔗", dmg: 9,  tier: 3, cost: 200 },
-  { name: "Kanabo",          emoji: "🏏", dmg: 9,  tier: 3, cost: 200 },
-  { name: "Tetsubo",         emoji: "🪵", dmg: 9,  tier: 3, cost: 200 },
-  { name: "Rokushakubo",     emoji: "🎴", dmg: 9,  tier: 3, cost: 200 },
-  { name: "Nagamaki",        emoji: "🌿", dmg: 10, tier: 3, cost: 200 },
-  { name: "Nodachi",         emoji: "🌑", dmg: 10, tier: 3, cost: 200 },
-  { name: "Kyoketsu-shoge",  emoji: "🕸️",  dmg: 10, tier: 3, cost: 200 },
-  { name: "Chigiriki",       emoji: "🔩", dmg: 10, tier: 3, cost: 200 },
-  { name: "Ono",             emoji: "🪓", dmg: 10, tier: 3, cost: 200 },
+  // ── TIER 3 – Steel (cost: 200 🪙 · dmg 11–12) ──
+  { name: "Nodachi",         emoji: "🌑", dmg: 11, tier: 3, cost: 200 },
+  { name: "Kyoketsu-shoge",  emoji: "🕸️",  dmg: 11, tier: 3, cost: 200 },
+  { name: "Hoko Yari",       emoji: "☄️",  dmg: 12, tier: 3, cost: 200 },
+  { name: "Jumonji Yari",    emoji: "✚",  dmg: 12, tier: 3, cost: 200 },
+  { name: "Sankaku Yari",    emoji: "🔻", dmg: 12, tier: 3, cost: 200 },
+  { name: "Sasaho Yari",     emoji: "🪬", dmg: 12, tier: 3, cost: 200 },
+  { name: "Odachi",          emoji: "⚡", dmg: 12, tier: 3, cost: 200 },
+  { name: "Yumi",            emoji: "🏹", dmg: 12, tier: 3, cost: 200 },
+  { name: "Hankyu",          emoji: "🎯", dmg: 11, tier: 3, cost: 200 },
+  { name: "Daikyu",          emoji: "🎑", dmg: 12, tier: 3, cost: 200 },
 
-  // ── TIER 4 – Shadow (cost: 400 🪙 · dmg 11–12) ──
-  { name: "Odachi",          emoji: "⚡", dmg: 11, tier: 4, cost: 400 },
-  { name: "Yumi",            emoji: "🏹", dmg: 11, tier: 4, cost: 400 },
-  { name: "Hankyu",          emoji: "🎯", dmg: 11, tier: 4, cost: 400 },
-  { name: "Daikyu",          emoji: "🎑", dmg: 11, tier: 4, cost: 400 },
-  { name: "Hoko Yari",       emoji: "☄️",  dmg: 11, tier: 4, cost: 400 },
-  { name: "Jumonji Yari",    emoji: "✚",  dmg: 12, tier: 4, cost: 400 },
-  { name: "Sankaku Yari",    emoji: "🔻", dmg: 12, tier: 4, cost: 400 },
-  { name: "Sasaho Yari",     emoji: "🪬", dmg: 12, tier: 4, cost: 400 },
-  { name: "Tanegashima",     emoji: "🔫", dmg: 12, tier: 4, cost: 400 },
-  { name: "Nunchaku",        emoji: "🔄", dmg: 12, tier: 4, cost: 400 },
+  // ── TIER 4 – Shadow (cost: 400 🪙 · dmg 13) ──
+  { name: "Kabutowari",      emoji: "👑", dmg: 13, tier: 4, cost: 400 },
+  { name: "Hachiwari",       emoji: "💎", dmg: 13, tier: 4, cost: 400 },
+  { name: "Kusari-fundo",    emoji: "💫", dmg: 13, tier: 4, cost: 400 },
+  { name: "Shikomizue",      emoji: "🐍", dmg: 13, tier: 4, cost: 400 },
+  { name: "Gunbai",          emoji: "🛡️",  dmg: 13, tier: 4, cost: 400 },
+  { name: "Tanegashima",     emoji: "🔫", dmg: 13, tier: 4, cost: 400 },
+  { name: "Wakizashi",       emoji: "🩸", dmg: 13, tier: 4, cost: 400 },
+  { name: "Tanto",           emoji: "🌙", dmg: 13, tier: 4, cost: 400 },
+  { name: "Masakari",        emoji: "🐉", dmg: 13, tier: 4, cost: 400 },
+  { name: "Kanemuchi",       emoji: "🔥", dmg: 13, tier: 4, cost: 400 },
 
-  // ── TIER 5 – Legendary (cost: 800 🪙 · dmg 13–14) ──
-  { name: "Kabutowari",      emoji: "👑", dmg: 13, tier: 5, cost: 800 },
-  { name: "Hachiwari",       emoji: "💎", dmg: 13, tier: 5, cost: 800 },
-  { name: "Kusari-fundo",    emoji: "💫", dmg: 13, tier: 5, cost: 800 },
-  { name: "Shikomizue",      emoji: "🐍", dmg: 13, tier: 5, cost: 800 },
-  { name: "Gunbai",          emoji: "🛡️",  dmg: 13, tier: 5, cost: 800 },
+  // ── TIER 5 – Legendary (cost: 800 🪙 · dmg 14) ──
   { name: "Metsubushi",      emoji: "💥", dmg: 14, tier: 5, cost: 800 },
-  { name: "Kanemuchi",       emoji: "🔥", dmg: 14, tier: 5, cost: 800 },
-  { name: "Wakizashi",       emoji: "🩸", dmg: 14, tier: 5, cost: 800 },
-  { name: "Tanto",           emoji: "🌙", dmg: 14, tier: 5, cost: 800 },
-  { name: "Masakari",        emoji: "🐉", dmg: 14, tier: 5, cost: 800 },
+  { name: "Bisento",         emoji: "🐲", dmg: 14, tier: 5, cost: 800 },
+  { name: "Sasumata",        emoji: "🦅", dmg: 14, tier: 5, cost: 800 },
+  { name: "Makura Yari",     emoji: "🌙", dmg: 14, tier: 5, cost: 800 },
+  { name: "Kiseru",          emoji: "🪬", dmg: 14, tier: 5, cost: 800 },
+  { name: "Naginata-kamayari", emoji: "🌀", dmg: 14, tier: 5, cost: 800 },
+  { name: "Jutte",           emoji: "⚜️",  dmg: 14, tier: 5, cost: 800 },
+  { name: "Kaginawa",        emoji: "🪝", dmg: 14, tier: 5, cost: 800 },
+  { name: "Teporenki",       emoji: "🔱", dmg: 14, tier: 5, cost: 800 },
+  { name: "Shinobi-zue",     emoji: "🌿", dmg: 14, tier: 5, cost: 800 },
 ];
 
-// Default starter loadout — all 10 tier-1 weapons
+// Default starter loadout — 12 T1 weapons, 2 per dmg value 5–10
+// gives shield options [5, 6, 7, 8, 9, 10] out of the box.
+// Equipping a bought weapon with dmg 11–14 auto-adds that shield button too.
 const STARTER_WEAPON_NAMES = [
-  "Shuriken","Kunai","Senban-shuriken","Hira-shuriken","Makibishi",
-  "Kama","Tekko","Sai","Fukiya","Tessen"
+  "Shuriken","Kunai",          // dmg 5
+  "Kama","Tekko",              // dmg 6
+  "Sai","Fukiya",              // dmg 7
+  "Tessen","Jitte",            // dmg 8
+  "Hanbo","Rokushakubo",       // dmg 9
+  "Kanabo","Tetsubo",          // dmg 10
 ];
-const LOADOUT_SIZE = 50; // max weapons each player can equip (full arsenal)
+const LOADOUT_SIZE = 50; // max weapons each player can equip
 
 const TIER_INFO = {
   1: { name: "Starter",   color: "#9b92c8", glow: "rgba(155,146,200,0.3)" },
