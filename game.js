@@ -297,22 +297,41 @@ async function saveTokenData() {
 }
 
 function updateTokenDisplay() {
-  document.querySelectorAll(".token-count").forEach(el => el.textContent = localTokens + " 🪙");
-  document.querySelectorAll(".potion-count").forEach(el => el.textContent = localPotions + " 🧪");
-  document.querySelectorAll(".xp-count").forEach(el => {
-    const lvl = getCurrentLevel(localXP);
-    el.textContent = lvl.badge + " " + localXP + " XP";
-  });
-  // Update mode level badge
-  const mlb = document.getElementById("modeLevelBadge");
-  if (mlb) {
-    const lvl = getCurrentLevel(localXP);
-    const next = getNextLevel(localXP);
-    const prog = next ? Math.round(((localXP - lvl.xpRequired) / (next.xpRequired - lvl.xpRequired)) * 100) : 100;
-    mlb.innerHTML = `<span class="mlb-badge" style="color:${lvl.color}">${lvl.badge} ${lvl.name}</span>
-      <div class="mlb-bar"><div class="mlb-fill" style="width:${prog}%;background:${lvl.color}"></div></div>
-      <span class="mlb-sub">${localXP} XP${next ? ' / '+next.xpRequired : ' — MAX'}</span>`;
-  }
+  // Update all .token-count and .potion-count spans
+  document.querySelectorAll(".token-count").forEach(el => el.textContent = localTokens);
+  document.querySelectorAll(".potion-count").forEach(el => el.textContent = localPotions);
+
+  const lvl = getCurrentLevel(localXP);
+  const next = getNextLevel(localXP);
+  const prog = next ? Math.round(((localXP - lvl.xpRequired) / (next.xpRequired - lvl.xpRequired)) * 100) : 100;
+
+  // ── Profile card on main menu ──
+  const pcUsername  = document.getElementById("pcUsername");
+  const pcAvatar    = document.getElementById("pcAvatar");
+  const pcAvatarRing= document.getElementById("pcAvatarRing");
+  const pcLvlBadge  = document.getElementById("pcLvlBadge");
+  const pcLvlName   = document.getElementById("pcLvlName");
+  const pcLvlNum    = document.getElementById("pcLvlNum");
+  const pcXpBar     = document.getElementById("pcXpBar");
+  const pcXpText    = document.getElementById("pcXpText");
+  const pcTokens    = document.getElementById("pcTokens");
+  const pcPotions   = document.getElementById("pcPotions");
+  const pcLevelTag  = document.getElementById("pcLevelTag");
+
+  if (pcUsername)   pcUsername.textContent  = currentUser ? currentUser.username : "Guest";
+  if (pcAvatar)     pcAvatar.textContent    = lvl.badge;
+  if (pcAvatarRing) pcAvatarRing.style.boxShadow = `0 0 0 3px ${lvl.color}55, 0 0 20px ${lvl.color}33`;
+  if (pcLvlBadge)   pcLvlBadge.textContent  = lvl.badge;
+  if (pcLvlName)    { pcLvlName.textContent = lvl.name; pcLvlName.style.color = lvl.color; }
+  if (pcLvlNum)     { pcLvlNum.textContent  = "Lv." + lvl.level; pcLvlNum.style.color = lvl.color + "99"; }
+  if (pcXpBar)      { pcXpBar.style.width   = prog + "%"; pcXpBar.style.background = `linear-gradient(90deg, ${lvl.color}, ${lvl.color}cc)`; pcXpBar.style.boxShadow = `0 0 10px ${lvl.color}66`; }
+  if (pcXpText)     pcXpText.textContent    = localXP + (next ? " / " + next.xpRequired : " (MAX)");
+  if (pcTokens)     pcTokens.textContent    = localTokens;
+  if (pcPotions)    pcPotions.textContent   = localPotions;
+  if (pcLevelTag)   pcLevelTag.style.borderColor = lvl.color + "44";
+
+  // Update user pill
+  updateUserPill();
 }
 
 async function awardTokens(amount, reason) {
@@ -852,19 +871,8 @@ function playAsGuest() { clearSession(); localTokens = 0; localPotions = 0; loca
 function logout() { clearSession(); localTokens = 0; localPotions = 0; localXP = 0; weaponTraits = {}; updateUserPill(); updateTokenDisplay(); showScreen("screen-auth"); }
 
 function updateUserPill() {
-  const pill = document.getElementById("userPill");
   const btn = document.getElementById("logoutBtn");
-  if (!pill) return;
-  if (currentUser) {
-    const lvl = getCurrentLevel(localXP);
-    pill.textContent = lvl.badge + " " + currentUser.username;
-    if (btn) btn.style.display = "";
-    const mw = document.getElementById("modeWelcome");
-    if (mw) mw.textContent = "Welcome, " + currentUser.username;
-  } else {
-    pill.textContent = "Playing as Guest";
-    if (btn) btn.style.display = "none";
-  }
+  if (btn) btn.style.display = currentUser ? "" : "none";
 }
 
 // ══════════════════════════════════════════════
@@ -1780,7 +1788,7 @@ const EMOJI_CATEGORIES = [
   },
   {
     label: "😂", title: "Reactions",
-    emojis: ["😂","😤","😈","🤣","😭","👀","🫡","💪","🤡","😏","🥶","👋","🙏","😱","🤙","😎","🫠","🤬","🥳","😵","🤯","😇","🥺","🤫","🤐","😜","🤩","😮","🫢","😬","🙄","🥴","😤","😡","🤑"]
+    emojis: ["😂","😤","😈","🤣","😭","👀","🫡","💪","🤡","😏","🥶","👋","🙏","😱","🤙","😎","🫠","🤬","🥳","😵","🤯","😇","🥺","🤫","🤐","😜","🤩","😮","🫢","😬","🙄","🥴","😤","😡","🤑","🫵","🖕","🤌","🤏","✌️","🤘","🫶","🫀","🧠","👁️","🦷","🦴","💀","🫦","🤲"]
   },
   {
     label: "🐉", title: "Creatures",

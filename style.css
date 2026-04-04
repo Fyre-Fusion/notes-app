@@ -1658,3 +1658,275 @@ input::placeholder { color: var(--text3); }
 
 /* Hide old emoji-chat styles if they still exist */
 .emoji-chat { display: none !important; }
+
+
+/* ════════════════════════════════════════════
+   PROFILE CARD — Main menu level display
+   ════════════════════════════════════════════ */
+
+.mode-section-label {
+  font-family: var(--font-d);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text3);
+  text-align: center;
+  margin-bottom: -8px;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 680px;
+  background: linear-gradient(135deg, var(--surface) 0%, var(--bg3) 60%, rgba(168,85,247,0.05) 100%);
+  border: 1.5px solid var(--border2);
+  border-radius: 20px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  transition: border-color .2s, box-shadow .2s, transform .15s;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+  position: relative;
+  overflow: hidden;
+}
+.profile-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(168,85,247,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+.profile-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 30px var(--accent-glow);
+  transform: translateY(-2px);
+}
+
+/* Avatar column */
+.pc-avatar-col { flex-shrink: 0; }
+.pc-avatar-ring {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow .3s;
+  font-size: 1.8rem;
+  position: relative;
+}
+.pc-avatar-ring::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: linear-gradient(135deg, var(--accent), var(--cyan)) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  opacity: 0.6;
+}
+
+/* Main content */
+.pc-main { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+.pc-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pc-username {
+  font-family: var(--font-d);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pc-level-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  flex-shrink: 0;
+  transition: border-color .2s;
+}
+.pc-level-tag span:first-child { font-size: 1rem; }
+#pcLvlName {
+  font-family: var(--font-d);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.pc-lvl-num {
+  font-family: var(--font-d);
+  font-size: 10px;
+  letter-spacing: 1px;
+  opacity: 0.7;
+}
+
+/* XP bar row */
+.pc-xp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pc-xp-label {
+  font-family: var(--font-d);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text3);
+  flex-shrink: 0;
+}
+.pc-xp-bar-wrap {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.pc-xp-bar {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.8s cubic-bezier(.17,.67,.3,1.1);
+  position: relative;
+}
+.pc-xp-bar::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50%;
+  background: rgba(255,255,255,0.25);
+  border-radius: 6px 6px 0 0;
+}
+.pc-xp-text {
+  font-family: var(--font-d);
+  font-size: 10px;
+  color: var(--text2);
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Stats row */
+.pc-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pc-stat-chip {
+  font-family: var(--font-d);
+  font-size: 11px;
+  color: var(--text2);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 3px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.3px;
+}
+.pc-stat-chip span { color: var(--accent2); }
+.pc-tap-hint {
+  font-size: 10px;
+  color: var(--text3);
+  font-style: italic;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* ── Mobile profile card ── */
+@media (max-width: 700px) {
+  .profile-card { flex-direction: column; align-items: flex-start; gap: 14px; padding: 16px 18px; }
+  .pc-top-row { width: 100%; }
+  .pc-tap-hint { display: none; }
+}
+
+/* ════════════════════════════════════════════
+   AUTH improvements
+   ════════════════════════════════════════════ */
+.auth-panel-title {
+  font-family: var(--font-d);
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text3);
+  text-align: center;
+  margin-bottom: -8px;
+}
+.auth-glow-2 {
+  position: absolute;
+  bottom: 10%; right: 5%; width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(34,211,238,0.06) 0%, transparent 65%);
+  animation: glow-drift 12s ease-in-out infinite alternate-reverse;
+}
+.hero-level-ladder {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.hll-item { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.hll-badge { font-size: 1.3rem; filter: drop-shadow(0 0 6px rgba(168,85,247,0.4)); }
+.hll-name { font-family: var(--font-d); font-size: 8px; letter-spacing: 0.5px; color: var(--text3); text-transform: uppercase; }
+.hll-gm .hll-badge { filter: drop-shadow(0 0 10px rgba(0,255,255,0.5)); }
+.hll-gm .hll-name { color: var(--cyan); }
+.hll-arrow { color: var(--text3); font-size: 1rem; margin-top: -8px; }
+.btn-full { width: 100%; justify-content: center; }
+
+/* ════════════════════════════════════════════
+   MODE SELECT header — clean version
+   ════════════════════════════════════════════ */
+.mode-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px 40px;
+  gap: 24px;
+}
+/* Remove old modeLevelBadge if it exists */
+#modeLevelBadge { display: none !important; }
+
+/* Mode cards with inner glow bg */
+.mode-card-bg {
+  position: absolute; inset: 0; border-radius: inherit;
+  background: linear-gradient(135deg, var(--accent-glow), transparent);
+  opacity: 0; transition: opacity .25s;
+  pointer-events: none;
+}
+.mode-card:hover .mode-card-bg { opacity: 1; }
+.mode-card-bg-boss {
+  background: linear-gradient(135deg, rgba(244,63,94,0.12), transparent);
+}
+.mode-card-boss:hover .mode-card-bg-boss { opacity: 1; }
+
+/* ════════════════════════════════════════════
+   SCREEN HEADER — simplified (no token pills)
+   ════════════════════════════════════════════ */
+/* Hide old token/potion/xp header pills — profile card shows them now */
+.header-tokens, .header-potions, .header-xp, .btn-level { display: none !important; }
+
+/* ════════════════════════════════════════════
+   DIVINE TIER ROW in rulebook
+   ════════════════════════════════════════════ */
+.wt-divine {
+  background: rgba(255,107,53,0.07);
+  border: 1px solid rgba(255,107,53,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  margin-top: 2px;
+}

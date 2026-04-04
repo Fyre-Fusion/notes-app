@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KlocVork — Arena</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,6 +15,7 @@
   <div class="auth-bg">
     <div class="auth-grid"></div>
     <div class="auth-glow"></div>
+    <div class="auth-glow auth-glow-2"></div>
     <div class="auth-particles" id="authParticles"></div>
   </div>
   <div class="auth-split">
@@ -27,16 +28,18 @@
         <div class="hstat"><span>10</span>Levels</div>
         <div class="hstat"><span>25</span>Traits</div>
       </div>
-      <div class="hero-badges-preview">
-        <span class="hbp-badge" title="Rookie">🥉</span>
-        <span class="hbp-badge" title="Warrior">⚔️</span>
-        <span class="hbp-badge" title="Knight">🛡️</span>
-        <span class="hbp-badge" title="Champion">🏅</span>
-        <span class="hbp-badge" title="Warlord">👑</span>
-        <span class="hbp-badge" title="Grandmaster">🌟</span>
+      <div class="hero-level-ladder">
+        <div class="hll-item"><span class="hll-badge">🥉</span><span class="hll-name">Rookie</span></div>
+        <div class="hll-arrow">›</div>
+        <div class="hll-item"><span class="hll-badge">🛡️</span><span class="hll-name">Knight</span></div>
+        <div class="hll-arrow">›</div>
+        <div class="hll-item"><span class="hll-badge">👑</span><span class="hll-name">Warlord</span></div>
+        <div class="hll-arrow">›</div>
+        <div class="hll-item hll-gm"><span class="hll-badge">💠</span><span class="hll-name">Grandmaster</span></div>
       </div>
     </div>
     <div class="auth-panel">
+      <div class="auth-panel-title">Enter the Arena</div>
       <div class="auth-tabs">
         <button class="auth-tab active" id="tabLogin" onclick="setAuthTab('login')">Sign In</button>
         <button class="auth-tab" id="tabSignup" onclick="setAuthTab('signup')">Sign Up</button>
@@ -52,7 +55,7 @@
           <label for="authPassword">Password</label>
           <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password"/>
         </div>
-        <button class="btn-primary" id="authSubmit" onclick="handleAuth()">
+        <button class="btn-primary btn-full" id="authSubmit" onclick="handleAuth()">
           <span id="authSubmitText">Enter the Arena</span>
           <span id="authSubmitSpinner" class="spinner hidden"></span>
         </button>
@@ -65,52 +68,91 @@
 <!-- ═══════ MODE SELECT ═══════ -->
 <div id="screen-mode" class="screen">
   <div class="screen-header">
-    <div class="logo-small">⚔ KlocVork Arena</div>
+    <div class="logo-small">⚔ KlocVork</div>
     <div class="header-right">
-      <span class="token-count header-tokens">0 🪙</span>
-      <span class="potion-count header-potions">0 🧪</span>
-      <span class="xp-count header-xp">0 XP</span>
-      <button class="btn-level" onclick="showLevelPanel()">🏅 Level</button>
-      <button class="btn-trait" onclick="showTraitShop()">✨ Traits</button>
       <button class="btn-shop" onclick="showShop()">🛒 Shop</button>
       <button class="btn-settings" onclick="showArsenal()">⚔️ Arsenal</button>
+      <button class="btn-trait" onclick="showTraitShop()">✨ Traits</button>
       <button class="btn-rulebook" onclick="showRulebook()">📖 Rules</button>
-      <div class="user-pill" id="userPill"></div>
       <button class="btn-ghost-sm" id="logoutBtn" onclick="logout()" style="display:none">Sign out</button>
     </div>
   </div>
+
   <div class="mode-content">
-    <div class="mode-hero">
-      <h2 class="mode-welcome" id="modeWelcome">Choose your battle</h2>
-      <p class="mode-sub">Select a mode to enter the arena</p>
-      <div class="mode-level-badge" id="modeLevelBadge"></div>
+
+    <!-- ★ PROFILE / LEVEL CARD ★ -->
+    <div class="profile-card" id="profileCard" onclick="showLevelPanel()">
+      <div class="pc-avatar-col">
+        <div class="pc-avatar-ring" id="pcAvatarRing">
+          <div class="pc-avatar" id="pcAvatar">⚔</div>
+        </div>
+      </div>
+      <div class="pc-main">
+        <div class="pc-top-row">
+          <div class="pc-username" id="pcUsername">Warrior</div>
+          <div class="pc-level-tag" id="pcLevelTag">
+            <span id="pcLvlBadge">🥉</span>
+            <span id="pcLvlName">Rookie</span>
+            <span class="pc-lvl-num" id="pcLvlNum">Lv.1</span>
+          </div>
+        </div>
+        <div class="pc-xp-row">
+          <span class="pc-xp-label">XP</span>
+          <div class="pc-xp-bar-wrap">
+            <div class="pc-xp-bar" id="pcXpBar" style="width:0%"></div>
+          </div>
+          <span class="pc-xp-text" id="pcXpText">0 / 100</span>
+        </div>
+        <div class="pc-stats-row">
+          <div class="pc-stat-chip"><span class="token-count" id="pcTokens">0</span> 🪙</div>
+          <div class="pc-stat-chip"><span class="potion-count" id="pcPotions">0</span> 🧪</div>
+          <div class="pc-tap-hint">Tap to view full progress →</div>
+        </div>
+      </div>
     </div>
+
+    <div class="mode-section-label">Choose Your Battle</div>
     <div class="mode-cards">
       <div class="mode-card" onclick="selectMode('hotseat')">
+        <div class="mode-card-bg"></div>
         <div class="mode-icon">🎮</div>
         <h3>Hot Seat</h3>
         <p>Two players, one device.<br>Pass and play.</p>
         <div class="mode-badge">Same Device</div>
       </div>
       <div class="mode-card" onclick="selectMode('online')">
+        <div class="mode-card-bg"></div>
         <div class="mode-icon">🌐</div>
         <h3>Online</h3>
         <p>Challenge a friend<br>remotely in real-time.</p>
         <div class="mode-badge">Multiplayer</div>
       </div>
       <div class="mode-card" onclick="selectMode('ai')">
+        <div class="mode-card-bg"></div>
         <div class="mode-icon">🤖</div>
         <h3>vs AI</h3>
         <p>Face a cunning<br>computer opponent.</p>
         <div class="mode-badge">Single Player</div>
       </div>
       <div class="mode-card mode-card-boss" onclick="selectMode('boss')">
+        <div class="mode-card-bg mode-card-bg-boss"></div>
         <div class="mode-icon">💀</div>
         <h3>Boss Battle</h3>
         <p>Both players face the<br>Warlord. Slay it first.</p>
         <div class="mode-badge mode-badge-boss">+300 🪙 Reward</div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ═══════ LEVEL PANEL MODAL ═══════ -->
+<div id="modal-level" class="modal-overlay hidden" onclick="closeLevelIfOutside(event)">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">🏅 Level &amp; XP Progress</h2>
+      <button class="modal-close" onclick="hideLevelPanel()">✕</button>
+    </div>
+    <div class="modal-body" id="levelBody"></div>
   </div>
 </div>
 
@@ -122,65 +164,22 @@
       <button class="modal-close" onclick="hideRulebook()">✕</button>
     </div>
     <div class="modal-body">
+      <div class="rule-section"><h3>Overview</h3><p>2 players · 30 HP each · 3 rounds · 6 shots per round. Most HP after all rounds wins.</p></div>
       <div class="rule-section">
-        <h3>Overview</h3>
-        <p>2 players · 30 HP each · 3 rounds · 6 shots per round. Most HP after all rounds wins.</p>
-      </div>
-      <div class="rule-section">
-        <h3>⚔ Weapons &amp; Tiers</h3>
-        <p>5 tiers of weapons. T1 starters are free. Max <strong>12 weapons</strong> equipped per loadout.</p>
+        <h3>⚔ Weapon Tiers</h3>
         <div class="weapon-table">
-          <div class="wt-row"><span style="color:#9b92c8">T1 Starter</span><span class="wt-dmg">5–10 dmg · Free · 12 slots default</span></div>
+          <div class="wt-row"><span style="color:#9b92c8">T1 Starter</span><span class="wt-dmg">5–10 dmg · Free</span></div>
           <div class="wt-row"><span style="color:#94a3b8">T2 Iron</span><span class="wt-dmg">10–11 dmg · 80 🪙</span></div>
           <div class="wt-row"><span style="color:#22d3ee">T3 Steel</span><span class="wt-dmg">11–12 dmg · 200 🪙</span></div>
           <div class="wt-row"><span style="color:#a855f7">T4 Shadow</span><span class="wt-dmg">13 dmg · 400 🪙</span></div>
           <div class="wt-row"><span style="color:#facc15">T5 Legendary</span><span class="wt-dmg">14 dmg · 800 🪙</span></div>
-          <div class="wt-row"><span style="color:#ff6b35">T6 Divine</span><span class="wt-dmg">15 dmg · 1000 🪙 · Gentuga Tensho</span></div>
+          <div class="wt-row wt-divine"><span style="color:#ff6b35">T6 Divine ✦</span><span class="wt-dmg" style="color:#ff6b35">15 dmg · 1000 🪙 · Gentuga Tensho</span></div>
         </div>
-        <p>When you equip a weapon with a new damage value, that shield value is <strong>added to your opponent</strong> — they can now block it.</p>
       </div>
-      <div class="rule-section">
-        <h3>🎯 Each Shot</h3>
-        <ol>
-          <li><strong>Player A</strong> secretly picks a weapon &amp; shield value</li>
-          <li><strong>Player B</strong> picks their own weapon &amp; shield</li>
-          <li>Both players attack simultaneously</li>
-        </ol>
-      </div>
-      <div class="rule-section">
-        <h3>💥 Damage Formula</h3>
-        <div class="formula-box">Damage = |Your Shield − Opponent's Weapon Damage|</div>
-        <p>Match your shield exactly = <span class="neon-text">0 damage (Perfect Block!)</span>.</p>
-      </div>
-      <div class="rule-section">
-        <h3>🧪 Potions</h3>
-        <p>Buy potions in the Shop for <strong>15 🪙</strong> each. Restore <strong>+10 HP</strong> per use. Max 9.</p>
-      </div>
-      <div class="rule-section">
-        <h3>✨ Special Shot (0.1% chance)</h3>
-        <p>Guess opponent's hidden weapon. First to 3 correct guesses wins <strong>30 🪙</strong>.</p>
-      </div>
-      <div class="rule-section">
-        <h3>💀 Boss Battle</h3>
-        <p>Both players team up against The Warlord (60 HP). Player who lands the <strong>killing blow</strong> wins <strong>300 🪙</strong>.</p>
-      </div>
-      <div class="rule-section">
-        <h3>🪙 Tokens</h3>
-        <ul>
-          <li>Win a match → <strong>+200 🪙</strong></li>
-          <li>Lose a match → <strong>+50 🪙</strong></li>
-          <li>Special Round win → <strong>+30 🪙</strong></li>
-          <li>Boss kill → <strong>+300 🪙</strong></li>
-        </ul>
-      </div>
-      <div class="rule-section">
-        <h3>⭐ XP &amp; Levels</h3>
-        <p>Earn XP by playing. XP uses compound interest — the higher your level, the more XP each action earns. Unlock badges at each level from <strong>Rookie → Grandmaster</strong>.</p>
-      </div>
-      <div class="rule-section">
-        <h3>✨ Trait Shop</h3>
-        <p>Spend <strong>500 🪙</strong> to roll a random trait on any weapon. Traits have rarities up to <strong>0.00%</strong> chance. 25 unique traits available.</p>
-      </div>
+      <div class="rule-section"><h3>💥 Damage Formula</h3><div class="formula-box">Damage = |Your Shield − Opponent's Weapon|</div><p>Match shield exactly = <span class="neon-text">0 damage (Perfect Block!)</span></p></div>
+      <div class="rule-section"><h3>🪙 Token Rewards</h3><ul><li>Win → <strong>+200 🪙</strong></li><li>Lose → <strong>+50 🪙</strong></li><li>Boss kill → <strong>+300 🪙</strong></li><li>Special round win → <strong>+30 🪙</strong></li></ul></div>
+      <div class="rule-section"><h3>⭐ XP &amp; Levels</h3><p>10 levels: Rookie → Grandmaster. XP uses compound interest. Tap your profile card on the main menu to view full progress.</p></div>
+      <div class="rule-section"><h3>✨ Trait Shop</h3><p>Spend <strong>500 🪙</strong> to roll a random trait on any weapon. 25 traits, rarities from Common to Mythic (0.00%).</p></div>
     </div>
   </div>
 </div>
@@ -192,9 +191,7 @@
       <h2 class="modal-title">🛒 Shop</h2>
       <button class="modal-close" onclick="hideShop()">✕</button>
     </div>
-    <div class="modal-body" id="shopBody">
-      <!-- rendered by renderShopUI() -->
-    </div>
+    <div class="modal-body" id="shopBody"></div>
   </div>
 </div>
 
@@ -205,22 +202,7 @@
       <h2 class="modal-title">✨ Trait Shop</h2>
       <button class="modal-close" onclick="hideTraitShop()">✕</button>
     </div>
-    <div class="modal-body" id="traitBody">
-      <!-- rendered by renderTraitUI() -->
-    </div>
-  </div>
-</div>
-
-<!-- ═══════ LEVEL PANEL MODAL ═══════ -->
-<div id="modal-level" class="modal-overlay hidden" onclick="closeLevelIfOutside(event)">
-  <div class="modal-box modal-box-wide">
-    <div class="modal-header">
-      <h2 class="modal-title">🏅 Level &amp; XP</h2>
-      <button class="modal-close" onclick="hideLevelPanel()">✕</button>
-    </div>
-    <div class="modal-body" id="levelBody">
-      <!-- rendered by renderLevelUI() -->
-    </div>
+    <div class="modal-body" id="traitBody"></div>
   </div>
 </div>
 
@@ -232,7 +214,7 @@
     <div class="arsenal-equipped-count" id="arsenalEquippedCount">0 / 12 equipped</div>
   </div>
   <div class="arsenal-shield-bar">
-    <span class="arsenal-shield-label">Shield Options:</span>
+    <span class="arsenal-shield-label">Shields:</span>
     <div class="arsenal-shield-list" id="arsenalShieldPreview"></div>
     <span class="arsenal-hint" id="arsenalHint"></span>
   </div>
@@ -292,8 +274,6 @@
     </div>
     <button class="btn-ghost-sm" onclick="confirmQuit()">✕ Quit</button>
   </div>
-
-  <!-- HP bars -->
   <div class="hp-bars">
     <div class="hp-side">
       <div class="hp-name" id="hpNameA">Player A</div>
@@ -307,23 +287,17 @@
       <div class="hp-num" id="hpNumB">30</div>
     </div>
   </div>
-
-  <!-- Available weapons -->
   <div class="available-weapons">
     <span class="aw-label">Weapons:</span>
     <div id="availableWeaponsList" class="aw-list"></div>
   </div>
-
-  <!-- Full Emoji Chat Panel -->
+  <!-- Emoji Chat Panel -->
   <div id="emojiChat" class="emoji-chat-panel" style="display:none">
-    <!-- Toggle button (always visible) -->
     <button class="ecp-toggle" id="emojiChatToggle" onclick="toggleChatPanel()">
       <span class="ecp-toggle-icon">💬</span>
       <span class="ecp-toggle-label">Chat</span>
       <span class="ecp-unread" id="ecpUnread" style="display:none">0</span>
     </button>
-
-    <!-- Chat window (slides in/out) -->
     <div class="ecp-window hidden" id="ecpWindow">
       <div class="ecp-header">
         <span class="ecp-header-icon">💬</span>
@@ -331,33 +305,21 @@
         <span class="ecp-header-status" id="ecpStatus">● Live</span>
         <button class="ecp-close" onclick="toggleChatPanel()">✕</button>
       </div>
-
-      <!-- Message log -->
       <div class="ecp-log" id="emojiChatLog"></div>
-
-      <!-- Typing / last seen indicator -->
       <div class="ecp-typing" id="ecpTyping" style="display:none">
         <span class="ecp-typing-dots"><span></span><span></span><span></span></span>
         <span id="ecpTypingName">Opponent</span> is reacting…
       </div>
-
-      <!-- Emoji picker grid -->
       <div class="ecp-picker-wrap">
-        <!-- Category tabs -->
         <div class="ecp-cats" id="ecpCats"></div>
-        <!-- Emoji grid -->
         <div class="ecp-grid" id="emojiPicker"></div>
       </div>
     </div>
   </div>
-
-  <!-- Online waiting overlay -->
   <div id="onlineWaitingOverlay" class="online-waiting hidden">
     <div class="pulse-ring large"></div>
     <p id="onlineWaitingText">Waiting for opponent…</p>
   </div>
-
-  <!-- Turn panel -->
   <div class="turn-panel" id="turnPanel">
     <div class="turn-header">
       <div class="turn-player-badge" id="turnBadge">Player A's Turn</div>
@@ -406,15 +368,9 @@
   <div class="roundover-content">
     <div class="ro-eyebrow" id="roLabel">Round 1 Complete</div>
     <div class="ro-scores">
-      <div class="ro-score">
-        <div class="ro-name" id="roNameA">Player A</div>
-        <div class="ro-hp" id="roHpA">30 HP</div>
-      </div>
+      <div class="ro-score"><div class="ro-name" id="roNameA">Player A</div><div class="ro-hp" id="roHpA">30 HP</div></div>
       <div class="ro-vs">—</div>
-      <div class="ro-score">
-        <div class="ro-name" id="roNameB">Player B</div>
-        <div class="ro-hp" id="roHpB">30 HP</div>
-      </div>
+      <div class="ro-score"><div class="ro-name" id="roNameB">Player B</div><div class="ro-hp" id="roHpB">30 HP</div></div>
     </div>
     <button class="btn-primary" id="roNextBtn" onclick="startNextRound()">Next Round →</button>
   </div>
@@ -427,15 +383,9 @@
     <div class="go-result" id="goResult">Player A Wins!</div>
     <div class="go-subtitle" id="goSubtitle"></div>
     <div class="go-final-hp">
-      <div class="go-hp-side">
-        <div class="go-hp-name" id="goNameA">Player A</div>
-        <div class="go-hp-num" id="goHpA">— HP</div>
-      </div>
+      <div class="go-hp-side"><div class="go-hp-name" id="goNameA">Player A</div><div class="go-hp-num" id="goHpA">— HP</div></div>
       <div class="go-hp-vs">vs</div>
-      <div class="go-hp-side">
-        <div class="go-hp-name" id="goNameB">Player B</div>
-        <div class="go-hp-num" id="goHpB">— HP</div>
-      </div>
+      <div class="go-hp-side"><div class="go-hp-name" id="goNameB">Player B</div><div class="go-hp-num" id="goHpB">— HP</div></div>
     </div>
     <div class="go-xp-award" id="goXpAward"></div>
     <div class="go-actions">
