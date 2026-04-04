@@ -1768,47 +1768,74 @@ function copyRoomCode() {
   setTimeout(function() { btn.textContent = "Copy"; }, 1500);
 }
 
+
 // ══════════════════════════════════════════════
-// EMOJI CHAT — REALTIME via Supabase Realtime
+// FULL EMOJI CHAT — PANEL + REALTIME
 // ══════════════════════════════════════════════
-const CHAT_EMOJIS = [
-  // Combat/reactions
-  "😂","😤","🔥","💀","😈","🤣","😭","👀",
-  "🫡","💪","🤡","😏","🥶","👋","🙏","😱",
-  "⚡","🤙","😎","🫠",
-  // More
-  "🗡️","⚔️","🛡️","💥","🩸","👑","🐉","🌙",
-  "🏆","💎","🎯","🔱","🌟","💫","🤬","🥳",
-  "👻","🧠","🫀","🦾","🔮","🌀","✨","🎲",
-  "😵","🤯","😇","🥺","🤫","🤐","😜","🤩",
-  "🧪","🪄","🎭","🏹","🌊","🔥","💨","🌪️",
-  "🦅","🐍","🐺","🦁","🐻","🦊","🐲","🦄",
+
+const EMOJI_CATEGORIES = [
+  {
+    label: "⚔️", title: "Combat",
+    emojis: ["⚔️","🗡️","🛡️","🏹","🔱","💥","🩸","💀","👑","🔥","⚡","💫","🌀","🌪️","🌊","❄️","🧪","🪄"]
+  },
+  {
+    label: "😂", title: "Reactions",
+    emojis: ["😂","😤","😈","🤣","😭","👀","🫡","💪","🤡","😏","🥶","👋","🙏","😱","🤙","😎","🫠","🤬","🥳","😵","🤯","😇","🥺","🤫","🤐","😜","🤩","😮","🫢","😬","🙄","🥴","😤","😡","🤑"]
+  },
+  {
+    label: "🐉", title: "Creatures",
+    emojis: ["🐉","🦅","🐍","🐺","🦁","🐻","🦊","🦄","🐲","🦂","🦋","🦎","🦁","🐯","🐗","🦅","🦆","🦉","🦚","🦜","🐦‍⬛","🐝","🦟","🦗"]
+  },
+  {
+    label: "🌟", title: "Symbols",
+    emojis: ["🌟","💎","🏆","🎯","🔮","🎲","🏅","✨","💠","🔱","⚜️","🌙","🌠","🎭","🎪","🎰","🃏","🎴","♟️","🧿","🔔","💣","🧨","🎆","🎇"]
+  },
+  {
+    label: "👻", title: "Spooky",
+    emojis: ["👻","💀","🦴","🩸","🕯️","🔮","🌑","🌒","🌓","🌔","🌕","🕷️","🕸️","🦇","🐚","⚰️","🪦","🩻","🫀","🧠","🦾","🫁","👁️","🫦","🌚"]
+  }
 ];
 
-let emojiPickerOpen = false;
+let chatPanelOpen = false;
 let emojiChatSub = null;
+let emojiPickerOpen = false; // kept for compat
+let unreadCount = 0;
+let activeCatIndex = 0;
+// Full persistent message history for this session
+let chatHistory = [];
 
+// ── INIT ──────────────────────────────────────
 function initEmojiChat() {
-  const picker = document.getElementById("emojiPicker");
-  if (!picker) return;
-  picker.innerHTML = "";
-  CHAT_EMOJIS.forEach(emoji => {
-    const btn = document.createElement("button");
-    btn.className = "ep-btn";
-    btn.textContent = emoji;
-    btn.onclick = () => sendChatEmoji(emoji);
-    picker.appendChild(btn);
-  });
+  chatHistory = [];
+  unreadCount = 0;
+  chatPanelOpen = false;
+
   const chatEl = document.getElementById("emojiChat");
   if (chatEl) chatEl.style.display = "flex";
+
+  // Reset panel state
+  const win = document.getElementById("ecpWindow");
+  if (win) win.classList.add("hidden");
+
   const log = document.getElementById("emojiChatLog");
   if (log) log.innerHTML = "";
-  emojiPickerOpen = false;
-  const pickerEl = document.getElementById("emojiPicker");
-  if (pickerEl) pickerEl.classList.add("hidden");
+
+  const unreadBadge = document.getElementById("ecpUnread");
+  if (unreadBadge) { unreadBadge.textContent = "0"; unreadBadge.style.display = "none"; }
+
+  // Build category tabs
+  buildCategoryTabs();
+  // Build first emoji grid
+  buildEmojiGrid(0);
+
   // Subscribe for online mode
   if (gameMode === "online" && onlineRoom) {
     subscribeEmojiChannel(onlineRoom);
+    const statusEl = document.getElementById("ecpStatus");
+    if (statusEl) { statusEl.textContent = "● Live"; statusEl.style.color = "var(--green)"; }
+  } else {
+    const statusEl = document.getElementById("ecpStatus");
+    if (statusEl) { statusEl.textContent = "● Local"; statusEl.style.color = "var(--cyan)"; }
   }
 }
 
@@ -1816,80 +1843,213 @@ function destroyEmojiChat() {
   const chatEl = document.getElementById("emojiChat");
   if (chatEl) chatEl.style.display = "none";
   if (emojiChatSub) { emojiChatSub.unsubscribe(); emojiChatSub = null; }
-  emojiPickerOpen = false;
-  const picker = document.getElementById("emojiPicker");
-  if (picker) picker.classList.add("hidden");
+  chatPanelOpen = false;
+  chatHistory = [];
+  unreadCount = 0;
 }
 
-function toggleEmojiPicker() {
-  emojiPickerOpen = !emojiPickerOpen;
-  const picker = document.getElementById("emojiPicker");
+// ── CATEGORY TABS ─────────────────────────────
+function buildCategoryTabs() {
+  const cats = document.getElementById("ecpCats");
+  if (!cats) return;
+  cats.innerHTML = "";
+  EMOJI_CATEGORIES.forEach((cat, i) => {
+    const btn = document.createElement("button");
+    btn.className = "ecp-cat-btn" + (i === activeCatIndex ? " active" : "");
+    btn.textContent = cat.label;
+    btn.title = cat.title;
+    btn.onclick = () => { activeCatIndex = i; buildCategoryTabs(); buildEmojiGrid(i); };
+    cats.appendChild(btn);
+  });
+}
+
+// ── EMOJI GRID ────────────────────────────────
+function buildEmojiGrid(catIndex) {
+  const grid = document.getElementById("emojiPicker");
+  if (!grid) return;
+  grid.innerHTML = "";
+  const cat = EMOJI_CATEGORIES[catIndex];
+  if (!cat) return;
+  cat.emojis.forEach(emoji => {
+    const btn = document.createElement("button");
+    btn.className = "ecp-emoji-btn";
+    btn.textContent = emoji;
+    btn.onclick = () => sendChatEmoji(emoji);
+    grid.appendChild(btn);
+  });
+}
+
+// ── TOGGLE PANEL ─────────────────────────────
+function toggleChatPanel() {
+  chatPanelOpen = !chatPanelOpen;
+  const win = document.getElementById("ecpWindow");
   const toggle = document.getElementById("emojiChatToggle");
-  if (picker) {
-    picker.classList.toggle("hidden", !emojiPickerOpen);
-    if (emojiPickerOpen && picker.children.length === 0) {
-      CHAT_EMOJIS.forEach(function(emoji) {
-        var btn = document.createElement("button");
-        btn.className = "ep-btn"; btn.textContent = emoji;
-        btn.onclick = function() { sendChatEmoji(emoji); };
-        picker.appendChild(btn);
-      });
-    }
+  if (win) win.classList.toggle("hidden", !chatPanelOpen);
+  if (chatPanelOpen) {
+    // Reset unread
+    unreadCount = 0;
+    const badge = document.getElementById("ecpUnread");
+    if (badge) { badge.style.display = "none"; badge.textContent = "0"; }
+    if (toggle) toggle.classList.remove("has-new");
+    // Scroll log to bottom
+    setTimeout(() => {
+      const log = document.getElementById("emojiChatLog");
+      if (log) log.scrollTop = log.scrollHeight;
+    }, 50);
   }
-  if (toggle) toggle.classList.remove("has-new");
 }
 
+// legacy compat (old code calls toggleEmojiPicker)
+function toggleEmojiPicker() { toggleChatPanel(); }
+
+// ── SEND EMOJI ────────────────────────────────
 function sendChatEmoji(emoji) {
-  emojiPickerOpen = false;
-  const picker = document.getElementById("emojiPicker");
-  if (picker) picker.classList.add("hidden");
-  let senderName = "You";
+  let senderName;
   if (gameMode === "online") {
     senderName = onlineRole === "A" ? gs.names.A : gs.names.B;
   } else {
     senderName = (gs.phase === "B") ? gs.names.B : gs.names.A;
   }
+
+  // Animate the button briefly
+  animateSentEmoji(emoji);
+
   appendEmojiMsg(senderName, emoji, false);
+
   if (gameMode === "online" && onlineRoom) {
     db.from("game_rooms").update({
       last_emoji: JSON.stringify({ from: senderName, emoji: emoji, ts: Date.now() })
-    }).eq("code", onlineRoom).then(function(res) {
-      if (res.error) {
-        if (res.error.message && res.error.message.includes("last_emoji"))
-          showToast("⚠️ Run migration.sql in Supabase to enable emoji chat!", "red");
+    }).eq("code", onlineRoom).then(res => {
+      if (res.error && res.error.message && res.error.message.includes("last_emoji")) {
+        showToast("⚠️ Run migration.sql to enable realtime chat!", "red");
       }
     });
   }
 }
 
+function animateSentEmoji(emoji) {
+  // Show a floating emoji burst from the send button
+  const toggle = document.getElementById("emojiChatToggle");
+  if (!toggle) return;
+  const rect = toggle.getBoundingClientRect();
+  const burst = document.createElement("div");
+  burst.className = "ecp-burst";
+  burst.textContent = emoji;
+  burst.style.left = rect.left + rect.width / 2 + "px";
+  burst.style.top  = rect.top  + "px";
+  document.body.appendChild(burst);
+  setTimeout(() => burst.remove(), 700);
+}
+
+// ── APPEND MESSAGE ────────────────────────────
 function appendEmojiMsg(sender, emoji, isOpponent) {
+  // Push to history
+  const entry = { sender, emoji, isOpponent, ts: Date.now() };
+  chatHistory.push(entry);
+
   const log = document.getElementById("emojiChatLog");
   if (!log) return;
-  const msg = document.createElement("div");
-  msg.className = "emoji-msg" + (isOpponent ? " from-opponent" : "");
-  msg.innerHTML = '<span class="em-sender">' + sender + '</span><span class="em-icon">' + emoji + '</span>';
-  log.appendChild(msg);
-  while (log.children.length > 6) log.removeChild(log.firstChild);
-  setTimeout(() => {
-    msg.style.transition = "opacity .5s, transform .5s";
-    msg.style.opacity = "0";
-    msg.style.transform = "translateX(40px)";
-    setTimeout(() => { if (msg.parentNode) msg.parentNode.removeChild(msg); }, 500);
-  }, 4000);
-  if (isOpponent) {
+
+  // Check if we should group with previous message (same sender, within 8s)
+  const prev = chatHistory[chatHistory.length - 2];
+  const shouldGroup = prev && prev.sender === sender && (entry.ts - prev.ts) < 8000;
+
+  if (shouldGroup) {
+    // Add emoji to the last message bubble's emoji row
+    const lastBubble = log.querySelector(".ecm-bubble:last-child .ecm-emojis");
+    if (lastBubble) {
+      const span = document.createElement("span");
+      span.className = "ecm-emoji-item";
+      span.textContent = emoji;
+      span.style.animation = "ecp-emoji-pop .35s cubic-bezier(.17,.67,.3,1.4) both";
+      lastBubble.appendChild(span);
+      log.scrollTop = log.scrollHeight;
+      return;
+    }
+  }
+
+  // New bubble
+  const bubble = document.createElement("div");
+  bubble.className = "ecm-bubble" + (isOpponent ? " ecm-opponent" : " ecm-self");
+
+  const senderEl = document.createElement("div");
+  senderEl.className = "ecm-sender";
+  senderEl.textContent = sender;
+
+  const emojisRow = document.createElement("div");
+  emojisRow.className = "ecm-emojis";
+
+  const emojiSpan = document.createElement("span");
+  emojiSpan.className = "ecm-emoji-item";
+  emojiSpan.textContent = emoji;
+  emojisRow.appendChild(emojiSpan);
+
+  const timeEl = document.createElement("div");
+  timeEl.className = "ecm-time";
+  const d = new Date();
+  timeEl.textContent = d.getHours().toString().padStart(2,"0") + ":" + d.getMinutes().toString().padStart(2,"0");
+
+  bubble.appendChild(senderEl);
+  bubble.appendChild(emojisRow);
+  bubble.appendChild(timeEl);
+  log.appendChild(bubble);
+
+  log.scrollTop = log.scrollHeight;
+
+  // Unread badge if panel is closed
+  if (!chatPanelOpen && isOpponent) {
+    unreadCount++;
+    const badge = document.getElementById("ecpUnread");
     const toggle = document.getElementById("emojiChatToggle");
-    if (toggle && !emojiPickerOpen) toggle.classList.add("has-new");
+    if (badge) { badge.textContent = unreadCount > 9 ? "9+" : String(unreadCount); badge.style.display = "flex"; }
+    if (toggle) toggle.classList.add("has-new");
+
+    // Show floating preview popup
+    showFloatingPreview(sender, emoji);
   }
 }
 
-// REALTIME emoji subscription
+// ── FLOATING PREVIEW (when panel is closed) ──
+let floatPreviewTimer = null;
+function showFloatingPreview(sender, emoji) {
+  let preview = document.getElementById("ecpFloatPreview");
+  if (!preview) {
+    preview = document.createElement("div");
+    preview.id = "ecpFloatPreview";
+    preview.className = "ecp-float-preview";
+    preview.onclick = () => { toggleChatPanel(); preview.remove(); };
+    document.body.appendChild(preview);
+  }
+  preview.innerHTML = `<span class="efp-sender">${sender}</span><span class="efp-emoji">${emoji}</span>`;
+  preview.classList.remove("efp-hide");
+  if (floatPreviewTimer) clearTimeout(floatPreviewTimer);
+  floatPreviewTimer = setTimeout(() => {
+    preview.classList.add("efp-hide");
+    setTimeout(() => { if (preview.parentNode) preview.remove(); }, 400);
+  }, 3500);
+}
+
+// ── TYPING INDICATOR ─────────────────────────
+let typingTimer = null;
+function showTypingIndicator(name) {
+  const el = document.getElementById("ecpTyping");
+  const nameEl = document.getElementById("ecpTypingName");
+  if (!el) return;
+  if (nameEl) nameEl.textContent = name;
+  el.style.display = "flex";
+  if (typingTimer) clearTimeout(typingTimer);
+  typingTimer = setTimeout(() => { el.style.display = "none"; }, 2500);
+}
+
+// ── REALTIME SUBSCRIPTION ─────────────────────
 function subscribeEmojiChannel(code) {
   if (emojiChatSub) { emojiChatSub.unsubscribe(); emojiChatSub = null; }
   let lastEmojiTs = 0;
+
   emojiChatSub = db.channel("emoji_" + code)
     .on("postgres_changes", {
       event: "UPDATE", schema: "public", table: "game_rooms", filter: "code=eq." + code
-    }, function(payload) {
+    }, payload => {
       try {
         const raw = payload.new && payload.new.last_emoji;
         if (!raw) return;
@@ -1898,7 +2058,13 @@ function subscribeEmojiChannel(code) {
         const myName = onlineRole === "A" ? gs.names.A : gs.names.B;
         if (data.from === myName) return;
         lastEmojiTs = data.ts;
-        appendEmojiMsg(data.from, data.emoji, true);
+        // Show typing for 400ms then reveal
+        showTypingIndicator(data.from);
+        setTimeout(() => {
+          const el = document.getElementById("ecpTyping");
+          if (el) el.style.display = "none";
+          appendEmojiMsg(data.from, data.emoji, true);
+        }, 420);
       } catch(e) {}
     })
     .subscribe();

@@ -314,11 +314,41 @@
     <div id="availableWeaponsList" class="aw-list"></div>
   </div>
 
-  <!-- Emoji Chat -->
-  <div id="emojiChat" class="emoji-chat" style="display:none">
-    <div class="emoji-chat-log" id="emojiChatLog"></div>
-    <div class="emoji-chat-toggle" id="emojiChatToggle" onclick="toggleEmojiPicker()">💬</div>
-    <div class="emoji-picker hidden" id="emojiPicker"></div>
+  <!-- Full Emoji Chat Panel -->
+  <div id="emojiChat" class="emoji-chat-panel" style="display:none">
+    <!-- Toggle button (always visible) -->
+    <button class="ecp-toggle" id="emojiChatToggle" onclick="toggleChatPanel()">
+      <span class="ecp-toggle-icon">💬</span>
+      <span class="ecp-toggle-label">Chat</span>
+      <span class="ecp-unread" id="ecpUnread" style="display:none">0</span>
+    </button>
+
+    <!-- Chat window (slides in/out) -->
+    <div class="ecp-window hidden" id="ecpWindow">
+      <div class="ecp-header">
+        <span class="ecp-header-icon">💬</span>
+        <span class="ecp-header-title">Emoji Chat</span>
+        <span class="ecp-header-status" id="ecpStatus">● Live</span>
+        <button class="ecp-close" onclick="toggleChatPanel()">✕</button>
+      </div>
+
+      <!-- Message log -->
+      <div class="ecp-log" id="emojiChatLog"></div>
+
+      <!-- Typing / last seen indicator -->
+      <div class="ecp-typing" id="ecpTyping" style="display:none">
+        <span class="ecp-typing-dots"><span></span><span></span><span></span></span>
+        <span id="ecpTypingName">Opponent</span> is reacting…
+      </div>
+
+      <!-- Emoji picker grid -->
+      <div class="ecp-picker-wrap">
+        <!-- Category tabs -->
+        <div class="ecp-cats" id="ecpCats"></div>
+        <!-- Emoji grid -->
+        <div class="ecp-grid" id="emojiPicker"></div>
+      </div>
+    </div>
   </div>
 
   <!-- Online waiting overlay -->
