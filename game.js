@@ -7,99 +7,110 @@ const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ══════════════════════════════════════════════
-// CONSTANTS
+// WEAPON CATALOGUE
 // ══════════════════════════════════════════════
-
-// ── WEAPON CATALOGUE (all 50 weapons across all tiers) ──
-// tier 1 = free default (10 weapons · 2 per dmg 5–10 → shields 5–10)
-// tiers 2–5 = purchasable upgrades (2 per dmg 11–14, plus extras at 5–10 for loadout swaps)
 const ALL_WEAPONS = [
-  // ── TIER 1 – Starter (free, always unlocked · 2× each dmg 5–10) ──
-  { name: "Shuriken",        emoji: "⭐", dmg: 5,  tier: 1, cost: 0   },
-  { name: "Kunai",           emoji: "🔪", dmg: 5,  tier: 1, cost: 0   },
-  { name: "Kama",            emoji: "🌙", dmg: 6,  tier: 1, cost: 0   },
-  { name: "Tekko",           emoji: "🥊", dmg: 6,  tier: 1, cost: 0   },
-  { name: "Sai",             emoji: "🔱", dmg: 7,  tier: 1, cost: 0   },
-  { name: "Fukiya",          emoji: "🎋", dmg: 7,  tier: 1, cost: 0   },
-  { name: "Tessen",          emoji: "🪭", dmg: 8,  tier: 1, cost: 0   },
-  { name: "Jitte",           emoji: "🔀", dmg: 8,  tier: 1, cost: 0   },
-  { name: "Hanbo",           emoji: "🪄", dmg: 9,  tier: 1, cost: 0   },
-  { name: "Rokushakubo",     emoji: "🎴", dmg: 9,  tier: 1, cost: 0   },
-  { name: "Kanabo",          emoji: "🏏", dmg: 10, tier: 1, cost: 0   },
-  { name: "Tetsubo",         emoji: "🪵", dmg: 10, tier: 1, cost: 0   },
-  // ── TIER 1 extras — same dmg range, buy to swap into loadout ──
-  { name: "Hira-shuriken",   emoji: "💠", dmg: 5,  tier: 1, cost: 0   },
-  { name: "Senban-shuriken", emoji: "🌟", dmg: 5,  tier: 1, cost: 0   },
-  { name: "Makibishi",       emoji: "🔘", dmg: 6,  tier: 1, cost: 0   },
-  { name: "Tekagi",          emoji: "🤚", dmg: 6,  tier: 1, cost: 0   },
-  { name: "Bo-shuriken",     emoji: "📍", dmg: 7,  tier: 1, cost: 0   },
-  { name: "Kaiken",          emoji: "🔺", dmg: 7,  tier: 1, cost: 0   },
-  { name: "Manriki-gusari",  emoji: "⛓️",  dmg: 8,  tier: 1, cost: 0   },
-  { name: "Chigiriki",       emoji: "🔩", dmg: 8,  tier: 1, cost: 0   },
-  { name: "Kusarigama",      emoji: "🔗", dmg: 9,  tier: 1, cost: 0   },
-  { name: "Nunchaku",        emoji: "🔄", dmg: 9,  tier: 1, cost: 0   },
+  // ── TIER 1 – Starter (free) ──
+  { name: "Shuriken",         emoji: "⭐", dmg: 5,  tier: 1, cost: 0    },
+  { name: "Kunai",            emoji: "🔪", dmg: 5,  tier: 1, cost: 0    },
+  { name: "Kama",             emoji: "🌙", dmg: 6,  tier: 1, cost: 0    },
+  { name: "Tekko",            emoji: "🥊", dmg: 6,  tier: 1, cost: 0    },
+  { name: "Sai",              emoji: "🔱", dmg: 7,  tier: 1, cost: 0    },
+  { name: "Fukiya",           emoji: "🎋", dmg: 7,  tier: 1, cost: 0    },
+  { name: "Tessen",           emoji: "🪭", dmg: 8,  tier: 1, cost: 0    },
+  { name: "Jitte",            emoji: "🔀", dmg: 8,  tier: 1, cost: 0    },
+  { name: "Hanbo",            emoji: "🪄", dmg: 9,  tier: 1, cost: 0    },
+  { name: "Rokushakubo",      emoji: "🎴", dmg: 9,  tier: 1, cost: 0    },
+  { name: "Kanabo",           emoji: "🏏", dmg: 10, tier: 1, cost: 0    },
+  { name: "Tetsubo",          emoji: "🪵", dmg: 10, tier: 1, cost: 0    },
+  // T1 extras
+  { name: "Hira-shuriken",    emoji: "💠", dmg: 5,  tier: 1, cost: 0    },
+  { name: "Senban-shuriken",  emoji: "🌟", dmg: 5,  tier: 1, cost: 0    },
+  { name: "Makibishi",        emoji: "🔘", dmg: 6,  tier: 1, cost: 0    },
+  { name: "Tekagi",           emoji: "🤚", dmg: 6,  tier: 1, cost: 0    },
+  { name: "Bo-shuriken",      emoji: "📍", dmg: 7,  tier: 1, cost: 0    },
+  { name: "Kaiken",           emoji: "🔺", dmg: 7,  tier: 1, cost: 0    },
+  { name: "Manriki-gusari",   emoji: "⛓️", dmg: 8,  tier: 1, cost: 0    },
+  { name: "Chigiriki",        emoji: "🔩", dmg: 8,  tier: 1, cost: 0    },
+  { name: "Kusarigama",       emoji: "🔗", dmg: 9,  tier: 1, cost: 0    },
+  { name: "Nunchaku",         emoji: "🔄", dmg: 9,  tier: 1, cost: 0    },
+  // ── New Greek T1 ──
+  { name: "Xiphos",           emoji: "🗡️", dmg: 6,  tier: 1, cost: 0    },
+  { name: "Kopis",            emoji: "⚔️", dmg: 7,  tier: 1, cost: 0    },
+  { name: "Makaira",          emoji: "🌙", dmg: 8,  tier: 1, cost: 0    },
+  { name: "Falcata",          emoji: "🔱", dmg: 8,  tier: 1, cost: 0    },
+  { name: "Dory",             emoji: "📌", dmg: 7,  tier: 1, cost: 0    },
+  { name: "Akontion",         emoji: "🎯", dmg: 6,  tier: 1, cost: 0    },
+  { name: "Labrys",           emoji: "🪓", dmg: 9,  tier: 1, cost: 0    },
+  { name: "Cestus",           emoji: "🥊", dmg: 6,  tier: 1, cost: 0    },
+  { name: "Sling",            emoji: "🪃", dmg: 5,  tier: 1, cost: 0    },
+  { name: "Sica",             emoji: "🔪", dmg: 7,  tier: 1, cost: 0    },
+  { name: "Krypteia Dagger",  emoji: "🌑", dmg: 6,  tier: 1, cost: 0    },
 
-  // ── TIER 2 – Iron (cost: 80 🪙 · dmg 10–11) ──
-  { name: "Katana",          emoji: "🥷", dmg: 10, tier: 2, cost: 80  },
-  { name: "Kodachi",         emoji: "🗡️",  dmg: 10, tier: 2, cost: 80  },
-  { name: "Yari",            emoji: "📌", dmg: 10, tier: 2, cost: 80  },
-  { name: "Naginata",        emoji: "🌀", dmg: 10, tier: 2, cost: 80  },
-  { name: "Tachi",           emoji: "🌊", dmg: 11, tier: 2, cost: 80  },
-  { name: "Uchigatana",      emoji: "🌸", dmg: 11, tier: 2, cost: 80  },
-  { name: "Ono",             emoji: "🪓", dmg: 11, tier: 2, cost: 80  },
-  { name: "Nagamaki",        emoji: "🌿", dmg: 11, tier: 2, cost: 80  },
-  { name: "Manriki",         emoji: "⛓️",  dmg: 10, tier: 2, cost: 80  },
-  { name: "Chokuto",         emoji: "🗡️",  dmg: 11, tier: 2, cost: 80  },
+  // ── TIER 2 – Iron (80🪙) ──
+  { name: "Katana",           emoji: "🥷", dmg: 10, tier: 2, cost: 80   },
+  { name: "Kodachi",          emoji: "🗡️", dmg: 10, tier: 2, cost: 80   },
+  { name: "Yari",             emoji: "📌", dmg: 10, tier: 2, cost: 80   },
+  { name: "Naginata",         emoji: "🌀", dmg: 10, tier: 2, cost: 80   },
+  { name: "Tachi",            emoji: "🌊", dmg: 11, tier: 2, cost: 80   },
+  { name: "Uchigatana",       emoji: "🌸", dmg: 11, tier: 2, cost: 80   },
+  { name: "Ono",              emoji: "🪓", dmg: 11, tier: 2, cost: 80   },
+  { name: "Nagamaki",         emoji: "🌿", dmg: 11, tier: 2, cost: 80   },
+  { name: "Manriki",          emoji: "⛓️", dmg: 10, tier: 2, cost: 80   },
+  { name: "Chokuto",          emoji: "🗡️", dmg: 11, tier: 2, cost: 80   },
+  // New Greek T2
+  { name: "Sarissa",          emoji: "🔱", dmg: 11, tier: 2, cost: 80   },
+  { name: "Kontos",           emoji: "🏇", dmg: 10, tier: 2, cost: 80   },
+  { name: "Mace",             emoji: "🔨", dmg: 10, tier: 2, cost: 80   },
+  { name: "Bow & Arrow",      emoji: "🏹", dmg: 11, tier: 2, cost: 80   },
+  { name: "Kestros",          emoji: "🎯", dmg: 11, tier: 2, cost: 80   },
+  { name: "Rhomphaia",        emoji: "⚔️", dmg: 11, tier: 2, cost: 80   },
 
-  // ── TIER 3 – Steel (cost: 200 🪙 · dmg 11–12) ──
-  { name: "Nodachi",         emoji: "🌑", dmg: 11, tier: 3, cost: 200 },
-  { name: "Kyoketsu-shoge",  emoji: "🕸️",  dmg: 11, tier: 3, cost: 200 },
-  { name: "Hoko Yari",       emoji: "☄️",  dmg: 12, tier: 3, cost: 200 },
-  { name: "Jumonji Yari",    emoji: "✚",  dmg: 12, tier: 3, cost: 200 },
-  { name: "Sankaku Yari",    emoji: "🔻", dmg: 12, tier: 3, cost: 200 },
-  { name: "Sasaho Yari",     emoji: "🪬", dmg: 12, tier: 3, cost: 200 },
-  { name: "Odachi",          emoji: "⚡", dmg: 12, tier: 3, cost: 200 },
-  { name: "Yumi",            emoji: "🏹", dmg: 12, tier: 3, cost: 200 },
-  { name: "Hankyu",          emoji: "🎯", dmg: 11, tier: 3, cost: 200 },
-  { name: "Daikyu",          emoji: "🎑", dmg: 12, tier: 3, cost: 200 },
+  // ── TIER 3 – Steel (200🪙) ──
+  { name: "Nodachi",          emoji: "🌑", dmg: 11, tier: 3, cost: 200  },
+  { name: "Kyoketsu-shoge",   emoji: "🕸️", dmg: 11, tier: 3, cost: 200  },
+  { name: "Hoko Yari",        emoji: "☄️", dmg: 12, tier: 3, cost: 200  },
+  { name: "Jumonji Yari",     emoji: "✚",  dmg: 12, tier: 3, cost: 200  },
+  { name: "Sankaku Yari",     emoji: "🔻", dmg: 12, tier: 3, cost: 200  },
+  { name: "Sasaho Yari",      emoji: "🪬", dmg: 12, tier: 3, cost: 200  },
+  { name: "Odachi",           emoji: "⚡", dmg: 12, tier: 3, cost: 200  },
+  { name: "Yumi",             emoji: "🏹", dmg: 12, tier: 3, cost: 200  },
+  { name: "Hankyu",           emoji: "🎯", dmg: 11, tier: 3, cost: 200  },
+  { name: "Daikyu",           emoji: "🎑", dmg: 12, tier: 3, cost: 200  },
 
-  // ── TIER 4 – Shadow (cost: 400 🪙 · dmg 13) ──
-  { name: "Kabutowari",      emoji: "👑", dmg: 13, tier: 4, cost: 400 },
-  { name: "Hachiwari",       emoji: "💎", dmg: 13, tier: 4, cost: 400 },
-  { name: "Kusari-fundo",    emoji: "💫", dmg: 13, tier: 4, cost: 400 },
-  { name: "Shikomizue",      emoji: "🐍", dmg: 13, tier: 4, cost: 400 },
-  { name: "Gunbai",          emoji: "🛡️",  dmg: 13, tier: 4, cost: 400 },
-  { name: "Tanegashima",     emoji: "🔫", dmg: 13, tier: 4, cost: 400 },
-  { name: "Wakizashi",       emoji: "🩸", dmg: 13, tier: 4, cost: 400 },
-  { name: "Tanto",           emoji: "🌙", dmg: 13, tier: 4, cost: 400 },
-  { name: "Masakari",        emoji: "🐉", dmg: 13, tier: 4, cost: 400 },
-  { name: "Kanemuchi",       emoji: "🔥", dmg: 13, tier: 4, cost: 400 },
+  // ── TIER 4 – Shadow (400🪙) ──
+  { name: "Kabutowari",       emoji: "👑", dmg: 13, tier: 4, cost: 400  },
+  { name: "Hachiwari",        emoji: "💎", dmg: 13, tier: 4, cost: 400  },
+  { name: "Kusari-fundo",     emoji: "💫", dmg: 13, tier: 4, cost: 400  },
+  { name: "Shikomizue",       emoji: "🐍", dmg: 13, tier: 4, cost: 400  },
+  { name: "Gunbai",           emoji: "🛡️", dmg: 13, tier: 4, cost: 400  },
+  { name: "Tanegashima",      emoji: "🔫", dmg: 13, tier: 4, cost: 400  },
+  { name: "Wakizashi",        emoji: "🩸", dmg: 13, tier: 4, cost: 400  },
+  { name: "Tanto",            emoji: "🌙", dmg: 13, tier: 4, cost: 400  },
+  { name: "Masakari",         emoji: "🐉", dmg: 13, tier: 4, cost: 400  },
+  { name: "Kanemuchi",        emoji: "🔥", dmg: 13, tier: 4, cost: 400  },
 
-  // ── TIER 5 – Legendary (cost: 800 🪙 · dmg 14) ──
-  { name: "Metsubushi",      emoji: "💥", dmg: 14, tier: 5, cost: 800 },
-  { name: "Bisento",         emoji: "🐲", dmg: 14, tier: 5, cost: 800 },
-  { name: "Sasumata",        emoji: "🦅", dmg: 14, tier: 5, cost: 800 },
-  { name: "Makura Yari",     emoji: "🌙", dmg: 14, tier: 5, cost: 800 },
-  { name: "Kiseru",          emoji: "🪬", dmg: 14, tier: 5, cost: 800 },
-  { name: "Naginata-kamayari", emoji: "🌀", dmg: 14, tier: 5, cost: 800 },
-  { name: "Jutte",           emoji: "⚜️",  dmg: 14, tier: 5, cost: 800 },
-  { name: "Kaginawa",        emoji: "🪝", dmg: 14, tier: 5, cost: 800 },
-  { name: "Teporenki",       emoji: "🔱", dmg: 14, tier: 5, cost: 800 },
-  { name: "Shinobi-zue",     emoji: "🌿", dmg: 14, tier: 5, cost: 800 },
+  // ── TIER 5 – Legendary (800🪙) ──
+  { name: "Metsubushi",       emoji: "💥", dmg: 14, tier: 5, cost: 800  },
+  { name: "Bisento",          emoji: "🐲", dmg: 14, tier: 5, cost: 800  },
+  { name: "Sasumata",         emoji: "🦅", dmg: 14, tier: 5, cost: 800  },
+  { name: "Makura Yari",      emoji: "🌙", dmg: 14, tier: 5, cost: 800  },
+  { name: "Kiseru",           emoji: "🪬", dmg: 14, tier: 5, cost: 800  },
+  { name: "Naginata-kamayari",emoji: "🌀", dmg: 14, tier: 5, cost: 800  },
+  { name: "Jutte",            emoji: "⚜️", dmg: 14, tier: 5, cost: 800  },
+  { name: "Kaginawa",         emoji: "🪝", dmg: 14, tier: 5, cost: 800  },
+  { name: "Teporenki",        emoji: "🔱", dmg: 14, tier: 5, cost: 800  },
+  { name: "Shinobi-zue",      emoji: "🌿", dmg: 14, tier: 5, cost: 800  },
+
+  // ── TIER 6 – Divine (1000🪙) ──
+  { name: "Gentuga Tensho",   emoji: "🌠", dmg: 15, tier: 6, cost: 1000 },
 ];
 
-// Default starter loadout — 12 T1 weapons, 2 per dmg value 5–10
-// gives shield options [5, 6, 7, 8, 9, 10] out of the box.
-// Equipping a bought weapon with dmg 11–14 auto-adds that shield button too.
 const STARTER_WEAPON_NAMES = [
-  "Shuriken","Kunai",          // dmg 5
-  "Kama","Tekko",              // dmg 6
-  "Sai","Fukiya",              // dmg 7
-  "Tessen","Jitte",            // dmg 8
-  "Hanbo","Rokushakubo",       // dmg 9
-  "Kanabo","Tetsubo",          // dmg 10
+  "Shuriken","Kunai","Kama","Tekko","Sai","Fukiya",
+  "Tessen","Jitte","Hanbo","Rokushakubo","Kanabo","Tetsubo",
 ];
-const LOADOUT_SIZE = 50; // max weapons each player can equip
+const LOADOUT_SIZE = 12; // MAX 12 weapons equipped
 
 const TIER_INFO = {
   1: { name: "Starter",   color: "#9b92c8", glow: "rgba(155,146,200,0.3)" },
@@ -107,15 +118,14 @@ const TIER_INFO = {
   3: { name: "Steel",     color: "#22d3ee", glow: "rgba(34,211,238,0.3)"  },
   4: { name: "Shadow",    color: "#a855f7", glow: "rgba(168,85,247,0.3)"  },
   5: { name: "Legendary", color: "#facc15", glow: "rgba(250,204,21,0.35)" },
+  6: { name: "Divine",    color: "#ff6b35", glow: "rgba(255,107,53,0.4)"  },
 };
 
-// Derive shield values dynamically from equipped weapons (unique damage values)
 function getShieldValues(weaponList) {
   const dmgSet = new Set(weaponList.map(w => w.dmg));
   return [...dmgSet].sort((a, b) => a - b);
 }
 
-// The active weapon pool for a match (set at game start from loadouts)
 let WEAPONS = ALL_WEAPONS.filter(w => STARTER_WEAPON_NAMES.includes(w.name));
 let SHIELD_VALUES = getShieldValues(WEAPONS);
 
@@ -130,61 +140,143 @@ const TOKENS_LOSS       = 50;
 const POTION_COST       = 15;
 const POTION_HEAL       = 10;
 const BOSS_HP_MAX       = 60;
-const BOSS_TOKENS       = 400;
+const BOSS_TOKENS       = 300;
 const SPECIAL_CHANCE    = 0.001;
 const SPECIAL_WINS_NEED = 3;
 const SPECIAL_TOKENS    = 30;
+const TRAIT_ROLL_COST   = 500;
+
+// ══════════════════════════════════════════════
+// LEVEL SYSTEM
+// ══════════════════════════════════════════════
+const LEVELS = [
+  { level: 1,  name: "Rookie",       badge: "🥉", xpRequired: 0,    color: "#9b92c8" },
+  { level: 2,  name: "Brawler",      badge: "🗡️", xpRequired: 100,  color: "#94a3b8" },
+  { level: 3,  name: "Duelist",      badge: "⚔️", xpRequired: 250,  color: "#22d3ee" },
+  { level: 4,  name: "Warrior",      badge: "🛡️", xpRequired: 500,  color: "#4ade80" },
+  { level: 5,  name: "Knight",       badge: "🏅", xpRequired: 900,  color: "#a855f7" },
+  { level: 6,  name: "Champion",     badge: "🏆", xpRequired: 1500, color: "#c084fc" },
+  { level: 7,  name: "Warlord",      badge: "👑", xpRequired: 2400, color: "#facc15" },
+  { level: 8,  name: "Blade Master", badge: "🔱", xpRequired: 3700, color: "#ff6b35" },
+  { level: 9,  name: "Overlord",     badge: "🌟", xpRequired: 5500, color: "#f43f5e" },
+  { level: 10, name: "Grandmaster",  badge: "💠", xpRequired: 8000, color: "#00ffff" },
+];
+
+const XP_BASE_RATE = 1.18; // compound interest multiplier per level
+
+function getXpForAction(action, playerLevel) {
+  const base = { win: 50, loss: 15, boss: 80, special: 30, shot: 2 };
+  const b = base[action] || 5;
+  return Math.round(b * Math.pow(XP_BASE_RATE, (playerLevel || 1) - 1));
+}
+
+function getCurrentLevel(xp) {
+  let lvl = LEVELS[0];
+  for (const l of LEVELS) { if (xp >= l.xpRequired) lvl = l; }
+  return lvl;
+}
+
+function getNextLevel(xp) {
+  const cur = getCurrentLevel(xp);
+  return LEVELS.find(l => l.level === cur.level + 1) || null;
+}
+
+// ══════════════════════════════════════════════
+// TRAIT SYSTEM
+// ══════════════════════════════════════════════
+const ALL_TRAITS = [
+  { name: "Phantom Strike",   emoji: "👻", rarity: "Mythic",    chance: 0.00, desc: "Attack ignores shields entirely." },
+  { name: "Soul Rend",        emoji: "💀", rarity: "Mythic",    chance: 0.00, desc: "Deals double damage on perfect matches." },
+  { name: "Eternal Flame",    emoji: "🔥", rarity: "Legendary", chance: 0.10, desc: "+2 bonus damage on every attack." },
+  { name: "Frostbite",        emoji: "❄️", rarity: "Legendary", chance: 0.10, desc: "Enemy loses 1 HP per shot passively." },
+  { name: "Thunder Veil",     emoji: "⚡", rarity: "Epic",      chance: 0.50, desc: "+1 shield effectiveness." },
+  { name: "Void Edge",        emoji: "🌑", rarity: "Epic",      chance: 0.50, desc: "25% chance to ignore enemy shield." },
+  { name: "Blood Pact",       emoji: "🩸", rarity: "Epic",      chance: 0.75, desc: "Lifesteal: +3 HP per hit." },
+  { name: "Iron Will",        emoji: "🛡️", rarity: "Rare",      chance: 1.00, desc: "Reduce incoming damage by 1." },
+  { name: "War Cry",          emoji: "😤", rarity: "Rare",      chance: 1.00, desc: "+1 damage when HP < 15." },
+  { name: "Mystic Guard",     emoji: "🔮", rarity: "Rare",      chance: 1.50, desc: "Perfect block heals +3 HP." },
+  { name: "Serpent's Bite",   emoji: "🐍", rarity: "Rare",      chance: 1.50, desc: "First attack each round +2 dmg." },
+  { name: "Dragon Scale",     emoji: "🐉", rarity: "Rare",      chance: 2.00, desc: "Damage cap reduced by 1." },
+  { name: "Shadow Step",      emoji: "🌙", rarity: "Uncommon",  chance: 3.00, desc: "50% chance to dodge 1 damage." },
+  { name: "Eagle Eye",        emoji: "🦅", rarity: "Uncommon",  chance: 3.00, desc: "See enemy's shield range hint." },
+  { name: "Berserker",        emoji: "💢", rarity: "Uncommon",  chance: 3.50, desc: "Damage +1 for each wound taken." },
+  { name: "Crystal Guard",    emoji: "💎", rarity: "Uncommon",  chance: 4.00, desc: "Block values ±1 also count as perfect." },
+  { name: "Fortune's Blade",  emoji: "🍀", rarity: "Uncommon",  chance: 4.00, desc: "+10 coins per perfect block." },
+  { name: "Momentum",         emoji: "🌀", rarity: "Common",    chance: 5.00, desc: "+0.5 dmg stacking per consecutive hit." },
+  { name: "Veteran's Mark",   emoji: "🎖️", rarity: "Common",    chance: 5.00, desc: "+5 XP per shot with this weapon." },
+  { name: "Quickdraw",        emoji: "⚡", rarity: "Common",    chance: 6.00, desc: "No cooldown on weapon reuse." },
+  { name: "Forged in Fire",   emoji: "🔨", rarity: "Common",    chance: 6.00, desc: "+3 HP at round start." },
+  { name: "Blessed Edge",     emoji: "✨", rarity: "Common",    chance: 7.00, desc: "+1 dmg on odd-numbered shots." },
+  { name: "Bane of Knights",  emoji: "⚔️", rarity: "Common",    chance: 7.00, desc: "+2 dmg against shielded opponents." },
+  { name: "Ghost Armor",      emoji: "👻", rarity: "Common",    chance: 8.00, desc: "First hit each match deals 0 damage to you." },
+  { name: "Relic's Echo",     emoji: "🏺", rarity: "Common",    chance: 8.00, desc: "Legacy: a mark of history on your blade." },
+];
+
+function rollTrait() {
+  const r = Math.random() * 100;
+  let cumulative = 0;
+  for (const t of ALL_TRAITS) {
+    cumulative += t.chance;
+    if (r < cumulative) return t;
+  }
+  // Fallback to last common trait
+  return ALL_TRAITS[ALL_TRAITS.length - 1];
+}
 
 // ══════════════════════════════════════════════
 // SESSION
 // ══════════════════════════════════════════════
 let currentUser = null;
-
 function saveSession(u)  { currentUser = u; try { localStorage.setItem(SESSION_KEY, JSON.stringify(u)); } catch(e) {} }
 function loadSession()   { try { const r = localStorage.getItem(SESSION_KEY); return r ? JSON.parse(r) : null; } catch(e) { return null; } }
 function clearSession()  { currentUser = null; try { localStorage.removeItem(SESSION_KEY); } catch(e) {} }
 
 // ══════════════════════════════════════════════
-// TOKENS + INVENTORY
+// INVENTORY
 // ══════════════════════════════════════════════
 let localTokens   = 0;
 let localPotions  = 0;
-let ownedWeapons  = [...STARTER_WEAPON_NAMES]; // names of unlocked weapons
-let myLoadout     = [...STARTER_WEAPON_NAMES.slice(0, LOADOUT_SIZE)]; // 6 equipped names
+let localXP       = 0;
+let ownedWeapons  = [...STARTER_WEAPON_NAMES];
+let myLoadout     = [...STARTER_WEAPON_NAMES.slice(0, LOADOUT_SIZE)];
+let weaponTraits  = {}; // { weaponName: { name, emoji, rarity, desc } }
 
 function loadInventoryFromData(data) {
   localTokens  = data?.tokens  ?? 0;
   localPotions = data?.potions ?? 0;
+  localXP      = data?.xp ?? 0;
   try {
     const ow = data?.owned_weapons;
-    if (ow) ownedWeapons = JSON.parse(ow);
-    else     ownedWeapons = [...STARTER_WEAPON_NAMES];
-    // always ensure starters are included
+    ownedWeapons = ow ? JSON.parse(ow) : [...STARTER_WEAPON_NAMES];
     STARTER_WEAPON_NAMES.forEach(n => { if (!ownedWeapons.includes(n)) ownedWeapons.push(n); });
   } catch(e) { ownedWeapons = [...STARTER_WEAPON_NAMES]; }
   try {
     const ml = data?.loadout;
-    if (ml) myLoadout = JSON.parse(ml);
-    else     myLoadout = ownedWeapons.slice(0, LOADOUT_SIZE);
-    // prune loadout to only owned weapons
-    myLoadout = myLoadout.filter(n => ownedWeapons.includes(n));
-    while (myLoadout.length < LOADOUT_SIZE) {
-      const extra = ownedWeapons.find(n => !myLoadout.includes(n));
-      if (!extra) break;
-      myLoadout.push(extra);
+    if (ml) {
+      myLoadout = JSON.parse(ml);
+      myLoadout = myLoadout.filter(n => ownedWeapons.includes(n));
+      // ensure max 12
+      if (myLoadout.length > LOADOUT_SIZE) myLoadout = myLoadout.slice(0, LOADOUT_SIZE);
+    } else {
+      myLoadout = ownedWeapons.slice(0, LOADOUT_SIZE);
     }
   } catch(e) { myLoadout = ownedWeapons.slice(0, LOADOUT_SIZE); }
+  try {
+    const wt = data?.weapon_traits;
+    weaponTraits = wt ? JSON.parse(wt) : {};
+  } catch(e) { weaponTraits = {}; }
 }
 
 async function loadTokenData() {
   if (!currentUser) {
-    localTokens = 0; localPotions = 0;
+    localTokens = 0; localPotions = 0; localXP = 0;
     ownedWeapons = [...STARTER_WEAPON_NAMES];
-    myLoadout    = [...STARTER_WEAPON_NAMES.slice(0, LOADOUT_SIZE)];
+    myLoadout = [...STARTER_WEAPON_NAMES.slice(0, LOADOUT_SIZE)];
+    weaponTraits = {};
     updateTokenDisplay(); return;
   }
   try {
-    const { data } = await db.from("players").select("tokens, potions, owned_weapons, loadout").eq("id", currentUser.id).maybeSingle();
+    const { data } = await db.from("players").select("tokens, potions, owned_weapons, loadout, xp, weapon_traits").eq("id", currentUser.id).maybeSingle();
     loadInventoryFromData(data);
   } catch(e) {}
   updateTokenDisplay();
@@ -194,23 +286,56 @@ async function saveTokenData() {
   if (!currentUser) return;
   try {
     await db.from("players").update({
-      tokens: localTokens, potions: localPotions,
+      tokens: localTokens,
+      potions: localPotions,
       owned_weapons: JSON.stringify(ownedWeapons),
       loadout: JSON.stringify(myLoadout),
+      xp: localXP,
+      weapon_traits: JSON.stringify(weaponTraits),
     }).eq("id", currentUser.id);
   } catch(e) {}
 }
 
 function updateTokenDisplay() {
-  document.querySelectorAll(".token-count").forEach(el => el.textContent = localTokens + " \uD83E\uDE99");
-  document.querySelectorAll(".potion-count").forEach(el => el.textContent = localPotions + " \uD83E\uDDEA");
+  document.querySelectorAll(".token-count").forEach(el => el.textContent = localTokens + " 🪙");
+  document.querySelectorAll(".potion-count").forEach(el => el.textContent = localPotions + " 🧪");
+  document.querySelectorAll(".xp-count").forEach(el => {
+    const lvl = getCurrentLevel(localXP);
+    el.textContent = lvl.badge + " " + localXP + " XP";
+  });
+  // Update mode level badge
+  const mlb = document.getElementById("modeLevelBadge");
+  if (mlb) {
+    const lvl = getCurrentLevel(localXP);
+    const next = getNextLevel(localXP);
+    const prog = next ? Math.round(((localXP - lvl.xpRequired) / (next.xpRequired - lvl.xpRequired)) * 100) : 100;
+    mlb.innerHTML = `<span class="mlb-badge" style="color:${lvl.color}">${lvl.badge} ${lvl.name}</span>
+      <div class="mlb-bar"><div class="mlb-fill" style="width:${prog}%;background:${lvl.color}"></div></div>
+      <span class="mlb-sub">${localXP} XP${next ? ' / '+next.xpRequired : ' — MAX'}</span>`;
+  }
 }
 
 async function awardTokens(amount, reason) {
   localTokens += amount;
   updateTokenDisplay();
   await saveTokenData();
-  showToast("+" + amount + " \uD83E\uDE99 " + reason, "gold");
+  showToast("+" + amount + " 🪙 " + reason, "gold");
+}
+
+async function awardXP(action) {
+  const lvl = getCurrentLevel(localXP);
+  const xpGain = getXpForAction(action, lvl.level);
+  const prevLvl = lvl.level;
+  localXP += xpGain;
+  const newLvl = getCurrentLevel(localXP);
+  updateTokenDisplay();
+  await saveTokenData();
+  showToast("+" + xpGain + " XP ✨", "info");
+  if (newLvl.level > prevLvl) {
+    setTimeout(() => {
+      showToast("🎉 LEVEL UP! " + newLvl.badge + " " + newLvl.name + "!", "gold");
+    }, 500);
+  }
 }
 
 function showToast(msg, type) {
@@ -237,9 +362,23 @@ async function hashPassword(pw) {
 let authMode = "login";
 
 window.addEventListener("DOMContentLoaded", () => {
+  spawnAuthParticles();
   const saved = loadSession();
   if (saved) { currentUser = saved; updateUserPill(); loadTokenData(); showScreen("screen-mode"); }
 });
+
+function spawnAuthParticles() {
+  const el = document.getElementById("authParticles");
+  if (!el) return;
+  const symbols = ["⚔", "🛡", "⭐", "💠", "🔱", "🌙", "🔥"];
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElement("div");
+    p.className = "auth-particle";
+    p.textContent = symbols[i % symbols.length];
+    p.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*8}s;animation-duration:${8+Math.random()*6}s;opacity:${0.05+Math.random()*0.1};font-size:${1+Math.random()*2}rem;`;
+    el.appendChild(p);
+  }
+}
 
 // ══════════════════════════════════════════════
 // SCREEN NAV
@@ -249,7 +388,6 @@ function showScreen(id) {
   const el = document.getElementById(id);
   el.classList.add("active");
   el.style.display = "flex";
-  // Always close emoji picker on any screen transition
   emojiPickerOpen = false;
   const picker = document.getElementById("emojiPicker");
   if (picker) picker.classList.add("hidden");
@@ -263,21 +401,180 @@ function hideRulebook() { document.getElementById("modal-rulebook").classList.ad
 function closeRulebookIfOutside(e) { if (e.target === document.getElementById("modal-rulebook")) hideRulebook(); }
 
 // ══════════════════════════════════════════════
+// LEVEL PANEL
+// ══════════════════════════════════════════════
+function showLevelPanel() { renderLevelUI(); document.getElementById("modal-level").classList.remove("hidden"); }
+function hideLevelPanel() { document.getElementById("modal-level").classList.add("hidden"); }
+function closeLevelIfOutside(e) { if (e.target === document.getElementById("modal-level")) hideLevelPanel(); }
+
+function renderLevelUI() {
+  const body = document.getElementById("levelBody");
+  if (!body) return;
+  const curLvl = getCurrentLevel(localXP);
+  const nextLvl = getNextLevel(localXP);
+  const prog = nextLvl ? Math.round(((localXP - curLvl.xpRequired) / (nextLvl.xpRequired - curLvl.xpRequired)) * 100) : 100;
+
+  let html = `
+  <div class="level-hero" style="border-color:${curLvl.color}33">
+    <div class="lh-badge" style="color:${curLvl.color};text-shadow:0 0 20px ${curLvl.color}55">${curLvl.badge}</div>
+    <div class="lh-name" style="color:${curLvl.color}">${curLvl.name}</div>
+    <div class="lh-level">Level ${curLvl.level}</div>
+    <div class="lh-xp">${localXP} XP</div>
+    <div class="lh-bar-wrap">
+      <div class="lh-bar" style="width:${prog}%;background:${curLvl.color};box-shadow:0 0 12px ${curLvl.color}66"></div>
+    </div>
+    <div class="lh-sub">${nextLvl ? (nextLvl.xpRequired - localXP) + ' XP to ' + nextLvl.name : 'Maximum Level Reached! 🎊'}</div>
+  </div>
+  <div class="level-info-box">
+    <p>XP uses <strong>compound interest</strong> — higher level = more XP per action.<br>
+    Formula: <code>XP = base × ${XP_BASE_RATE}<sup>level-1</sup></code></p>
+  </div>
+  <div class="level-grid">`;
+
+  for (const l of LEVELS) {
+    const unlocked = localXP >= l.xpRequired;
+    const isCur = l.level === curLvl.level;
+    html += `<div class="level-card ${unlocked ? 'unlocked' : 'locked'} ${isCur ? 'current' : ''}" style="${isCur ? `border-color:${l.color};box-shadow:0 0 16px ${l.color}33` : ''}">
+      <div class="lc-badge">${l.badge}</div>
+      <div class="lc-name" style="color:${unlocked ? l.color : 'var(--text3)'}">${l.name}</div>
+      <div class="lc-level" style="color:${unlocked ? l.color+'99' : 'var(--text3)'}">Lv. ${l.level}</div>
+      <div class="lc-xp" style="color:var(--text3)">${l.xpRequired} XP</div>
+      ${isCur ? '<div class="lc-current">← You</div>' : ''}
+      ${unlocked && !isCur ? '<div class="lc-done">✓</div>' : ''}
+    </div>`;
+  }
+
+  html += `</div>
+  <div class="level-xp-table">
+    <div class="lxt-title">XP Rewards (compound interest multiplied per level)</div>
+    <table class="lxt-table">
+      <tr><th>Action</th><th>Base XP</th><th>At Lv.${curLvl.level}</th></tr>
+      <tr><td>Win a match</td><td>50</td><td>${getXpForAction('win', curLvl.level)}</td></tr>
+      <tr><td>Lose a match</td><td>15</td><td>${getXpForAction('loss', curLvl.level)}</td></tr>
+      <tr><td>Boss kill</td><td>80</td><td>${getXpForAction('boss', curLvl.level)}</td></tr>
+      <tr><td>Special round</td><td>30</td><td>${getXpForAction('special', curLvl.level)}</td></tr>
+      <tr><td>Per shot</td><td>2</td><td>${getXpForAction('shot', curLvl.level)}</td></tr>
+    </table>
+  </div>`;
+
+  body.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════
+// TRAIT SHOP
+// ══════════════════════════════════════════════
+function showTraitShop() { renderTraitUI(); document.getElementById("modal-trait").classList.remove("hidden"); }
+function hideTraitShop() { document.getElementById("modal-trait").classList.add("hidden"); }
+function closeTraitIfOutside(e) { if (e.target === document.getElementById("modal-trait")) hideTraitShop(); }
+
+function renderTraitUI() {
+  const body = document.getElementById("traitBody");
+  if (!body) return;
+
+  const RARITY_COLORS = {
+    "Mythic": "#ff6b35", "Legendary": "#facc15", "Epic": "#a855f7",
+    "Rare": "#22d3ee", "Uncommon": "#4ade80", "Common": "#94a3b8"
+  };
+
+  let html = `
+  <div class="trait-intro">
+    <div class="trait-intro-text">
+      <p>Roll a <strong>random trait</strong> onto any weapon you own for <strong>500 🪙</strong>.<br>
+      Each weapon can hold one trait at a time. Re-rolling replaces the existing trait.</p>
+      <div class="trait-balance">Balance: <span style="color:#facc15">${localTokens}</span> 🪙</div>
+    </div>
+  </div>
+  <div class="trait-rarity-legend">`;
+
+  const rarities = ["Mythic","Legendary","Epic","Rare","Uncommon","Common"];
+  for (const r of rarities) {
+    html += `<span class="trl-chip" style="color:${RARITY_COLORS[r]};border-color:${RARITY_COLORS[r]}44">${r}</span>`;
+  }
+  html += `</div>`;
+
+  // All traits preview
+  html += `<div class="trait-all-title">All 25 Traits</div>
+  <div class="trait-grid">`;
+  for (const t of ALL_TRAITS) {
+    const c = RARITY_COLORS[t.rarity] || "#94a3b8";
+    html += `<div class="trait-card" style="border-color:${c}33">
+      <div class="tc-emoji">${t.emoji}</div>
+      <div class="tc-name" style="color:${c}">${t.name}</div>
+      <div class="tc-rarity" style="color:${c}88">${t.rarity}</div>
+      <div class="tc-chance">${t.chance === 0 ? '0.00%' : t.chance.toFixed(2)+'%'}</div>
+      <div class="tc-desc">${t.desc}</div>
+    </div>`;
+  }
+  html += `</div>`;
+
+  // Roll section — show equipped weapons
+  html += `<div class="trait-roll-section">
+    <div class="trait-roll-title">🎲 Roll on a Weapon</div>
+    <div class="trait-weapons-list">`;
+
+  const rollableWeapons = ownedWeapons.map(n => ALL_WEAPONS.find(w => w.name === n)).filter(Boolean);
+  for (const w of rollableWeapons) {
+    const ti = TIER_INFO[w.tier] || TIER_INFO[1];
+    const existing = weaponTraits[w.name];
+    const canAfford = localTokens >= TRAIT_ROLL_COST && currentUser;
+    html += `<div class="trait-weapon-row">
+      <div class="twr-weapon">
+        <span class="twr-emoji">${w.emoji}</span>
+        <span class="twr-name">${w.name}</span>
+        <span class="twr-tier" style="color:${ti.color}">T${w.tier}</span>
+      </div>
+      ${existing ? `<div class="twr-trait" style="color:${RARITY_COLORS[existing.rarity] || '#94a3b8'}88">
+        ${existing.emoji} ${existing.name} <span class="twr-rarity">${existing.rarity}</span>
+      </div>` : '<div class="twr-no-trait">No trait</div>'}
+      <button class="twr-roll-btn" onclick="rollTraitOnWeapon('${w.name.replace(/'/g,"\\'")}', this)" ${canAfford ? '' : 'disabled'}>
+        🎲 Roll (500 🪙)
+      </button>
+    </div>`;
+  }
+
+  html += `</div></div>`;
+  body.innerHTML = html;
+}
+
+async function rollTraitOnWeapon(weaponName, btnEl) {
+  if (!currentUser) { showToast("Sign in to roll traits!", "red"); return; }
+  if (localTokens < TRAIT_ROLL_COST) { showToast("Not enough tokens! Need 500 🪙", "red"); return; }
+
+  localTokens -= TRAIT_ROLL_COST;
+  updateTokenDisplay();
+
+  // Animate
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = "Rolling..."; }
+
+  // Reveal after short delay
+  setTimeout(async () => {
+    const trait = rollTrait();
+    weaponTraits[weaponName] = trait;
+    await saveTokenData();
+
+    const RARITY_COLORS = { "Mythic": "#ff6b35", "Legendary": "#facc15", "Epic": "#a855f7", "Rare": "#22d3ee", "Uncommon": "#4ade80", "Common": "#94a3b8" };
+    const c = RARITY_COLORS[trait.rarity] || "#94a3b8";
+    showToast(`${trait.emoji} ${trait.name} — ${trait.rarity}!`, trait.rarity === "Mythic" || trait.rarity === "Legendary" ? "gold" : "info");
+
+    renderTraitUI();
+  }, 800);
+}
+
+// ══════════════════════════════════════════════
 // SHOP
 // ══════════════════════════════════════════════
-let shopTab = "potions"; // "potions" | "weapons"
+let shopTab = "potions";
 
 function showShop() { shopTab = "potions"; renderShopUI(); document.getElementById("modal-shop").classList.remove("hidden"); }
 function hideShop() { document.getElementById("modal-shop").classList.add("hidden"); }
 function closeShopIfOutside(e) { if (e.target === document.getElementById("modal-shop")) hideShop(); }
-
 function setShopTab(t) { shopTab = t; renderShopUI(); }
 
 function renderShopUI() {
   const body = document.getElementById("shopBody");
   if (!body) return;
   const bal = `<div class="shop-balance">
-    <div class="shop-bal-item"><span class="shop-bal-label">Your Tokens</span><span class="shop-bal-value" id="shopTokenBalance">${localTokens}</span> 🪙</div>
+    <div class="shop-bal-item"><span class="shop-bal-label">Tokens</span><span class="shop-bal-value" id="shopTokenBalance">${localTokens}</span> 🪙</div>
     <div class="shop-bal-item"><span class="shop-bal-label">Potions</span><span class="shop-bal-value" id="shopPotionOwned">${localPotions}</span> 🧪</div>
   </div>
   <div class="shop-tabs">
@@ -292,16 +589,16 @@ function renderShopUI() {
       <div class="shop-item-icon">🧪</div>
       <div class="shop-item-info">
         <div class="shop-item-name">Health Potion</div>
-        <div class="shop-item-desc">Use during combat instead of attacking to restore +10 HP. Max 9.</div>
+        <div class="shop-item-desc">Use during combat instead of attacking to restore +${POTION_HEAL} HP. Max 9.</div>
         <div class="shop-item-cost">15 🪙 each</div>
       </div>
-      <button class="btn-primary" id="shopBuyBtn" onclick="buyPotion()" ${canBuy?'':'disabled'}>${localPotions>=9?'Max Potions (9)':'Buy — 15 🪙'}</button>
+      <button class="btn-primary" onclick="buyPotion()" ${canBuy?'':'disabled'}>${localPotions>=9?'Max Potions (9)':'Buy — 15 🪙'}</button>
     </div>
-    <p class="shop-hint">Earn tokens: +200 per win, +50 per loss, +400 boss kill, +30 special round.</p>`;
+    <p class="shop-hint">Earn tokens: +200 per win, +50 per loss, +300 boss kill, +30 special round.</p>`;
   } else {
-    // Weapons tab — show by tier
     let html = bal + `<div class="weapon-shop-list">`;
-    for (let t = 1; t <= 5; t++) {
+    const maxTier = 6;
+    for (let t = 1; t <= maxTier; t++) {
       const ti = TIER_INFO[t];
       const tier_weapons = ALL_WEAPONS.filter(w => w.tier === t);
       html += `<div class="ws-tier-header" style="color:${ti.color};border-color:${ti.color}20">
@@ -312,19 +609,21 @@ function renderShopUI() {
         const owned = ownedWeapons.includes(w.name);
         const equipped = myLoadout.includes(w.name);
         const canAfford = localTokens >= w.cost;
+        const trait = weaponTraits[w.name];
         html += `<div class="ws-weapon-card ${owned?'ws-owned':''} ${equipped?'ws-equipped':''}" data-weapon="${w.name}">
           <div class="ws-weapon-emoji">${w.emoji}</div>
           <div class="ws-weapon-name">${w.name}</div>
           <div class="ws-weapon-dmg" style="color:${ti.color}">${w.dmg} dmg</div>
+          ${trait ? `<div class="ws-weapon-trait" title="${trait.desc}">${trait.emoji}</div>` : ''}
           ${owned
-            ? `<button class="ws-btn ${equipped?'ws-btn-equipped':'ws-btn-equip'}" onclick="toggleEquip('${w.name}')">${equipped?'✓ Equipped':'Equip'}</button>`
-            : `<button class="ws-btn ws-btn-buy" onclick="buyWeapon('${w.name}')" ${canAfford&&currentUser?'':'disabled'}>${w.cost} 🪙</button>`
+            ? `<button class="ws-btn ${equipped?'ws-btn-equipped':'ws-btn-equip'}" onclick="toggleEquip('${w.name.replace(/'/g,"\\'")}')"> ${equipped?'✓ On':'Equip'}</button>`
+            : `<button class="ws-btn ws-btn-buy" onclick="buyWeapon('${w.name.replace(/'/g,"\\'")}'")" ${canAfford&&currentUser?'':'disabled'}>${w.cost} 🪙</button>`
           }
         </div>`;
       });
       html += `</div>`;
     }
-    html += `</div><p class="shop-hint">Equip up to ${LOADOUT_SIZE} weapons. They become your match loadout and determine available shield values.</p>`;
+    html += `</div><p class="shop-hint">Max ${LOADOUT_SIZE} weapons equipped. Shield values come from opponent's equipped weapons. New dmg = new shield for opponent.</p>`;
     body.innerHTML = html;
   }
 }
@@ -333,11 +632,8 @@ async function buyPotion() {
   if (!currentUser) { showToast("Sign in to buy potions!", "red"); return; }
   if (localTokens < POTION_COST) { showToast("Not enough tokens!", "red"); return; }
   if (localPotions >= 9) { showToast("Max 9 potions!", "red"); return; }
-  localTokens  -= POTION_COST;
-  localPotions += 1;
-  updateTokenDisplay();
-  await saveTokenData();
-  renderShopUI();
+  localTokens -= POTION_COST; localPotions += 1;
+  updateTokenDisplay(); await saveTokenData(); renderShopUI();
   showToast("Potion purchased! 🧪", "green");
 }
 
@@ -349,97 +645,69 @@ async function buyWeapon(name) {
   if (localTokens < w.cost) { showToast("Not enough tokens!", "red"); return; }
   localTokens -= w.cost;
   ownedWeapons.push(name);
-  updateTokenDisplay();
-  await saveTokenData();
-  renderShopUI();
-  showToast(`${w.emoji} ${w.name} unlocked!`, "gold");
+  updateTokenDisplay(); await saveTokenData(); renderShopUI();
+  showToast(w.emoji + " " + w.name + " unlocked!", "gold");
 }
 
 function toggleEquip(name) {
   if (!ownedWeapons.includes(name)) return;
   if (myLoadout.includes(name)) {
-    if (myLoadout.length <= 1) { showToast("Must have at least 1 weapon equipped!", "red"); return; }
+    if (myLoadout.length <= 1) { showToast("Must have at least 1 weapon!", "red"); return; }
     myLoadout = myLoadout.filter(n => n !== name);
-    showToast(`${ALL_WEAPONS.find(w=>w.name===name)?.emoji} ${name} unequipped`, "info");
+    showToast(ALL_WEAPONS.find(w=>w.name===name)?.emoji + " " + name + " unequipped", "info");
   } else {
-    if (myLoadout.length >= LOADOUT_SIZE) { showToast(`Max ${LOADOUT_SIZE} weapons equipped!`, "red"); return; }
+    if (myLoadout.length >= LOADOUT_SIZE) { showToast("Max " + LOADOUT_SIZE + " weapons equipped! Unequip one first.", "red"); return; }
     myLoadout.push(name);
-    showToast(`${ALL_WEAPONS.find(w=>w.name===name)?.emoji} ${name} equipped!`, "green");
+    showToast(ALL_WEAPONS.find(w=>w.name===name)?.emoji + " " + name + " equipped!", "green");
   }
-  saveTokenData();
-  renderShopUI();
+  saveTokenData(); renderShopUI();
 }
 
 // ══════════════════════════════════════════════
-// ARSENAL PANEL (full-screen loadout selector)
+// ARSENAL PANEL
 // ══════════════════════════════════════════════
-let arsenalFilter = 0; // 0 = all tiers, 1-5 = specific tier
+let arsenalFilter = 0;
 
-function showArsenal() {
-  arsenalFilter = 0;
-  renderArsenalPanel();
-  showScreen("screen-arsenal");
-}
-
-function hideArsenal() {
-  showScreen("screen-mode");
-}
-
-function setArsenalFilter(t) {
-  arsenalFilter = t;
-  renderArsenalPanel();
-}
+function showArsenal() { arsenalFilter = 0; renderArsenalPanel(); showScreen("screen-arsenal"); }
+function hideArsenal() { showScreen("screen-mode"); }
+function setArsenalFilter(t) { arsenalFilter = t; renderArsenalPanel(); }
 
 function renderArsenalPanel() {
   const equipped = myLoadout.length;
   const remaining = LOADOUT_SIZE - equipped;
-
-  // Header counts
   const el = document.getElementById("arsenalEquippedCount");
   if (el) el.textContent = equipped + " / " + LOADOUT_SIZE + " equipped";
-
   const hint = document.getElementById("arsenalHint");
   if (hint) {
-    if (remaining > 0) hint.textContent = "Select " + remaining + " more weapon" + (remaining === 1 ? "" : "s") + " to fill your loadout.";
-    else hint.textContent = "Loadout full! Unequip a weapon to swap.";
+    if (remaining > 0) hint.textContent = "Select " + remaining + " more to fill your loadout.";
+    else hint.textContent = "Loadout full! Unequip to swap.";
     hint.style.color = remaining === 0 ? "var(--green)" : "var(--text2)";
   }
-
-  // Shield preview
   const shieldPreview = document.getElementById("arsenalShieldPreview");
   if (shieldPreview) {
-    const shieldVals = getShieldValues(
-      myLoadout.map(n => ALL_WEAPONS.find(w => w.name === n)).filter(Boolean)
-    );
+    const shieldVals = getShieldValues(myLoadout.map(n => ALL_WEAPONS.find(w => w.name === n)).filter(Boolean));
     shieldPreview.innerHTML = shieldVals.map(v => {
       const blockers = ALL_WEAPONS.filter(w => w.dmg === v && myLoadout.includes(w.name));
       const ti = TIER_INFO[blockers[0]?.tier || 1];
       return `<div class="arsenal-shield-chip" title="Blocks: ${blockers.map(w=>w.name).join(", ")}" style="border-color:${ti.color};color:${ti.color};box-shadow:0 0 8px ${ti.glow}">${v}</div>`;
     }).join("");
   }
-
-  // Tier filter tabs
   const filterBar = document.getElementById("arsenalFilterBar");
   if (filterBar) {
     filterBar.innerHTML = `<button class="af-tab${arsenalFilter===0?' active':''}" onclick="setArsenalFilter(0)">All</button>` +
-      [1,2,3,4,5].map(t => {
+      [1,2,3,4,5,6].map(t => {
         const ti = TIER_INFO[t];
         const ownedCount = ALL_WEAPONS.filter(w => w.tier === t && ownedWeapons.includes(w.name)).length;
         if (!ownedCount) return "";
         return `<button class="af-tab${arsenalFilter===t?' active':''}" onclick="setArsenalFilter(${t})" style="${arsenalFilter===t?`background:${ti.color}22;color:${ti.color};border-color:${ti.color}`:''}">T${t} ${ti.name}</button>`;
       }).join("");
   }
-
-  // Weapon grid
   const grid = document.getElementById("arsenalGrid");
   if (!grid) return;
   grid.innerHTML = "";
-
   const filtered = arsenalFilter === 0
     ? ownedWeapons.map(n => ALL_WEAPONS.find(w => w.name === n)).filter(Boolean)
     : ALL_WEAPONS.filter(w => w.tier === arsenalFilter && ownedWeapons.includes(w.name));
-
-  // Sort: equipped first, then by tier, then by dmg
   filtered.sort((a, b) => {
     const ae = myLoadout.includes(a.name) ? 0 : 1;
     const be = myLoadout.includes(b.name) ? 0 : 1;
@@ -447,15 +715,14 @@ function renderArsenalPanel() {
     if (a.tier !== b.tier) return a.tier - b.tier;
     return a.dmg - b.dmg;
   });
-
   if (filtered.length === 0) {
     grid.innerHTML = `<div class="arsenal-empty">No weapons owned in this tier yet.<br><button class="btn-ghost" onclick="showShopFromArsenal()">🛒 Go to Shop</button></div>`;
     return;
   }
-
   filtered.forEach(w => {
     const isEquipped = myLoadout.includes(w.name);
     const ti = TIER_INFO[w.tier];
+    const trait = weaponTraits[w.name];
     const card = document.createElement("div");
     card.className = "arsenal-card" + (isEquipped ? " arsenal-equipped" : "");
     card.innerHTML = `
@@ -463,18 +730,13 @@ function renderArsenalPanel() {
       <div class="arsenal-card-emoji">${w.emoji}</div>
       <div class="arsenal-card-name">${w.name}</div>
       <div class="arsenal-card-dmg" style="color:${ti.color}">${w.dmg} dmg</div>
-      <div class="arsenal-card-tier" style="color:${ti.color}60;font-size:9px;letter-spacing:1px;font-family:var(--font-d)">T${w.tier} ${ti.name}</div>
-      <button class="arsenal-equip-btn ${isEquipped ? 'equipped' : ''}" onclick="arsenalToggle('${w.name}')">
+      ${trait ? `<div class="arsenal-trait-tag" title="${trait.desc}">${trait.emoji} ${trait.name}</div>` : ''}
+      <button class="arsenal-equip-btn ${isEquipped ? 'equipped' : ''}" onclick="arsenalToggle('${w.name.replace(/'/g,"\\'")}')">
         ${isEquipped ? '✓ Equipped' : '+ Equip'}
       </button>`;
     grid.appendChild(card);
   });
-
-  // Also show locked weapons (not owned) as a "Buy in Shop" hint at the bottom
-  const locked = ALL_WEAPONS.filter(w =>
-    !ownedWeapons.includes(w.name) &&
-    (arsenalFilter === 0 || w.tier === arsenalFilter)
-  );
+  const locked = ALL_WEAPONS.filter(w => !ownedWeapons.includes(w.name) && (arsenalFilter === 0 || w.tier === arsenalFilter));
   if (locked.length) {
     const section = document.createElement("div");
     section.className = "arsenal-locked-section";
@@ -488,7 +750,6 @@ function renderArsenalPanel() {
         <div class="arsenal-card-emoji" style="opacity:0.4">${w.emoji}</div>
         <div class="arsenal-card-name" style="opacity:0.5">${w.name}</div>
         <div class="arsenal-card-dmg" style="color:${ti.color}80">${w.dmg} dmg</div>
-        <div class="arsenal-card-tier" style="color:${ti.color}50;font-size:9px;letter-spacing:1px;font-family:var(--font-d)">T${w.tier} ${ti.name}</div>
         <button class="arsenal-equip-btn buy" onclick="showShopFromArsenal()">${w.cost} 🪙</button>`;
       section.appendChild(card);
     });
@@ -500,29 +761,20 @@ function arsenalToggle(name) {
   const w = ALL_WEAPONS.find(x => x.name === name);
   if (!w || !ownedWeapons.includes(name)) return;
   if (myLoadout.includes(name)) {
-    if (myLoadout.length <= 1) { showToast("Must keep at least 1 weapon equipped!", "red"); return; }
+    if (myLoadout.length <= 1) { showToast("Must keep at least 1 weapon!", "red"); return; }
     myLoadout = myLoadout.filter(n => n !== name);
     showToast(w.emoji + " " + name + " unequipped", "info");
   } else {
-    if (myLoadout.length >= LOADOUT_SIZE) { showToast("Max " + LOADOUT_SIZE + " weapons equipped!", "red"); return; }
+    if (myLoadout.length >= LOADOUT_SIZE) { showToast("Max " + LOADOUT_SIZE + " weapons! Unequip one first.", "red"); return; }
     myLoadout.push(name);
     showToast(w.emoji + " " + name + " equipped!", "green");
   }
-  saveTokenData();
-  renderArsenalPanel();
+  saveTokenData(); renderArsenalPanel();
 }
 
-function showShopFromArsenal() {
-  hideArsenal();
-  showScreen("screen-mode");
-  setTimeout(() => showShop(), 50);
-}
-
-// Legacy settings shim — redirect to Arsenal
+function showShopFromArsenal() { hideArsenal(); showScreen("screen-mode"); setTimeout(() => showShop(), 50); }
 function showSettings() { showArsenal(); }
 function hideSettings() { hideArsenal(); }
-
-// OLD settings helpers — kept for compat but now delegate
 function settingsToggleWeapon(name, checked) {
   if (checked) {
     if (myLoadout.length >= LOADOUT_SIZE) { showToast("Max " + LOADOUT_SIZE + " weapons!", "red"); return; }
@@ -531,8 +783,7 @@ function settingsToggleWeapon(name, checked) {
     if (myLoadout.length <= 1) { showToast("Must have at least 1 weapon!", "red"); return; }
     myLoadout = myLoadout.filter(n => n !== name);
   }
-  saveTokenData();
-  renderArsenalPanel();
+  saveTokenData(); renderArsenalPanel();
 }
 
 // ══════════════════════════════════════════════
@@ -551,7 +802,7 @@ function setAuthTab(mode) {
 function setAuthLoading(on) {
   document.getElementById("authSubmit").disabled = on;
   document.getElementById("authSubmitSpinner").classList.toggle("hidden", !on);
-  document.getElementById("authSubmitText").textContent = on ? "\u2026" : (authMode === "login" ? "Enter the Arena" : "Create Account");
+  document.getElementById("authSubmitText").textContent = on ? "…" : (authMode === "login" ? "Enter the Arena" : "Create Account");
 }
 
 function setAuthError(msg, ok) {
@@ -561,7 +812,7 @@ function setAuthError(msg, ok) {
 }
 
 async function signUp(username, password) {
-  if (!USERNAME_REGEX.test(username)) { setAuthError("Username: 3\u201315 chars, letters/numbers/underscores only."); return; }
+  if (!USERNAME_REGEX.test(username)) { setAuthError("Username: 3–15 chars, letters/numbers/underscores only."); return; }
   if (password.length < 6) { setAuthError("Password must be at least 6 characters."); return; }
   setAuthLoading(true);
   try {
@@ -569,14 +820,11 @@ async function signUp(username, password) {
     if (ex) { setAuthError("Username already taken."); return; }
     const hashed = await hashPassword(password);
     const { data, error } = await db.from("players")
-      .insert({ username: username.toLowerCase(), password_hash: hashed, tokens: 0, potions: 0 })
+      .insert({ username: username.toLowerCase(), password_hash: hashed, tokens: 0, potions: 0, xp: 0 })
       .select("id, username").single();
     if (error) { setAuthError("Sign up failed: " + error.message); return; }
-    setAuthError("Account created! Signing you in\u2026", true);
-    setTimeout(() => {
-      saveSession({ id: data.id, username: data.username });
-      updateUserPill(); loadTokenData(); showScreen("screen-mode");
-    }, 800);
+    setAuthError("Account created! Signing you in…", true);
+    setTimeout(() => { saveSession({ id: data.id, username: data.username }); updateUserPill(); loadTokenData(); showScreen("screen-mode"); }, 800);
   } catch(e) { setAuthError("Something went wrong."); }
   finally { setAuthLoading(false); }
 }
@@ -589,9 +837,7 @@ async function signIn(username, password) {
     if (!data) { setAuthError("Username not found."); return; }
     if (await hashPassword(password) !== data.password_hash) { setAuthError("Incorrect password."); return; }
     saveSession({ id: data.id, username: data.username });
-    updateUserPill();
-    await loadTokenData();
-    showScreen("screen-mode");
+    updateUserPill(); await loadTokenData(); showScreen("screen-mode");
   } catch(e) { setAuthError("Something went wrong."); }
   finally { setAuthLoading(false); }
 }
@@ -602,15 +848,16 @@ function handleAuth() {
   if (authMode === "signup") signUp(u, p); else signIn(u, p);
 }
 
-function playAsGuest() { clearSession(); localTokens = 0; localPotions = 0; updateUserPill(); updateTokenDisplay(); showScreen("screen-mode"); }
-function logout()      { clearSession(); localTokens = 0; localPotions = 0; updateUserPill(); updateTokenDisplay(); showScreen("screen-auth"); }
+function playAsGuest() { clearSession(); localTokens = 0; localPotions = 0; localXP = 0; weaponTraits = {}; updateUserPill(); updateTokenDisplay(); showScreen("screen-mode"); }
+function logout() { clearSession(); localTokens = 0; localPotions = 0; localXP = 0; weaponTraits = {}; updateUserPill(); updateTokenDisplay(); showScreen("screen-auth"); }
 
 function updateUserPill() {
   const pill = document.getElementById("userPill");
-  const btn  = document.getElementById("logoutBtn");
+  const btn = document.getElementById("logoutBtn");
   if (!pill) return;
   if (currentUser) {
-    pill.textContent = "\u2694 " + currentUser.username;
+    const lvl = getCurrentLevel(localXP);
+    pill.textContent = lvl.badge + " " + currentUser.username;
     if (btn) btn.style.display = "";
     const mw = document.getElementById("modeWelcome");
     if (mw) mw.textContent = "Welcome, " + currentUser.username;
@@ -652,21 +899,32 @@ function freshGameState(names) {
   };
 }
 
+// ── Shield values are derived from OPPONENT's loadout ──
+// For now in local modes, both players share the same pool.
+// Shield values come from the match weapon pool dmg values.
+function buildShieldValuesForPlayer(playerWeapons, opponentWeapons) {
+  // Shields available to a player = damage values from OPPONENT's equipped weapons
+  const dmgSet = new Set(opponentWeapons.map(w => w.dmg));
+  return [...dmgSet].sort((a, b) => a - b);
+}
+
+let SHIELD_VALUES_A = []; // shields available to player A (from B's weapons)
+let SHIELD_VALUES_B = []; // shields available to player B (from A's weapons)
+
 function initGame(mode, names) {
-  // Build match weapon pool from player's loadout
   WEAPONS = myLoadout.map(n => ALL_WEAPONS.find(w => w.name === n)).filter(Boolean);
   if (!WEAPONS.length) WEAPONS = ALL_WEAPONS.filter(w => STARTER_WEAPON_NAMES.includes(w.name));
+  // In local games, both players have same weapons so shields are symmetric
   SHIELD_VALUES = getShieldValues(WEAPONS);
-
+  SHIELD_VALUES_A = SHIELD_VALUES;
+  SHIELD_VALUES_B = SHIELD_VALUES;
   const n = names || {
     A: currentUser ? currentUser.username : "Player A",
     B: mode === "ai" ? "The Machine" : "Player B",
   };
   gs = freshGameState(n);
-  specialActive = false;
-  specialGuesserNow = "A";
-  renderGame();
-  initEmojiChat();
+  specialActive = false; specialGuesserNow = "A";
+  renderGame(); initEmojiChat();
 }
 
 // ══════════════════════════════════════════════
@@ -676,20 +934,20 @@ let bossHp = BOSS_HP_MAX;
 
 function initBossGame() {
   bossHp = BOSS_HP_MAX;
+  WEAPONS = myLoadout.map(n => ALL_WEAPONS.find(w => w.name === n)).filter(Boolean);
+  if (!WEAPONS.length) WEAPONS = ALL_WEAPONS.filter(w => STARTER_WEAPON_NAMES.includes(w.name));
+  SHIELD_VALUES = getShieldValues(WEAPONS);
   const n = { A: currentUser ? currentUser.username : "Player A", B: "Player B" };
   gs = freshGameState(n);
-  renderBossGame();
-  initEmojiChat();
+  renderBossGame(); initEmojiChat();
 }
 
 function renderBossGame() {
-  document.getElementById("gsRound").textContent = "\u2694 Boss Battle";
+  document.getElementById("gsRound").textContent = "⚔ Boss Battle";
   document.getElementById("gsShot").textContent  = "Boss HP: " + bossHp + "/" + BOSS_HP_MAX;
   document.getElementById("hpNameA").textContent = gs.names.A;
   document.getElementById("hpNameB").textContent = gs.names.B;
-  updateHPBars();
-  renderAvailableWeapons();
-  hideOnlineWaiting();
+  updateHPBars(); renderAvailableWeapons(); hideOnlineWaiting();
   if (gs.phase === "A") renderPlayerATurn(true);
   else renderPlayerBTurn(true);
 }
@@ -701,87 +959,68 @@ function resolveBossShot(choiceA, choiceB) {
   const dmgBossFromB = choiceB.weapon ? Math.abs(bossShield - choiceB.weapon.dmg) : 0;
   const dmgToA = choiceA.shield != null ? Math.abs(choiceA.shield - bossWeapon.dmg) : bossWeapon.dmg;
   const dmgToB = choiceB.shield != null ? Math.abs(choiceB.shield - bossWeapon.dmg) : bossWeapon.dmg;
-
   const prevHp = bossHp;
   bossHp = Math.max(0, bossHp - dmgBossFromA - dmgBossFromB);
   if (!choiceA.potion) gs.hpA = Math.max(0, gs.hpA - dmgToA);
   else gs.hpA = Math.min(MAX_HP, gs.hpA + POTION_HEAL);
   if (!choiceB.potion) gs.hpB = Math.max(0, gs.hpB - dmgToB);
   else gs.hpB = Math.min(MAX_HP, gs.hpB + POTION_HEAL);
-
   let killingBlow = null;
-  if (bossHp === 0 && prevHp > 0) {
-    killingBlow = (prevHp - dmgBossFromA) <= 0 ? "A" : "B";
-  }
-
+  if (bossHp === 0 && prevHp > 0) { killingBlow = (prevHp - dmgBossFromA) <= 0 ? "A" : "B"; }
   showBossResult(choiceA, choiceB, bossWeapon, bossShield, dmgToA, dmgToB, dmgBossFromA, dmgBossFromB, killingBlow);
 }
 
 function showBossResult(cA, cB, bossW, bossS, dmgA, dmgB, dmgBA, dmgBB, killingBlow) {
   document.getElementById("rdNameA").textContent = gs.names.A;
   document.getElementById("rdNameB").textContent = gs.names.B;
-  document.getElementById("rdWeaponA").textContent = cA.potion ? "\uD83E\uDDEA Healed" : (cA.weapon.emoji + " " + cA.weapon.name + " \u2192 " + dmgBA + " dmg to Boss");
-  document.getElementById("rdWeaponB").textContent = cB.potion ? "\uD83E\uDDEA Healed" : (cB.weapon.emoji + " " + cB.weapon.name + " \u2192 " + dmgBB + " dmg to Boss");
-  document.getElementById("rdShieldA").textContent = cA.potion ? "+"+POTION_HEAL+" HP" : "\uD83D\uDEE1 " + cA.shield;
-  document.getElementById("rdShieldB").textContent = cB.potion ? "+"+POTION_HEAL+" HP" : "\uD83D\uDEE1 " + cB.shield;
-
-  const eA = document.getElementById("rdDmgA");
-  const eB = document.getElementById("rdDmgB");
+  document.getElementById("rdWeaponA").textContent = cA.potion ? "🧪 Healed" : (cA.weapon.emoji + " " + cA.weapon.name + " → " + dmgBA + " dmg to Boss");
+  document.getElementById("rdWeaponB").textContent = cB.potion ? "🧪 Healed" : (cB.weapon.emoji + " " + cB.weapon.name + " → " + dmgBB + " dmg to Boss");
+  document.getElementById("rdShieldA").textContent = cA.potion ? "+" + POTION_HEAL + " HP" : "🛡 " + cA.shield;
+  document.getElementById("rdShieldB").textContent = cB.potion ? "+" + POTION_HEAL + " HP" : "🛡 " + cB.shield;
+  const eA = document.getElementById("rdDmgA"), eB = document.getElementById("rdDmgB");
   eA.className = (dmgA === 0 || cA.potion) ? "rd-dmg no-dmg" : "rd-dmg";
-  eA.textContent = cA.potion ? "+"+POTION_HEAL+" HP \uD83E\uDDEA" : (dmgA === 0 ? "\u2746 Perfect Block!" : "\u2212"+dmgA+" HP");
+  eA.textContent = cA.potion ? "+" + POTION_HEAL + " HP 🧪" : (dmgA === 0 ? "✦ Perfect Block!" : "−" + dmgA + " HP");
   eB.className = (dmgB === 0 || cB.potion) ? "rd-dmg no-dmg" : "rd-dmg";
-  eB.textContent = cB.potion ? "+"+POTION_HEAL+" HP \uD83E\uDDEA" : (dmgB === 0 ? "\u2746 Perfect Block!" : "\u2212"+dmgB+" HP");
-
-  const hpEl  = document.getElementById("resultHpSummary");
-  const nBtn  = document.getElementById("resultNextBtn");
-
+  eB.textContent = cB.potion ? "+" + POTION_HEAL + " HP 🧪" : (dmgB === 0 ? "✦ Perfect Block!" : "−" + dmgB + " HP");
+  const hpEl = document.getElementById("resultHpSummary");
+  const nBtn = document.getElementById("resultNextBtn");
   if (bossHp <= 0) {
     const winner = killingBlow === "A" ? gs.names.A : gs.names.B;
-    hpEl.innerHTML = "\uD83C\uDFC6 " + winner + " landed the killing blow! Boss defeated!";
-    nBtn.textContent = "Claim Reward \u2192";
+    hpEl.innerHTML = "🏆 " + winner + " landed the killing blow! Boss defeated!";
+    nBtn.textContent = "Claim Reward →";
     nBtn.onclick = () => claimBossReward(killingBlow);
   } else if (gs.hpA <= 0 && gs.hpB <= 0) {
-    hpEl.innerHTML = "\uD83D\uDC80 Both players fell. Boss survives with " + bossHp + " HP.";
-    nBtn.textContent = "Retreat \u2192";
+    hpEl.innerHTML = "💀 Both players fell. Boss survives with " + bossHp + " HP.";
+    nBtn.textContent = "Retreat →";
     nBtn.onclick = () => showScreen("screen-mode");
   } else {
-    hpEl.innerHTML = bossW.emoji + " Boss: " + bossW.name + " (Shield " + bossS + ") &nbsp;|&nbsp; Boss HP: <strong>" + bossHp + "</strong>/" + BOSS_HP_MAX + " &nbsp;|&nbsp; " + gs.names.A + ": " + gs.hpA + " HP &nbsp;|&nbsp; " + gs.names.B + ": " + gs.hpB + " HP";
-    nBtn.textContent = "Next Shot \u2192";
+    hpEl.innerHTML = bossW.emoji + " Boss: " + bossW.name + " (Shield " + bossS + ") | Boss HP: <strong>" + bossHp + "</strong>/" + BOSS_HP_MAX + " | " + gs.names.A + ": " + gs.hpA + " HP | " + gs.names.B + ": " + gs.hpB + " HP";
+    nBtn.textContent = "Next Shot →";
     nBtn.onclick = nextBossShot;
   }
   showScreen("screen-result");
 }
 
 async function claimBossReward(winner) {
-  if (winner === "A" && currentUser) await awardTokens(BOSS_TOKENS, "Boss Kill!");
-  else if (winner === "B" && currentUser) await awardTokens(BOSS_TOKENS, "Boss Kill!");
+  if (currentUser) {
+    await awardTokens(BOSS_TOKENS, "Boss Kill!");
+    await awardXP("boss");
+  }
   showScreen("screen-mode");
 }
 
-function nextBossShot() {
-  gs.shot++; gs.phase = "A";
-  showScreen("screen-game");
-  renderBossGame();
-}
+function nextBossShot() { gs.shot++; gs.phase = "A"; showScreen("screen-game"); renderBossGame(); }
 
 // ══════════════════════════════════════════════
 // RENDER (normal game)
 // ══════════════════════════════════════════════
 function renderGame() {
-  document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "\u26A1 Sudden Death" : "Round " + gs.round + " / " + TOTAL_ROUNDS;
+  document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "⚡ Sudden Death" : "Round " + gs.round + " / " + TOTAL_ROUNDS;
   document.getElementById("gsShot").textContent  = "Shot " + gs.shot + " / " + SHOTS_PER_ROUND;
   document.getElementById("hpNameA").textContent = gs.names.A;
   document.getElementById("hpNameB").textContent = gs.names.B;
-  updateHPBars();
-  renderAvailableWeapons();
-  hideOnlineWaiting();
-
-  // 0.1% chance special shot
-  if (!specialActive && Math.random() < SPECIAL_CHANCE) {
-    triggerSpecialShot();
-    return;
-  }
-
+  updateHPBars(); renderAvailableWeapons(); hideOnlineWaiting();
+  if (!specialActive && Math.random() < SPECIAL_CHANCE) { triggerSpecialShot(); return; }
   if (gs.phase === "A") renderPlayerATurn(false);
   else renderPlayerBTurn(false);
 }
@@ -789,10 +1028,8 @@ function renderGame() {
 function updateHPBars() {
   const pctA = Math.max(0, gs.hpA / MAX_HP * 100);
   const pctB = Math.max(0, gs.hpB / MAX_HP * 100);
-  const barA = document.getElementById("hpBarA");
-  const barB = document.getElementById("hpBarB");
-  barA.style.width = pctA + "%";
-  barB.style.width = pctB + "%";
+  const barA = document.getElementById("hpBarA"), barB = document.getElementById("hpBarB");
+  barA.style.width = pctA + "%"; barB.style.width = pctB + "%";
   document.getElementById("hpNumA").textContent = gs.hpA;
   document.getElementById("hpNumB").textContent = gs.hpB;
   barA.style.background = pctA > 50 ? "var(--green)" : pctA > 25 ? "#facc15" : "var(--red)";
@@ -809,13 +1046,14 @@ function renderAvailableWeapons() {
   WEAPONS.forEach(w => {
     const c = document.createElement("span");
     c.className = "aw-chip" + (gs.usedWeapons.includes(w.name) ? " used" : "");
-    c.textContent = w.emoji + " " + w.name;
+    const trait = weaponTraits[w.name];
+    c.textContent = w.emoji + " " + w.name + (trait ? " " + trait.emoji : "");
     list.appendChild(c);
   });
 }
 
 function showOnlineWaiting(msg) {
-  document.getElementById("onlineWaitingText").textContent = msg || "Waiting for opponent\u2026";
+  document.getElementById("onlineWaitingText").textContent = msg || "Waiting for opponent…";
   document.getElementById("onlineWaitingOverlay").classList.remove("hidden");
   document.getElementById("turnPanel").style.display = "none";
 }
@@ -827,37 +1065,31 @@ function hideOnlineWaiting() {
 // ══════════════════════════════════════════════
 // SPECIAL SHOT
 // ══════════════════════════════════════════════
-let specialActive = false;
-let specialGuesserNow = "A";
-let specialHiddenWeapon = null;
+let specialActive = false, specialGuesserNow = "A", specialHiddenWeapon = null;
 
 function triggerSpecialShot() {
   specialActive = true;
-  showToast("\u2728 SPECIAL SHOT triggered!", "gold");
+  showToast("✨ SPECIAL SHOT triggered!", "gold");
   renderSpecialTurn();
 }
 
 function renderSpecialTurn() {
   specialHiddenWeapon = WEAPONS[Math.floor(Math.random() * WEAPONS.length)];
-  const guesser   = specialGuesserNow;
+  const guesser = specialGuesserNow;
   const targetName = guesser === "A" ? gs.names.B : gs.names.A;
   const meName     = guesser === "A" ? gs.names.A : gs.names.B;
   const myScore    = guesser === "A" ? gs.specialScoreA : gs.specialScoreB;
   const theirScore = guesser === "A" ? gs.specialScoreB : gs.specialScoreA;
-
   const panel = document.getElementById("turnPanel");
   panel.innerHTML =
     '<div class="turn-header">' +
-      '<div class="turn-player-badge special-badge">\u2728 Special Shot \u2014 ' + meName + '\'s Turn</div>' +
-      '<div class="turn-phase">Guess ' + targetName + '\'s hidden weapon! &nbsp; Score: ' + meName + ' <strong>' + myScore + '</strong> \u2014 ' + targetName + ' <strong>' + theirScore + '</strong> &nbsp; (first to ' + SPECIAL_WINS_NEED + ' wins \uD83E\uDE99' + SPECIAL_TOKENS + ')</div>' +
+      '<div class="turn-player-badge special-badge">✨ Special Shot — ' + meName + '\'s Turn</div>' +
+      '<div class="turn-phase">Guess ' + targetName + '\'s hidden weapon! Score: ' + meName + ' <strong>' + myScore + '</strong> — ' + targetName + ' <strong>' + theirScore + '</strong> (first to ' + SPECIAL_WINS_NEED + ' wins 🪙' + SPECIAL_TOKENS + ')</div>' +
     '</div>' +
-    '<div class="choice-section">' +
-      '<label class="choice-label">Guess ' + targetName + '\'s Weapon</label>' +
-      '<div class="weapon-grid" id="specialGuessGrid"></div>' +
-    '</div>' +
-    '<button class="btn-confirm" id="confirmBtn" onclick="confirmSpecialGuess()" disabled>Submit Guess \u2192</button>' +
+    '<div class="choice-section"><label class="choice-label">Guess ' + targetName + '\'s Weapon</label>' +
+      '<div class="weapon-grid" id="specialGuessGrid"></div></div>' +
+    '<button class="btn-confirm" id="confirmBtn" onclick="confirmSpecialGuess()" disabled>Submit Guess →</button>' +
     '<p id="gameError" class="form-error"></p>';
-
   window._specialSel = null;
   renderWeaponGrid("specialGuessGrid", WEAPONS, function(w) {
     window._specialSel = w;
@@ -869,47 +1101,35 @@ function renderSpecialTurn() {
 function confirmSpecialGuess() {
   const guessed = window._specialSel;
   if (!guessed) return;
-  const correct  = guessed.name === specialHiddenWeapon.name;
-  const guesser  = specialGuesserNow;
-
+  const correct = guessed.name === specialHiddenWeapon.name;
+  const guesser = specialGuesserNow;
   if (correct) {
     if (guesser === "A") gs.specialScoreA++; else gs.specialScoreB++;
-    showToast("\u2705 Correct! " + specialHiddenWeapon.emoji + " " + specialHiddenWeapon.name, "green");
+    showToast("✅ Correct! " + specialHiddenWeapon.emoji + " " + specialHiddenWeapon.name, "green");
   } else {
-    showToast("\u274C Wrong! It was " + specialHiddenWeapon.emoji + " " + specialHiddenWeapon.name, "red");
+    showToast("❌ Wrong! It was " + specialHiddenWeapon.emoji + " " + specialHiddenWeapon.name, "red");
   }
-
-  if (gs.specialScoreA >= SPECIAL_WINS_NEED || gs.specialScoreB >= SPECIAL_WINS_NEED) {
-    endSpecialRound();
-    return;
-  }
-
-  // Alternate guesser
+  if (gs.specialScoreA >= SPECIAL_WINS_NEED || gs.specialScoreB >= SPECIAL_WINS_NEED) { endSpecialRound(); return; }
   specialGuesserNow = guesser === "A" ? "B" : "A";
-
   if (gameMode === "hotseat") {
-    // Show pass screen so they can hand the device
     document.getElementById("passTitle").textContent    = "Pass to " + (specialGuesserNow === "A" ? gs.names.A : gs.names.B);
-    document.getElementById("passSubtitle").textContent = "Next: " + (specialGuesserNow === "A" ? gs.names.A : gs.names.B) + " makes a Special Shot guess.";
+    document.getElementById("passSubtitle").textContent = "Next: Special Shot guess.";
     showScreen("screen-pass");
-  } else {
-    renderSpecialTurn();
-  }
+  } else { renderSpecialTurn(); }
 }
 
 async function endSpecialRound() {
   const aWon = gs.specialScoreA >= SPECIAL_WINS_NEED;
   const winnerName = aWon ? gs.names.A : gs.names.B;
-  showToast("\uD83C\uDFC6 " + winnerName + " wins the Special Round! +" + SPECIAL_TOKENS + " \uD83E\uDE99", "gold");
-  if (aWon && currentUser) await awardTokens(SPECIAL_TOKENS, "Special Round Win!");
-  gs.specialScoreA = 0; gs.specialScoreB = 0;
-  specialActive = false; specialGuesserNow = "A";
+  showToast("🏆 " + winnerName + " wins the Special Round! +" + SPECIAL_TOKENS + " 🪙", "gold");
+  if (aWon && currentUser) { await awardTokens(SPECIAL_TOKENS, "Special Round Win!"); await awardXP("special"); }
+  gs.specialScoreA = 0; gs.specialScoreB = 0; specialActive = false; specialGuesserNow = "A";
   restoreTurnPanel();
   setTimeout(function() { gs.phase = "A"; renderGame(); }, 1500);
 }
 
 // ══════════════════════════════════════════════
-// TURN PANEL — restore standard HTML after special shot overwrites it
+// TURN PANEL RESTORE
 // ══════════════════════════════════════════════
 function restoreTurnPanel() {
   const tp = document.getElementById("turnPanel");
@@ -917,18 +1137,12 @@ function restoreTurnPanel() {
   tp.innerHTML =
     '<div class="turn-header">' +
       '<div class="turn-player-badge" id="turnBadge">Player A\'s Turn</div>' +
-      '<div class="turn-phase" id="turnPhase">Choose your weapon &amp; shield</div>' +
+      '<div class="turn-phase" id="turnPhase">Choose your weapon & shield</div>' +
     '</div>' +
-    '<div class="choice-section">' +
-      '<label class="choice-label">Your Weapon</label>' +
-      '<div class="weapon-grid" id="weaponGrid"></div>' +
-    '</div>' +
-    '<div class="choice-section">' +
-      '<label class="choice-label">Shield Points <span class="shield-hint">(5\u201311)</span></label>' +
-      '<div class="shield-grid" id="shieldGrid"></div>' +
-    '</div>' +
+    '<div class="choice-section"><label class="choice-label">Your Weapon</label><div class="weapon-grid" id="weaponGrid"></div></div>' +
+    '<div class="choice-section"><label class="choice-label">Shield Points <span class="shield-hint">(5–15)</span></label><div class="shield-grid" id="shieldGrid"></div></div>' +
     '<div class="choice-section" id="potionRow"></div>' +
-    '<button class="btn-confirm" id="confirmBtn" onclick="confirmChoice()" disabled>Confirm \u2192</button>' +
+    '<button class="btn-confirm" id="confirmBtn" onclick="confirmChoice()" disabled>Confirm →</button>' +
     '<p id="gameError" class="form-error"></p>';
 }
 
@@ -939,16 +1153,14 @@ let selWeaponA = null, selShieldA = null, usingPotionA = false;
 
 function renderPlayerATurn(isBoss) {
   selWeaponA = null; selShieldA = null; usingPotionA = false;
-  const badge = document.getElementById("turnBadge");
-  const phase = document.getElementById("turnPhase");
+  const badge = document.getElementById("turnBadge"), phase = document.getElementById("turnPhase");
   if (badge) badge.textContent = gs.names.A + "'s Turn";
-  if (phase) phase.textContent = isBoss
-    ? "Choose your weapon & shield to attack the Boss!"
-    : "Choose your weapon & shield \u2014 hidden from your opponent.";
+  if (phase) phase.textContent = isBoss ? "Choose your weapon & shield to attack the Boss!" : "Choose your weapon & shield — hidden from your opponent.";
   const cb = document.getElementById("confirmBtn");
   if (cb) cb.disabled = true;
   renderWeaponGrid("weaponGrid", WEAPONS, function(w) { selWeaponA = w; usingPotionA = false; checkAReady(); });
-  renderShieldGrid("shieldGrid", function(v) { selShieldA = v; checkAReady(); }, null);
+  // Shield values for A = dmg values from WEAPONS (opponent B's potential weapons)
+  renderShieldGrid("shieldGrid", SHIELD_VALUES_A.length ? SHIELD_VALUES_A : getShieldValues(WEAPONS), function(v) { selShieldA = v; checkAReady(); }, null);
   renderPotionRow("potionRow", "A");
 }
 function checkAReady() {
@@ -963,21 +1175,16 @@ let selWeaponB = null, selShieldB = null, usingPotionB = false;
 
 function renderPlayerBTurn(isBoss) {
   selWeaponB = null; selShieldB = null; usingPotionB = false;
-  const badge = document.getElementById("turnBadge");
-  const phase = document.getElementById("turnPhase");
+  const badge = document.getElementById("turnBadge"), phase = document.getElementById("turnPhase");
   if (badge) badge.textContent = gs.names.B + "'s Turn";
-  // Tell Player B what weapon A locked in so they can see the perfect counter
   const aWeapon = gs.pendingA && gs.pendingA.weapon ? gs.pendingA.weapon : null;
-  if (phase) phase.textContent = isBoss
-    ? "Choose your weapon & shield to attack the Boss!"
-    : aWeapon
-      ? gs.names.A + " has locked in. Pick your weapon & shield \u2014 shield " + aWeapon.dmg + " perfectly counters their weapon!"
-      : "Pick your weapon & shield.";
+  if (phase) phase.textContent = isBoss ? "Choose your weapon & shield to attack the Boss!" :
+    aWeapon ? gs.names.A + " locked in. Pick weapon & shield — shield " + aWeapon.dmg + " perfectly counters!" : "Pick your weapon & shield.";
   const cb = document.getElementById("confirmBtn");
   if (cb) cb.disabled = true;
   const bAvail = isBoss ? WEAPONS : WEAPONS.filter(function(w) { return w.name !== (gs.pendingA && gs.pendingA.weapon ? gs.pendingA.weapon.name : null); });
   renderWeaponGrid("weaponGrid", bAvail, function(w) { selWeaponB = w; usingPotionB = false; checkBReady(); });
-  renderShieldGrid("shieldGrid", function(v) { selShieldB = v; checkBReady(); }, aWeapon ? aWeapon.dmg : null);
+  renderShieldGrid("shieldGrid", SHIELD_VALUES_B.length ? SHIELD_VALUES_B : getShieldValues(WEAPONS), function(v) { selShieldB = v; checkBReady(); }, aWeapon ? aWeapon.dmg : null);
   renderPotionRow("potionRow", "B");
 }
 function checkBReady() {
@@ -993,11 +1200,9 @@ function renderPotionRow(rowId, player) {
   if (!row) return;
   const count = player === "A" ? gs.potionsA : gs.potionsB;
   if (!count || count <= 0) { row.innerHTML = ""; return; }
-  row.innerHTML =
-    '<label class="choice-label">Potions (' + count + ' left)</label>' +
-    '<button class="btn-potion" id="potionBtn' + player + '" onclick="togglePotion(\'' + player + '\')">'+
-      '\uD83E\uDDEA Use Potion (+' + POTION_HEAL + ' HP)' +
-    '</button>';
+  row.innerHTML = '<label class="choice-label">Potions (' + count + ' left)</label>' +
+    '<button class="btn-potion" id="potionBtn' + player + '" onclick="togglePotion(\'' + player + '\')">' +
+    '🧪 Use Potion (+' + POTION_HEAL + ' HP)</button>';
 }
 
 function togglePotion(player) {
@@ -1006,16 +1211,16 @@ function togglePotion(player) {
     if (usingPotionA) { selWeaponA = null; selShieldA = null; }
     const btn = document.getElementById("potionBtnA");
     if (btn) btn.classList.toggle("potion-active", usingPotionA);
-    document.querySelectorAll("#weaponGrid .weapon-btn").forEach(function(b) { b.classList.toggle("weapon-dimmed", usingPotionA); });
-    document.querySelectorAll("#shieldGrid .shield-btn").forEach(function(b) { b.classList.toggle("weapon-dimmed", usingPotionA); });
+    document.querySelectorAll("#weaponGrid .weapon-btn").forEach(b => b.classList.toggle("weapon-dimmed", usingPotionA));
+    document.querySelectorAll("#shieldGrid .shield-btn").forEach(b => b.classList.toggle("weapon-dimmed", usingPotionA));
     checkAReady();
   } else {
     usingPotionB = !usingPotionB;
     if (usingPotionB) { selWeaponB = null; selShieldB = null; }
     const btn = document.getElementById("potionBtnB");
     if (btn) btn.classList.toggle("potion-active", usingPotionB);
-    document.querySelectorAll("#weaponGrid .weapon-btn").forEach(function(b) { b.classList.toggle("weapon-dimmed", usingPotionB); });
-    document.querySelectorAll("#shieldGrid .shield-btn").forEach(function(b) { b.classList.toggle("weapon-dimmed", usingPotionB); });
+    document.querySelectorAll("#weaponGrid .weapon-btn").forEach(b => b.classList.toggle("weapon-dimmed", usingPotionB));
+    document.querySelectorAll("#shieldGrid .shield-btn").forEach(b => b.classList.toggle("weapon-dimmed", usingPotionB));
     checkBReady();
   }
 }
@@ -1029,15 +1234,16 @@ function renderWeaponGrid(gridId, weapons, onSelect) {
   grid.innerHTML = "";
   weapons.forEach(function(w) {
     const ti = TIER_INFO[w.tier] || TIER_INFO[1];
+    const trait = weaponTraits[w.name];
     const btn = document.createElement("button");
     btn.className = "weapon-btn";
     btn.style.position = "relative";
     btn.innerHTML =
-      "<span>" + w.emoji + " " + w.name + "</span>" +
-      "<span class=\"weapon-dmg\">" + w.dmg + " dmg</span>" +
-      "<span class=\"weapon-tier\" style=\"background:" + ti.color + "22;color:" + ti.color + ";border:1px solid " + ti.color + "44\">T" + w.tier + "</span>";
+      "<span>" + w.emoji + " " + w.name + (trait ? " <span class='weapon-trait-dot' title='" + trait.name + ": " + trait.desc + "'>" + trait.emoji + "</span>" : "") + "</span>" +
+      "<span class='weapon-dmg'>" + w.dmg + " dmg</span>" +
+      "<span class='weapon-tier' style='background:" + ti.color + "22;color:" + ti.color + ";border:1px solid " + ti.color + "44'>T" + w.tier + "</span>";
     btn.onclick = function() {
-      grid.querySelectorAll(".weapon-btn").forEach(function(b) { b.classList.remove("selected"); });
+      grid.querySelectorAll(".weapon-btn").forEach(b => b.classList.remove("selected"));
       btn.classList.add("selected");
       onSelect(w);
     };
@@ -1045,28 +1251,24 @@ function renderWeaponGrid(gridId, weapons, onSelect) {
   });
 }
 
-function renderShieldGrid(gridId, onSelect, perfectCounterDmg) {
+function renderShieldGrid(gridId, shieldValues, onSelect, perfectCounterDmg) {
   const grid = document.getElementById(gridId);
   if (!grid) return;
   grid.innerHTML = "";
-  // Build a map of dmg → weapons (from active match WEAPONS)
   const weaponByVal = {};
   WEAPONS.forEach(function(w) {
     if (!weaponByVal[w.dmg]) weaponByVal[w.dmg] = [];
     weaponByVal[w.dmg].push(w.emoji + " " + w.name);
   });
-  SHIELD_VALUES.forEach(function(v) {
+  shieldValues.forEach(function(v) {
     const btn = document.createElement("button");
     const isPerfect = (perfectCounterDmg !== null && perfectCounterDmg !== undefined && v === perfectCounterDmg);
     btn.className = "shield-btn" + (isPerfect ? " perfect-counter" : "");
     btn.textContent = v;
-    if (isPerfect) {
-      btn.title = "Perfect counter — blocks opponent\u2019s weapon!";
-    } else if (weaponByVal[v] && weaponByVal[v].length) {
-      btn.setAttribute("data-weapon", "blocks " + weaponByVal[v].join(", "));
-    }
+    if (isPerfect) btn.title = "Perfect counter — blocks opponent's weapon!";
+    else if (weaponByVal[v] && weaponByVal[v].length) btn.setAttribute("data-weapon", "blocks " + weaponByVal[v].join(", "));
     btn.onclick = function() {
-      grid.querySelectorAll(".shield-btn").forEach(function(b) { b.classList.remove("selected"); });
+      grid.querySelectorAll(".shield-btn").forEach(b => b.classList.remove("selected"));
       btn.classList.add("selected");
       onSelect(v);
     };
@@ -1081,54 +1283,40 @@ function confirmChoice() {
   const cb = document.getElementById("confirmBtn");
   if (!cb) return;
   cb.disabled = true;
-
   if (gs.phase === "A") {
     if (usingPotionA) {
-      // For non-online modes, apply heal immediately
       if (gameMode !== "online") {
         gs.potionsA = Math.max(0, gs.potionsA - 1);
         gs.hpA = Math.min(MAX_HP, gs.hpA + POTION_HEAL);
         localPotions = Math.max(0, localPotions - 1);
-        saveTokenData();
-        updateTokenDisplay();
+        saveTokenData(); updateTokenDisplay();
       }
       gs.pendingA = { weapon: null, shield: null, potion: true };
     } else {
       gs.pendingA = { weapon: selWeaponA, shield: selShieldA, potion: false };
     }
-
     cb.classList.add("locked-in");
-    cb.textContent = usingPotionA ? "\u2713 Potion Used!" : "\u2713 Locked In!";
-    setTimeout(function() { cb.classList.remove("locked-in"); cb.textContent = "Confirm \u2192"; }, 600);
-
-    if (gameMode === "hotseat") {
-      setTimeout(function() { gs.phase = "B"; showPassScreen(); }, 400);
-    } else if (gameMode === "ai") {
-      gs.phase = "B"; resolveAITurn();
-    } else if (gameMode === "boss") {
-      gs.phase = "B"; renderBossGame();
-    } else if (gameMode === "online") {
-      submitOnlineMoveA();
-    }
+    cb.textContent = usingPotionA ? "✓ Potion Used!" : "✓ Locked In!";
+    setTimeout(function() { cb.classList.remove("locked-in"); cb.textContent = "Confirm →"; }, 600);
+    if (gameMode === "hotseat") { setTimeout(function() { gs.phase = "B"; showPassScreen(); }, 400); }
+    else if (gameMode === "ai") { gs.phase = "B"; resolveAITurn(); }
+    else if (gameMode === "boss") { gs.phase = "B"; renderBossGame(); }
+    else if (gameMode === "online") { submitOnlineMoveA(); }
   } else {
-    // Phase B
     if (usingPotionB) {
       if (gameMode !== "online") {
         gs.potionsB = Math.max(0, gs.potionsB - 1);
         gs.hpB = Math.min(MAX_HP, gs.hpB + POTION_HEAL);
         localPotions = Math.max(0, localPotions - 1);
-        saveTokenData();
-        updateTokenDisplay();
+        saveTokenData(); updateTokenDisplay();
       }
     }
-
     if (gameMode === "boss") {
       const cA = gs.pendingA;
       const cB = usingPotionB ? { weapon: null, shield: selShieldB, potion: true } : { weapon: selWeaponB, shield: selShieldB, potion: false };
       resolveBossShot(cA, cB);
-    } else if (gameMode === "online") {
-      submitOnlineMoveB();
-    } else {
+    } else if (gameMode === "online") { submitOnlineMoveB(); }
+    else {
       const cB = usingPotionB ? { weapon: null, shield: selShieldB, potion: true } : { weapon: selWeaponB, shield: selShieldB, potion: false };
       resolveShot(gs.pendingA, cB);
     }
@@ -1146,14 +1334,9 @@ function showPassScreen() {
 
 function continueAfterPass() {
   showScreen("screen-game");
-  if (specialActive) {
-    // Restore panel then render special turn for the other player
-    restoreTurnPanel();
-    renderSpecialTurn();
-    return;
-  }
+  if (specialActive) { restoreTurnPanel(); renderSpecialTurn(); return; }
   if (gameMode === "boss") { renderBossGame(); return; }
-  document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "\u26A1 Sudden Death" : "Round " + gs.round + " / " + TOTAL_ROUNDS;
+  document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "⚡ Sudden Death" : "Round " + gs.round + " / " + TOTAL_ROUNDS;
   document.getElementById("gsShot").textContent  = "Shot " + gs.shot + " / " + SHOTS_PER_ROUND;
   document.getElementById("hpNameA").textContent = gs.names.A;
   document.getElementById("hpNameB").textContent = gs.names.B;
@@ -1166,9 +1349,9 @@ function continueAfterPass() {
 // ══════════════════════════════════════════════
 function resolveAITurn() {
   const pendingName = gs.pendingA && gs.pendingA.weapon ? gs.pendingA.weapon.name : null;
-  const pool = WEAPONS.filter(function(w) { return w.name !== pendingName; });
-  const aiW  = pool[Math.floor(Math.random() * pool.length)];
-  const aiS  = SHIELD_VALUES[Math.floor(Math.random() * SHIELD_VALUES.length)];
+  const pool = WEAPONS.filter(w => w.name !== pendingName);
+  const aiW = pool[Math.floor(Math.random() * pool.length)];
+  const aiS = SHIELD_VALUES[Math.floor(Math.random() * SHIELD_VALUES.length)];
   resolveShot(gs.pendingA, { weapon: aiW, shield: aiS, potion: false });
 }
 
@@ -1178,25 +1361,21 @@ function resolveAITurn() {
 function resolveShot(choiceA, choiceB) {
   var dmgToA = 0, dmgToB = 0;
   if (!choiceA.potion && !choiceB.potion) {
+    // Shield from OPPONENT's weapons
     dmgToB = Math.abs(choiceB.shield - choiceA.weapon.dmg);
     dmgToA = Math.abs(choiceA.shield - choiceB.weapon.dmg);
   } else if (choiceA.potion && !choiceB.potion) {
-    // A healed; B still attacks A (A's shield is undefined — take partial dmg)
-    dmgToA = Math.round(choiceB.weapon.dmg / 2);
-    dmgToB = 0;
+    dmgToA = Math.round(choiceB.weapon.dmg / 2); dmgToB = 0;
   } else if (!choiceA.potion && choiceB.potion) {
-    dmgToB = Math.round(choiceA.weapon.dmg / 2);
-    dmgToA = 0;
+    dmgToB = Math.round(choiceA.weapon.dmg / 2); dmgToA = 0;
   }
-
-  // Potion HP already applied in confirmChoice
   if (!choiceA.potion) gs.hpA = Math.max(0, gs.hpA - dmgToA);
   if (!choiceB.potion) gs.hpB = Math.max(0, gs.hpB - dmgToB);
-
   if (choiceA.weapon && !gs.usedWeapons.includes(choiceA.weapon.name)) gs.usedWeapons.push(choiceA.weapon.name);
   if (choiceB.weapon && !gs.usedWeapons.includes(choiceB.weapon.name)) gs.usedWeapons.push(choiceB.weapon.name);
-
   gs.phase = "A"; gs.pendingA = null;
+  // Award shot XP
+  if (currentUser) awardXP("shot");
   showShotResult(choiceA, choiceB, dmgToA, dmgToB);
 }
 
@@ -1206,75 +1385,51 @@ function resolveShot(choiceA, choiceB) {
 function showShotResult(cA, cB, dmgA, dmgB) {
   document.getElementById("rdNameA").textContent = gs.names.A;
   document.getElementById("rdNameB").textContent = gs.names.B;
-
-  if (cA.potion) {
-    document.getElementById("rdWeaponA").textContent = "\uD83E\uDDEA Potion Used";
-    document.getElementById("rdShieldA").textContent = "+" + POTION_HEAL + " HP healed";
-  } else {
-    document.getElementById("rdWeaponA").textContent = cA.weapon.emoji + " " + cA.weapon.name + " (" + cA.weapon.dmg + ")";
-    document.getElementById("rdShieldA").textContent = "\uD83D\uDEE1 Shield: " + cA.shield;
-  }
-  if (cB.potion) {
-    document.getElementById("rdWeaponB").textContent = "\uD83E\uDDEA Potion Used";
-    document.getElementById("rdShieldB").textContent = "+" + POTION_HEAL + " HP healed";
-  } else {
-    document.getElementById("rdWeaponB").textContent = cB.weapon.emoji + " " + cB.weapon.name + " (" + cB.weapon.dmg + ")";
-    document.getElementById("rdShieldB").textContent = "\uD83D\uDEE1 Shield: " + cB.shield;
-  }
-
-  // Clone to re-trigger animation
-  var eA = document.getElementById("rdDmgA");
-  var eB = document.getElementById("rdDmgB");
+  if (cA.potion) { document.getElementById("rdWeaponA").textContent = "🧪 Potion Used"; document.getElementById("rdShieldA").textContent = "+" + POTION_HEAL + " HP healed"; }
+  else { document.getElementById("rdWeaponA").textContent = cA.weapon.emoji + " " + cA.weapon.name + " (" + cA.weapon.dmg + ")"; document.getElementById("rdShieldA").textContent = "🛡 Shield: " + cA.shield; }
+  if (cB.potion) { document.getElementById("rdWeaponB").textContent = "🧪 Potion Used"; document.getElementById("rdShieldB").textContent = "+" + POTION_HEAL + " HP healed"; }
+  else { document.getElementById("rdWeaponB").textContent = cB.weapon.emoji + " " + cB.weapon.name + " (" + cB.weapon.dmg + ")"; document.getElementById("rdShieldB").textContent = "🛡 Shield: " + cB.shield; }
+  var eA = document.getElementById("rdDmgA"), eB = document.getElementById("rdDmgB");
   [eA, eB].forEach(function(el) { var clone = el.cloneNode(true); el.parentNode.replaceChild(clone, el); });
-
   setTimeout(function() {
-    var fa = document.getElementById("rdDmgA");
-    var fb = document.getElementById("rdDmgB");
+    var fa = document.getElementById("rdDmgA"), fb = document.getElementById("rdDmgB");
     animateDmgEl(fa, dmgA, dmgA === 0, cA.potion);
     animateDmgEl(fb, dmgB, dmgB === 0, cB.potion);
   }, 10);
-
-  document.getElementById("resultHpSummary").textContent = gs.names.A + ": " + gs.hpA + " HP  \u00B7  " + gs.names.B + ": " + gs.hpB + " HP";
+  document.getElementById("resultHpSummary").textContent = gs.names.A + ": " + gs.hpA + " HP  ·  " + gs.names.B + ": " + gs.hpB + " HP";
   var nBtn = document.getElementById("resultNextBtn");
-  nBtn.textContent = gs.shot >= SHOTS_PER_ROUND ? "End Round \u2192" : "Next Shot \u2192";
+  nBtn.textContent = gs.shot >= SHOTS_PER_ROUND ? "End Round →" : "Next Shot →";
   nBtn.onclick = nextAfterResult;
   showScreen("screen-result");
 }
 
 function animateDmgEl(el, finalVal, isPerfect, isHeal) {
-  if (isHeal) { el.className = "rd-dmg no-dmg"; el.textContent = "+" + POTION_HEAL + " HP \uD83E\uDDEA"; return; }
+  if (isHeal) { el.className = "rd-dmg no-dmg"; el.textContent = "+" + POTION_HEAL + " HP 🧪"; return; }
   el.className = "rd-dmg" + (isPerfect ? " no-dmg" : "");
-  if (isPerfect) { el.textContent = "\u2746 Perfect Block!"; return; }
-  el.textContent = "\u22120 HP";
+  if (isPerfect) { el.textContent = "✦ Perfect Block!"; return; }
+  el.textContent = "−0 HP";
   var duration = 600, steps = 20, interval = duration / steps, current = 0;
   var timer = setInterval(function() {
     current = Math.min(current + Math.ceil(finalVal / steps), finalVal);
-    el.textContent = "\u2212" + current + " HP";
+    el.textContent = "−" + current + " HP";
     if (current >= finalVal) clearInterval(timer);
   }, interval);
 }
 
 function nextAfterResult() {
   if (gs.shot >= SHOTS_PER_ROUND) { endRound(); return; }
-  // For online Player B: gs.shot is already set from server state, don't re-increment
   if (gameMode === "online") {
     if (onlineRole === "A") {
-      gs.shot++; gs.phase = "A";
-      showScreen("screen-game"); renderGame();
+      gs.shot++; gs.phase = "A"; showScreen("screen-game"); renderGame();
       db.from("game_rooms").update({ turn_status: "a_choosing", move_a: null, move_b: null, state: JSON.stringify(gs) }).eq("code", onlineRoom);
     } else {
-      // B: server state already has the correct shot; just show waiting
-      gs.phase = "A";
-      showScreen("screen-game");
-      document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "\u26A1 Sudden Death" : "Round " + gs.round + " / " + TOTAL_ROUNDS;
+      gs.phase = "A"; showScreen("screen-game");
+      document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "⚡ Sudden Death" : "Round " + gs.round + " / " + TOTAL_ROUNDS;
       document.getElementById("gsShot").textContent  = "Shot " + gs.shot + " / " + SHOTS_PER_ROUND;
       updateHPBars(); renderAvailableWeapons();
-      showOnlineWaiting("Waiting for " + gs.names.A + " to choose\u2026");
+      showOnlineWaiting("Waiting for " + gs.names.A + " to choose…");
     }
-  } else {
-    gs.shot++; gs.phase = "A";
-    showScreen("screen-game"); renderGame();
-  }
+  } else { gs.shot++; gs.phase = "A"; showScreen("screen-game"); renderGame(); }
 }
 
 // ══════════════════════════════════════════════
@@ -1284,28 +1439,21 @@ function endRound() {
   gs.totalHpA = (gs.totalHpA || 0) + gs.hpA;
   gs.totalHpB = (gs.totalHpB || 0) + gs.hpB;
   var lastRound = (gs.round >= TOTAL_ROUNDS && !gs.isSuddenDeath) || gs.isSuddenDeath;
-
   document.getElementById("roNameA").textContent = gs.names.A;
   document.getElementById("roNameB").textContent = gs.names.B;
-
   if (lastRound) {
-    if (gs.isSuddenDeath) {
-      document.getElementById("roHpA").textContent = gs.hpA + " HP";
-      document.getElementById("roHpB").textContent = gs.hpB + " HP";
-    } else {
-      document.getElementById("roHpA").textContent = gs.totalHpA + " HP total";
-      document.getElementById("roHpB").textContent = gs.totalHpB + " HP total";
-    }
+    if (gs.isSuddenDeath) { document.getElementById("roHpA").textContent = gs.hpA + " HP"; document.getElementById("roHpB").textContent = gs.hpB + " HP"; }
+    else { document.getElementById("roHpA").textContent = gs.totalHpA + " HP total"; document.getElementById("roHpB").textContent = gs.totalHpB + " HP total"; }
     if (gs.totalHpA === gs.totalHpB && !gs.isSuddenDeath) {
-      document.getElementById("roLabel").textContent   = "It's a Tie after 3 Rounds!";
-      document.getElementById("roNextBtn").textContent = "\u26A1 Begin Sudden Death \u2192";
+      document.getElementById("roLabel").textContent = "It's a Tie after 3 Rounds!";
+      document.getElementById("roNextBtn").textContent = "⚡ Begin Sudden Death →";
       showScreen("screen-roundover");
     } else { showGameOver(); }
   } else {
     document.getElementById("roHpA").textContent = gs.hpA + " HP  (total: " + gs.totalHpA + ")";
     document.getElementById("roHpB").textContent = gs.hpB + " HP  (total: " + gs.totalHpB + ")";
-    document.getElementById("roLabel").textContent   = "Round " + gs.round + " Complete";
-    document.getElementById("roNextBtn").textContent = "Begin Round " + (gs.round + 1) + " \u2192";
+    document.getElementById("roLabel").textContent = "Round " + gs.round + " Complete";
+    document.getElementById("roNextBtn").textContent = "Begin Round " + (gs.round + 1) + " →";
     showScreen("screen-roundover");
   }
 }
@@ -1321,10 +1469,10 @@ function startNextRound() {
       db.from("game_rooms").update({ turn_status: "a_choosing", move_a: null, move_b: null, state: JSON.stringify(gs) }).eq("code", onlineRoom);
     } else {
       showScreen("screen-game");
-      document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "\u26A1 Sudden Death" : "Round " + gs.round + " / " + TOTAL_ROUNDS;
+      document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "⚡ Sudden Death" : "Round " + gs.round + " / " + TOTAL_ROUNDS;
       document.getElementById("gsShot").textContent  = "Shot " + gs.shot + " / " + SHOTS_PER_ROUND;
       updateHPBars(); renderAvailableWeapons();
-      showOnlineWaiting("Waiting for " + gs.names.A + " to choose\u2026");
+      showOnlineWaiting("Waiting for " + gs.names.A + " to choose…");
     }
   } else { showScreen("screen-game"); renderGame(); }
 }
@@ -1333,10 +1481,9 @@ function startNextRound() {
 // GAME OVER
 // ══════════════════════════════════════════════
 async function showGameOver() {
-  var finalA = gs.totalHpA || gs.hpA;
-  var finalB = gs.totalHpB || gs.hpB;
+  var finalA = gs.totalHpA || gs.hpA, finalB = gs.totalHpB || gs.hpB;
   var aWins = finalA > finalB, tie = finalA === finalB;
-  document.getElementById("goEmblem").textContent   = tie ? "\uD83E\uDD1D" : "\uD83C\uDFC6";
+  document.getElementById("goEmblem").textContent   = tie ? "🤝" : "🏆";
   document.getElementById("goNameA").textContent    = gs.names.A;
   document.getElementById("goNameB").textContent    = gs.names.B;
   document.getElementById("goHpA").textContent      = gs.isSuddenDeath ? gs.hpA + " HP" : (gs.totalHpA || gs.hpA) + " HP total";
@@ -1350,7 +1497,13 @@ async function showGameOver() {
     document.getElementById("goSubtitle").textContent = aWins ? gs.names.B + " has been defeated." : gs.names.A + " has been defeated.";
   }
 
+  // XP and tokens
   if (currentUser && gameMode !== "boss") {
+    const xpAction = !tie && aWins ? "win" : "loss";
+    await awardXP(xpAction);
+    const xpGained = getXpForAction(xpAction, getCurrentLevel(localXP).level);
+    const goXp = document.getElementById("goXpAward");
+    if (goXp) goXp.innerHTML = `<span class="go-xp-badge">+${xpGained} XP ✨ ${getCurrentLevel(localXP).badge} ${getCurrentLevel(localXP).name}</span>`;
     if (!tie) { if (aWins) await awardTokens(TOKENS_WIN, "Victory!"); else await awardTokens(TOKENS_LOSS, "Better luck next time."); }
     else await awardTokens(TOKENS_LOSS, "Draw.");
   }
@@ -1391,8 +1544,7 @@ function confirmQuit() {
 // ONLINE MULTIPLAYER
 // ══════════════════════════════════════════════
 var onlineRoom = null, onlineSub = null, onlineRole = null, lobbyPoll = null;
-var lastHandledKey = "";
-var resultShownForKey = "";
+var lastHandledKey = "", resultShownForKey = "";
 
 function startGamePoll() {
   if (lobbyPoll) { clearInterval(lobbyPoll); lobbyPoll = null; }
@@ -1408,7 +1560,6 @@ async function pollTick() {
     data = res.data;
   } catch(e) { return; }
   if (!data) return;
-
   var ts = data.turn_status;
   var stateObj = data.state ? (function() { try { return JSON.parse(data.state); } catch(e) { return null; } })() : null;
   var round = stateObj ? stateObj.round : gs.round;
@@ -1427,16 +1578,13 @@ async function pollTick() {
     } else if (ts === "resolved") {
       var onResult = document.getElementById("screen-result").classList.contains("active");
       if (!onResult && stateObj && data.last_result && resultShownForKey !== key) {
-        lastHandledKey = key;
-        resultShownForKey = key;
+        lastHandledKey = key; resultShownForKey = key;
         try {
           var result = JSON.parse(data.last_result);
-          gs.hpA = stateObj.hpA; gs.hpB = stateObj.hpB;
-          gs.usedWeapons = stateObj.usedWeapons; gs.names = stateObj.names;
-          gs.round = stateObj.round; gs.shot = stateObj.shot;
+          gs.hpA = stateObj.hpA; gs.hpB = stateObj.hpB; gs.usedWeapons = stateObj.usedWeapons;
+          gs.names = stateObj.names; gs.round = stateObj.round; gs.shot = stateObj.shot;
           gs.isSuddenDeath = stateObj.isSuddenDeath;
-          gs.totalHpA = stateObj.totalHpA || gs.totalHpA;
-          gs.totalHpB = stateObj.totalHpB || gs.totalHpB;
+          gs.totalHpA = stateObj.totalHpA || gs.totalHpA; gs.totalHpB = stateObj.totalHpB || gs.totalHpB;
           gs.potionsA = stateObj.potionsA != null ? stateObj.potionsA : gs.potionsA;
           gs.potionsB = stateObj.potionsB != null ? stateObj.potionsB : gs.potionsB;
           showShotResult(result.cA, result.cB, result.dmgA, result.dmgB);
@@ -1444,21 +1592,17 @@ async function pollTick() {
       }
     }
   }
-
   if (onlineRole === "A") {
     if (ts === "resolved") {
       var onResultA = document.getElementById("screen-result").classList.contains("active");
       if (!onResultA && stateObj && data.last_result && resultShownForKey !== key) {
-        lastHandledKey = key;
-        resultShownForKey = key;
+        lastHandledKey = key; resultShownForKey = key;
         try {
           var resultA = JSON.parse(data.last_result);
-          gs.hpA = stateObj.hpA; gs.hpB = stateObj.hpB;
-          gs.usedWeapons = stateObj.usedWeapons; gs.names = stateObj.names;
-          gs.round = stateObj.round; gs.shot = stateObj.shot;
+          gs.hpA = stateObj.hpA; gs.hpB = stateObj.hpB; gs.usedWeapons = stateObj.usedWeapons;
+          gs.names = stateObj.names; gs.round = stateObj.round; gs.shot = stateObj.shot;
           gs.isSuddenDeath = stateObj.isSuddenDeath;
-          gs.totalHpA = stateObj.totalHpA || gs.totalHpA;
-          gs.totalHpB = stateObj.totalHpB || gs.totalHpB;
+          gs.totalHpA = stateObj.totalHpA || gs.totalHpA; gs.totalHpB = stateObj.totalHpB || gs.totalHpB;
           gs.potionsA = stateObj.potionsA != null ? stateObj.potionsA : gs.potionsA;
           gs.potionsB = stateObj.potionsB != null ? stateObj.potionsB : gs.potionsB;
           showShotResult(resultA.cA, resultA.cB, resultA.dmgA, resultA.dmgB);
@@ -1477,32 +1621,27 @@ function cleanupOnline() {
 function genCode() { return Math.random().toString(36).substring(2,8).toUpperCase(); }
 
 async function createRoom() {
-  var code   = genCode();
+  var code = genCode();
   var userId = currentUser ? currentUser.id : ("guest_" + Math.random().toString(36).slice(2,8));
-  var errEl  = document.getElementById("lobbyError");
+  var errEl = document.getElementById("lobbyError");
   errEl.textContent = "";
-
   var aName     = currentUser ? currentUser.username : "Player A";
   var initState = freshGameState({ A: aName, B: "Player B" });
-
   var ins = await db.from("game_rooms").insert({
     code: code, player_a: userId, player_a_name: aName,
     state: JSON.stringify(initState), status: "waiting",
     turn_status: "a_choosing", move_a: null, move_b: null, last_result: null,
   });
-
   if (ins.error) {
     var isSM = ins.error.message && (ins.error.message.includes("last_result") || ins.error.message.includes("turn_status") || ins.error.message.includes("last_emoji"));
-    errEl.innerHTML = isSM ? "\u26A0\uFE0F DB schema outdated. Run <strong>migration.sql</strong> in Supabase SQL Editor, then refresh." : "Failed to create room: " + ins.error.message;
+    errEl.innerHTML = isSM ? "⚠️ DB schema outdated. Run <strong>migration.sql</strong> in Supabase SQL Editor, then refresh." : "Failed to create room: " + ins.error.message;
     return;
   }
-
   onlineRoom = code; onlineRole = "A";
   document.getElementById("roomCodeDisplay").textContent = code;
   document.getElementById("lobbyCreate").classList.add("hidden");
   document.getElementById("lobbyWaiting").classList.remove("hidden");
   subscribeToRoom(code);
-
   lobbyPoll = setInterval(async function() {
     var r = await db.from("game_rooms").select("status, state").eq("code", code).maybeSingle();
     if (!r.data) return;
@@ -1514,50 +1653,42 @@ async function createRoom() {
 }
 
 async function joinRoom() {
-  var code  = document.getElementById("joinCode").value.trim().toUpperCase();
+  var code = document.getElementById("joinCode").value.trim().toUpperCase();
   var errEl = document.getElementById("lobbyError");
   errEl.textContent = "";
   if (!code || code.length !== 6) { errEl.textContent = "Enter a valid 6-character code."; return; }
-
   var res = await db.from("game_rooms").select("*").eq("code", code).maybeSingle();
   if (res.error || !res.data) { errEl.textContent = "Room not found."; return; }
   if (res.data.status !== "waiting") { errEl.textContent = "Room is already full or in progress."; return; }
-
-  var userId    = currentUser ? currentUser.id : ("guest_" + Math.random().toString(36).slice(2,8));
-  var bName     = currentUser ? currentUser.username : "Player B";
+  var userId = currentUser ? currentUser.id : ("guest_" + Math.random().toString(36).slice(2,8));
+  var bName  = currentUser ? currentUser.username : "Player B";
   var roomState = JSON.parse(res.data.state);
   roomState.names.B = bName;
-
   var ue = await db.from("game_rooms").update({
     player_b: userId, player_b_name: bName, status: "active",
     turn_status: "a_choosing", state: JSON.stringify(roomState),
   }).eq("code", code);
-
   if (ue.error) {
     var isSM = ue.error.message && (ue.error.message.includes("last_result") || ue.error.message.includes("turn_status") || ue.error.message.includes("last_emoji"));
-    errEl.innerHTML = isSM ? "\u26A0\uFE0F DB schema outdated. Run <strong>migration.sql</strong> in Supabase SQL Editor, then refresh." : "Failed to join room: " + ue.error.message;
+    errEl.innerHTML = isSM ? "⚠️ DB schema outdated. Run <strong>migration.sql</strong> in Supabase SQL Editor, then refresh." : "Failed to join room: " + ue.error.message;
     return;
   }
-
   onlineRoom = code; onlineRole = "B";
   startOnlineGame({ state: JSON.stringify(roomState) }, "B");
   subscribeToRoom(code); startGamePoll();
 }
 
 function startOnlineGame(row, role) {
-  gameMode = "online";
-  gs = JSON.parse(row.state);
-  gs.phase = "A";
-  showScreen("screen-game");
-  initEmojiChat();
+  gameMode = "online"; gs = JSON.parse(row.state); gs.phase = "A";
+  showScreen("screen-game"); initEmojiChat();
   if (role === "A") { renderGame(); }
   else {
-    document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "\u26A1 Sudden Death" : "Round " + gs.round + " / " + TOTAL_ROUNDS;
+    document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "⚡ Sudden Death" : "Round " + gs.round + " / " + TOTAL_ROUNDS;
     document.getElementById("gsShot").textContent  = "Shot " + gs.shot + " / " + SHOTS_PER_ROUND;
     document.getElementById("hpNameA").textContent = gs.names.A;
     document.getElementById("hpNameB").textContent = gs.names.B;
     updateHPBars(); renderAvailableWeapons();
-    showOnlineWaiting("Waiting for " + gs.names.A + " to choose\u2026");
+    showOnlineWaiting("Waiting for " + gs.names.A + " to choose…");
   }
 }
 
@@ -1572,70 +1703,48 @@ async function submitOnlineMoveA() {
   if (usingPotionA) {
     gs.potionsA = Math.max(0, gs.potionsA - 1);
     localPotions = Math.max(0, localPotions - 1);
-    saveTokenData();
-    updateTokenDisplay();
+    saveTokenData(); updateTokenDisplay();
   }
   var move = JSON.stringify({ weapon: selWeaponA, shield: selShieldA, potion: usingPotionA });
   var r = await db.from("game_rooms").update({ move_a: move, turn_status: "b_choosing", state: JSON.stringify(gs) }).eq("code", onlineRoom);
   if (r.error) { document.getElementById("gameError").textContent = "Failed to submit move. Try again."; return; }
-  showOnlineWaiting("Locked in. Waiting for " + gs.names.B + "\u2026");
+  showOnlineWaiting("Locked in. Waiting for " + gs.names.B + "…");
 }
 
 async function submitOnlineMoveB() {
   var res = await db.from("game_rooms").select("move_a, state").eq("code", onlineRoom).maybeSingle();
   if (res.error || !res.data || !res.data.move_a) { document.getElementById("gameError").textContent = "Could not read opponent's move. Try again."; return; }
-
   var mA = JSON.parse(res.data.move_a);
   var cA = mA;
   var cB = usingPotionB ? { weapon: null, shield: selShieldB, potion: true } : { weapon: selWeaponB, shield: selShieldB, potion: false };
-
   var dmgToA = 0, dmgToB = 0;
   if (!cA.potion && !cB.potion) {
-    dmgToB = Math.abs(cB.shield - cA.weapon.dmg);
-    dmgToA = Math.abs(cA.shield - cB.weapon.dmg);
-  } else if (cA.potion && !cB.potion) {
-    dmgToA = Math.round(cB.weapon.dmg / 2); dmgToB = 0;
-  } else if (!cA.potion && cB.potion) {
-    dmgToB = Math.round(cA.weapon.dmg / 2); dmgToA = 0;
-  }
-
+    dmgToB = Math.abs(cB.shield - cA.weapon.dmg); dmgToA = Math.abs(cA.shield - cB.weapon.dmg);
+  } else if (cA.potion && !cB.potion) { dmgToA = Math.round(cB.weapon.dmg / 2); dmgToB = 0; }
+  else if (!cA.potion && cB.potion) { dmgToB = Math.round(cA.weapon.dmg / 2); dmgToA = 0; }
   if (!cA.potion) gs.hpA = Math.max(0, gs.hpA - dmgToA);
   else gs.hpA = Math.min(MAX_HP, gs.hpA + POTION_HEAL);
   if (!cB.potion) gs.hpB = Math.max(0, gs.hpB - dmgToB);
   else gs.hpB = Math.min(MAX_HP, gs.hpB + POTION_HEAL);
-
-  if (usingPotionB) {
-    gs.potionsB = Math.max(0, gs.potionsB - 1);
-    localPotions = Math.max(0, localPotions - 1);
-    saveTokenData();
-    updateTokenDisplay();
-  }
-
+  if (usingPotionB) { gs.potionsB = Math.max(0, gs.potionsB - 1); localPotions = Math.max(0, localPotions - 1); saveTokenData(); updateTokenDisplay(); }
   if (cA.weapon && !gs.usedWeapons.includes(cA.weapon.name)) gs.usedWeapons.push(cA.weapon.name);
   if (cB.weapon && !gs.usedWeapons.includes(cB.weapon.name)) gs.usedWeapons.push(cB.weapon.name);
   gs.phase = "A"; gs.pendingA = null;
-
   var result = { cA: cA, cB: cB, dmgA: dmgToA, dmgB: dmgToB };
   var newState = JSON.stringify(gs);
   var roundShotKey = gs.round + "-" + gs.shot + "-resolved";
-
   var upd = await db.from("game_rooms").update({
     move_a: null, move_b: null, turn_status: "resolved",
     state: newState, last_result: JSON.stringify(result),
   }).eq("code", onlineRoom);
-
   if (upd.error) { document.getElementById("gameError").textContent = "Failed to submit move. Try again."; return; }
-
-  // Mark this result as already shown so pollTick doesn't re-trigger it
-  resultShownForKey = roundShotKey;
-  lastHandledKey = roundShotKey;
+  resultShownForKey = roundShotKey; lastHandledKey = roundShotKey;
   showShotResult(result.cA, result.cB, result.dmgA, result.dmgB);
 }
 
 function activateBTurn() {
-  gs.phase = "B";
-  showScreen("screen-game");
-  document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "\u26A1 Sudden Death" : "Round " + gs.round + " / " + TOTAL_ROUNDS;
+  gs.phase = "B"; showScreen("screen-game");
+  document.getElementById("gsRound").textContent = gs.isSuddenDeath ? "⚡ Sudden Death" : "Round " + gs.round + " / " + TOTAL_ROUNDS;
   document.getElementById("gsShot").textContent  = "Shot " + gs.shot + " / " + SHOTS_PER_ROUND;
   document.getElementById("hpNameA").textContent = gs.names.A;
   document.getElementById("hpNameB").textContent = gs.names.B;
@@ -1658,20 +1767,28 @@ function copyRoomCode() {
   btn.textContent = "Copied!";
   setTimeout(function() { btn.textContent = "Copy"; }, 1500);
 }
+
 // ══════════════════════════════════════════════
-// EMOJI CHAT
+// EMOJI CHAT — REALTIME via Supabase Realtime
 // ══════════════════════════════════════════════
 const CHAT_EMOJIS = [
+  // Combat/reactions
   "😂","😤","🔥","💀","😈","🤣","😭","👀",
   "🫡","💪","🤡","😏","🥶","👋","🙏","😱",
-  "⚡","🤙","😎","🫠"
+  "⚡","🤙","😎","🫠",
+  // More
+  "🗡️","⚔️","🛡️","💥","🩸","👑","🐉","🌙",
+  "🏆","💎","🎯","🔱","🌟","💫","🤬","🥳",
+  "👻","🧠","🫀","🦾","🔮","🌀","✨","🎲",
+  "😵","🤯","😇","🥺","🤫","🤐","😜","🤩",
+  "🧪","🪄","🎭","🏹","🌊","🔥","💨","🌪️",
+  "🦅","🐍","🐺","🦁","🐻","🦊","🐲","🦄",
 ];
 
 let emojiPickerOpen = false;
 let emojiChatSub = null;
 
 function initEmojiChat() {
-  // Render the emoji picker buttons
   const picker = document.getElementById("emojiPicker");
   if (!picker) return;
   picker.innerHTML = "";
@@ -1679,25 +1796,17 @@ function initEmojiChat() {
     const btn = document.createElement("button");
     btn.className = "ep-btn";
     btn.textContent = emoji;
-    btn.title = emoji;
     btn.onclick = () => sendChatEmoji(emoji);
     picker.appendChild(btn);
   });
-
-  // Show the chat widget on game screen for all modes
   const chatEl = document.getElementById("emojiChat");
   if (chatEl) chatEl.style.display = "flex";
-
-  // Clear log
   const log = document.getElementById("emojiChatLog");
   if (log) log.innerHTML = "";
-
-  // Reset picker state
   emojiPickerOpen = false;
   const pickerEl = document.getElementById("emojiPicker");
   if (pickerEl) pickerEl.classList.add("hidden");
-
-  // Subscribe to online emoji channel if online mode
+  // Subscribe for online mode
   if (gameMode === "online" && onlineRoom) {
     subscribeEmojiChannel(onlineRoom);
   }
@@ -1718,12 +1827,10 @@ function toggleEmojiPicker() {
   const toggle = document.getElementById("emojiChatToggle");
   if (picker) {
     picker.classList.toggle("hidden", !emojiPickerOpen);
-    // Re-render picker buttons each open in case DOM was wiped
     if (emojiPickerOpen && picker.children.length === 0) {
       CHAT_EMOJIS.forEach(function(emoji) {
         var btn = document.createElement("button");
-        btn.className = "ep-btn";
-        btn.textContent = emoji;
+        btn.className = "ep-btn"; btn.textContent = emoji;
         btn.onclick = function() { sendChatEmoji(emoji); };
         picker.appendChild(btn);
       });
@@ -1733,31 +1840,23 @@ function toggleEmojiPicker() {
 }
 
 function sendChatEmoji(emoji) {
-  // Close picker
   emojiPickerOpen = false;
   const picker = document.getElementById("emojiPicker");
   if (picker) picker.classList.add("hidden");
-
-  // Determine sender name
   let senderName = "You";
   if (gameMode === "online") {
     senderName = onlineRole === "A" ? gs.names.A : gs.names.B;
   } else {
-    // For hotseat/ai/boss, use current player based on phase
     senderName = (gs.phase === "B") ? gs.names.B : gs.names.A;
   }
-
-  // Show locally
   appendEmojiMsg(senderName, emoji, false);
-
-  // Broadcast if online
   if (gameMode === "online" && onlineRoom) {
     db.from("game_rooms").update({
       last_emoji: JSON.stringify({ from: senderName, emoji: emoji, ts: Date.now() })
     }).eq("code", onlineRoom).then(function(res) {
       if (res.error) {
-        var col = res.error.message && res.error.message.includes("last_emoji");
-        if (col) showToast("⚠️ Run migration.sql in Supabase to enable emoji chat!", "red");
+        if (res.error.message && res.error.message.includes("last_emoji"))
+          showToast("⚠️ Run migration.sql in Supabase to enable emoji chat!", "red");
       }
     });
   }
@@ -1766,47 +1865,36 @@ function sendChatEmoji(emoji) {
 function appendEmojiMsg(sender, emoji, isOpponent) {
   const log = document.getElementById("emojiChatLog");
   if (!log) return;
-
   const msg = document.createElement("div");
   msg.className = "emoji-msg" + (isOpponent ? " from-opponent" : "");
-  msg.innerHTML =
-    '<span class="em-sender">' + sender + '</span>' +
-    '<span class="em-icon">' + emoji + '</span>';
+  msg.innerHTML = '<span class="em-sender">' + sender + '</span><span class="em-icon">' + emoji + '</span>';
   log.appendChild(msg);
-
-  // Keep max 5 visible
-  while (log.children.length > 5) log.removeChild(log.firstChild);
-
-  // Auto-remove after 4s
+  while (log.children.length > 6) log.removeChild(log.firstChild);
   setTimeout(() => {
     msg.style.transition = "opacity .5s, transform .5s";
     msg.style.opacity = "0";
     msg.style.transform = "translateX(40px)";
     setTimeout(() => { if (msg.parentNode) msg.parentNode.removeChild(msg); }, 500);
   }, 4000);
-
-  // Badge notification if picker is closed and it's an opponent message
   if (isOpponent) {
     const toggle = document.getElementById("emojiChatToggle");
     if (toggle && !emojiPickerOpen) toggle.classList.add("has-new");
   }
 }
 
+// REALTIME emoji subscription
 function subscribeEmojiChannel(code) {
   if (emojiChatSub) { emojiChatSub.unsubscribe(); emojiChatSub = null; }
   let lastEmojiTs = 0;
-
   emojiChatSub = db.channel("emoji_" + code)
     .on("postgres_changes", {
-      event: "UPDATE", schema: "public", table: "game_rooms",
-      filter: "code=eq." + code
+      event: "UPDATE", schema: "public", table: "game_rooms", filter: "code=eq." + code
     }, function(payload) {
       try {
         const raw = payload.new && payload.new.last_emoji;
         if (!raw) return;
         const data = JSON.parse(raw);
         if (!data || !data.ts || data.ts <= lastEmojiTs) return;
-        // Only show if from the opponent
         const myName = onlineRole === "A" ? gs.names.A : gs.names.B;
         if (data.from === myName) return;
         lastEmojiTs = data.ts;

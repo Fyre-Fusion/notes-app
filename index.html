@@ -12,16 +12,28 @@
 
 <!-- ═══════ AUTH ═══════ -->
 <div id="screen-auth" class="screen active">
-  <div class="auth-bg"><div class="auth-grid"></div><div class="auth-glow"></div></div>
+  <div class="auth-bg">
+    <div class="auth-grid"></div>
+    <div class="auth-glow"></div>
+    <div class="auth-particles" id="authParticles"></div>
+  </div>
   <div class="auth-split">
     <div class="auth-hero">
       <div class="hero-emblem">⚔</div>
       <h1 class="hero-title">KlocVork<br><em>Arena</em></h1>
       <p class="hero-sub">A game of blades, shields,<br>and hidden intentions.</p>
       <div class="hero-stats">
-        <div class="hstat"><span>50</span>Weapons</div>
-        <div class="hstat"><span>3</span>Rounds</div>
-        <div class="hstat"><span>30</span>HP Each</div>
+        <div class="hstat"><span>70+</span>Weapons</div>
+        <div class="hstat"><span>10</span>Levels</div>
+        <div class="hstat"><span>25</span>Traits</div>
+      </div>
+      <div class="hero-badges-preview">
+        <span class="hbp-badge" title="Rookie">🥉</span>
+        <span class="hbp-badge" title="Warrior">⚔️</span>
+        <span class="hbp-badge" title="Knight">🛡️</span>
+        <span class="hbp-badge" title="Champion">🏅</span>
+        <span class="hbp-badge" title="Warlord">👑</span>
+        <span class="hbp-badge" title="Grandmaster">🌟</span>
       </div>
     </div>
     <div class="auth-panel">
@@ -57,6 +69,9 @@
     <div class="header-right">
       <span class="token-count header-tokens">0 🪙</span>
       <span class="potion-count header-potions">0 🧪</span>
+      <span class="xp-count header-xp">0 XP</span>
+      <button class="btn-level" onclick="showLevelPanel()">🏅 Level</button>
+      <button class="btn-trait" onclick="showTraitShop()">✨ Traits</button>
       <button class="btn-shop" onclick="showShop()">🛒 Shop</button>
       <button class="btn-settings" onclick="showArsenal()">⚔️ Arsenal</button>
       <button class="btn-rulebook" onclick="showRulebook()">📖 Rules</button>
@@ -68,6 +83,7 @@
     <div class="mode-hero">
       <h2 class="mode-welcome" id="modeWelcome">Choose your battle</h2>
       <p class="mode-sub">Select a mode to enter the arena</p>
+      <div class="mode-level-badge" id="modeLevelBadge"></div>
     </div>
     <div class="mode-cards">
       <div class="mode-card" onclick="selectMode('hotseat')">
@@ -92,7 +108,7 @@
         <div class="mode-icon">💀</div>
         <h3>Boss Battle</h3>
         <p>Both players face the<br>Warlord. Slay it first.</p>
-        <div class="mode-badge mode-badge-boss">+20 🪙 Reward</div>
+        <div class="mode-badge mode-badge-boss">+300 🪙 Reward</div>
       </div>
     </div>
   </div>
@@ -112,20 +128,21 @@
       </div>
       <div class="rule-section">
         <h3>⚔ Weapons &amp; Tiers</h3>
-        <p>There are <strong>5 tiers</strong> of weapons. The 12 Tier 1 starters are free &amp; always equipped. Unlock higher tiers in the Shop.</p>
+        <p>5 tiers of weapons. T1 starters are free. Max <strong>12 weapons</strong> equipped per loadout.</p>
         <div class="weapon-table">
-          <div class="wt-row"><span style="color:#9b92c8">T1 Starter</span><span class="wt-dmg">5–10 dmg · Free · 12 weapons (default) · shields 5–10</span></div>
-          <div class="wt-row"><span style="color:#94a3b8">T2 Iron</span><span class="wt-dmg">10–11 dmg · 80 🪙 · adds shield 11</span></div>
-          <div class="wt-row"><span style="color:#22d3ee">T3 Steel</span><span class="wt-dmg">11–12 dmg · 200 🪙 · adds shield 12</span></div>
-          <div class="wt-row"><span style="color:#a855f7">T4 Shadow</span><span class="wt-dmg">13 dmg · 400 🪙 · adds shield 13</span></div>
-          <div class="wt-row"><span style="color:#facc15">T5 Legendary</span><span class="wt-dmg">14 dmg · 800 🪙 · adds shield 14</span></div>
+          <div class="wt-row"><span style="color:#9b92c8">T1 Starter</span><span class="wt-dmg">5–10 dmg · Free · 12 slots default</span></div>
+          <div class="wt-row"><span style="color:#94a3b8">T2 Iron</span><span class="wt-dmg">10–11 dmg · 80 🪙</span></div>
+          <div class="wt-row"><span style="color:#22d3ee">T3 Steel</span><span class="wt-dmg">11–12 dmg · 200 🪙</span></div>
+          <div class="wt-row"><span style="color:#a855f7">T4 Shadow</span><span class="wt-dmg">13 dmg · 400 🪙</span></div>
+          <div class="wt-row"><span style="color:#facc15">T5 Legendary</span><span class="wt-dmg">14 dmg · 800 🪙</span></div>
+          <div class="wt-row"><span style="color:#ff6b35">T6 Divine</span><span class="wt-dmg">15 dmg · 1000 🪙 · Gentuga Tensho</span></div>
         </div>
-        <p>Your loadout starts with all 12 T1 weapons. Buy &amp; equip a higher tier weapon — a new shield button automatically appears to counter it. Unequip a default to swap it out.</p>
+        <p>When you equip a weapon with a new damage value, that shield value is <strong>added to your opponent</strong> — they can now block it.</p>
       </div>
       <div class="rule-section">
         <h3>🎯 Each Shot</h3>
         <ol>
-          <li><strong>Player A</strong> secretly picks a weapon &amp; shield value (5–11)</li>
+          <li><strong>Player A</strong> secretly picks a weapon &amp; shield value</li>
           <li><strong>Player B</strong> picks their own weapon &amp; shield</li>
           <li>Both players attack simultaneously</li>
         </ol>
@@ -137,15 +154,15 @@
       </div>
       <div class="rule-section">
         <h3>🧪 Potions</h3>
-        <p>Buy potions in the Shop for <strong>15 🪙</strong> each. During combat, use one instead of attacking to restore <strong>+10 HP</strong>. You are still vulnerable to your opponent's attack.</p>
+        <p>Buy potions in the Shop for <strong>15 🪙</strong> each. Restore <strong>+10 HP</strong> per use. Max 9.</p>
       </div>
       <div class="rule-section">
         <h3>✨ Special Shot (0.1% chance)</h3>
-        <p>Any shot has a 0.1% chance to become a Special Shot. Players alternate guessing each other's hidden weapon. First to <strong>3 correct guesses</strong> wins <strong>30 🪙</strong>. Normal combat resumes after.</p>
+        <p>Guess opponent's hidden weapon. First to 3 correct guesses wins <strong>30 🪙</strong>.</p>
       </div>
       <div class="rule-section">
         <h3>💀 Boss Battle</h3>
-        <p>Both players team up against The Warlord (60 HP). Attack the boss every shot — the player who lands the <strong>killing blow</strong> wins <strong>20 🪙</strong>. The boss hits back each shot with a random weapon.</p>
+        <p>Both players team up against The Warlord (60 HP). Player who lands the <strong>killing blow</strong> wins <strong>300 🪙</strong>.</p>
       </div>
       <div class="rule-section">
         <h3>🪙 Tokens</h3>
@@ -153,21 +170,16 @@
           <li>Win a match → <strong>+200 🪙</strong></li>
           <li>Lose a match → <strong>+50 🪙</strong></li>
           <li>Special Round win → <strong>+30 🪙</strong></li>
-          <li>Boss kill → <strong>+400 🪙</strong></li>
+          <li>Boss kill → <strong>+300 🪙</strong></li>
         </ul>
       </div>
       <div class="rule-section">
-        <h3>🏆 Winning &amp; Sudden Death</h3>
-        <p>After 3 rounds, most HP wins. On a tie, a <strong>Sudden Death</strong> round decides it.</p>
+        <h3>⭐ XP &amp; Levels</h3>
+        <p>Earn XP by playing. XP uses compound interest — the higher your level, the more XP each action earns. Unlock badges at each level from <strong>Rookie → Grandmaster</strong>.</p>
       </div>
       <div class="rule-section">
-        <h3>🎮 Game Modes</h3>
-        <ul>
-          <li><strong>Hot Seat</strong> — Same device. Screen blanks after Player A picks, pass to Player B.</li>
-          <li><strong>Online</strong> — Create a room, share the 6-letter code, play on separate devices.</li>
-          <li><strong>vs AI</strong> — AI picks randomly each shot.</li>
-          <li><strong>Boss Battle</strong> — Co-op vs The Warlord. Killing blow earns 20 🪙.</li>
-        </ul>
+        <h3>✨ Trait Shop</h3>
+        <p>Spend <strong>500 🪙</strong> to roll a random trait on any weapon. Traits have rarities up to <strong>0.00%</strong> chance. 25 unique traits available.</p>
       </div>
     </div>
   </div>
@@ -186,31 +198,45 @@
   </div>
 </div>
 
-<!-- ═══════ ARSENAL (full-screen loadout panel) ═══════ -->
+<!-- ═══════ TRAIT SHOP MODAL ═══════ -->
+<div id="modal-trait" class="modal-overlay hidden" onclick="closeTraitIfOutside(event)">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">✨ Trait Shop</h2>
+      <button class="modal-close" onclick="hideTraitShop()">✕</button>
+    </div>
+    <div class="modal-body" id="traitBody">
+      <!-- rendered by renderTraitUI() -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ LEVEL PANEL MODAL ═══════ -->
+<div id="modal-level" class="modal-overlay hidden" onclick="closeLevelIfOutside(event)">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">🏅 Level &amp; XP</h2>
+      <button class="modal-close" onclick="hideLevelPanel()">✕</button>
+    </div>
+    <div class="modal-body" id="levelBody">
+      <!-- rendered by renderLevelUI() -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ ARSENAL SCREEN ═══════ -->
 <div id="screen-arsenal" class="screen">
   <div class="arsenal-header">
     <button class="btn-back" onclick="hideArsenal()">← Back</button>
-    <div class="arsenal-title">
-      <span class="arsenal-title-icon">⚔️</span>
-      <div>
-        <div class="arsenal-title-text">Arsenal</div>
-        <div class="arsenal-title-sub" id="arsenalEquippedCount">0 / 15 equipped</div>
-      </div>
-    </div>
-    <button class="btn-shop-sm" onclick="showShopFromArsenal()">🛒 Shop</button>
+    <div class="arsenal-title">⚔️ Arsenal</div>
+    <div class="arsenal-equipped-count" id="arsenalEquippedCount">0 / 12 equipped</div>
   </div>
-
-  <!-- Shield preview strip -->
   <div class="arsenal-shield-bar">
-    <div class="arsenal-shield-label">🛡️ Active Shields</div>
+    <span class="arsenal-shield-label">Shield Options:</span>
     <div class="arsenal-shield-list" id="arsenalShieldPreview"></div>
-    <div class="arsenal-hint" id="arsenalHint"></div>
+    <span class="arsenal-hint" id="arsenalHint"></span>
   </div>
-
-  <!-- Tier filter tabs -->
   <div class="arsenal-filter-bar" id="arsenalFilterBar"></div>
-
-  <!-- Weapon grid -->
   <div class="arsenal-grid-wrap">
     <div class="arsenal-grid" id="arsenalGrid"></div>
   </div>
@@ -312,7 +338,7 @@
       <div class="weapon-grid" id="weaponGrid"></div>
     </div>
     <div class="choice-section">
-      <label class="choice-label">Shield Points <span class="shield-hint">(5–11)</span></label>
+      <label class="choice-label">Shield Points <span class="shield-hint">(5–15)</span></label>
       <div class="shield-grid" id="shieldGrid"></div>
     </div>
     <div class="choice-section" id="potionRow"></div>
@@ -381,6 +407,7 @@
         <div class="go-hp-num" id="goHpB">— HP</div>
       </div>
     </div>
+    <div class="go-xp-award" id="goXpAward"></div>
     <div class="go-actions">
       <button class="btn-primary" onclick="playAgain()">Play Again</button>
       <button class="btn-ghost" onclick="showScreen('screen-mode')">Main Menu</button>
