@@ -25,17 +25,17 @@
       <p class="hero-sub">A game of blades, shields,<br>and hidden intentions.</p>
       <div class="hero-stats">
         <div class="hstat"><span>70+</span>Weapons</div>
-        <div class="hstat"><span>10</span>Levels</div>
-        <div class="hstat"><span>25</span>Traits</div>
+        <div class="hstat"><span>1000</span>Levels</div>
+        <div class="hstat"><span>100</span>Traits</div>
       </div>
       <div class="hero-level-ladder">
-        <div class="hll-item"><span class="hll-badge">🥉</span><span class="hll-name">Rookie</span></div>
-        <div class="hll-arrow">›</div>
-        <div class="hll-item"><span class="hll-badge">🛡️</span><span class="hll-name">Knight</span></div>
-        <div class="hll-arrow">›</div>
-        <div class="hll-item"><span class="hll-badge">👑</span><span class="hll-name">Warlord</span></div>
-        <div class="hll-arrow">›</div>
-        <div class="hll-item hll-gm"><span class="hll-badge">💠</span><span class="hll-name">Grandmaster</span></div>
+        <div class="hll-item"><span class="hll-badge">🌿</span><span class="hll-name">Exorcist</span></div>
+        <div class="hll-arrow">·</div>
+        <div class="hll-item"><span class="hll-badge">🌑</span><span class="hll-name">Eclipse</span></div>
+        <div class="hll-arrow">·</div>
+        <div class="hll-item"><span class="hll-badge">💧</span><span class="hll-name">Hydros</span></div>
+        <div class="hll-arrow">·</div>
+        <div class="hll-item hll-gm"><span class="hll-badge">🔥</span><span class="hll-name">Vulcryn</span></div>
       </div>
     </div>
     <div class="auth-panel">
@@ -65,6 +65,24 @@
   </div>
 </div>
 
+<!-- ═══════ TUTORIAL OVERLAY ═══════ -->
+<div id="screen-tutorial" class="screen">
+  <div class="tutorial-overlay">
+    <div class="tutorial-box">
+      <div class="tut-header">
+        <div class="tut-title">⚔ How to Play</div>
+        <div class="tut-step-indicator" id="tutStepIndicator">1 / 7</div>
+      </div>
+      <div class="tut-content" id="tutContent"></div>
+      <div class="tut-footer">
+        <button class="btn-ghost" id="tutPrevBtn" onclick="tutPrev()" style="visibility:hidden">← Prev</button>
+        <div class="tut-dots" id="tutDots"></div>
+        <button class="btn-primary" id="tutNextBtn" onclick="tutNext()">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════ MODE SELECT ═══════ -->
 <div id="screen-mode" class="screen">
   <div class="screen-header">
@@ -73,14 +91,14 @@
       <button class="btn-shop" onclick="showShop()">🛒 Shop</button>
       <button class="btn-settings" onclick="showArsenal()">⚔️ Arsenal</button>
       <button class="btn-trait" onclick="showTraitShop()">✨ Traits</button>
+      <button class="btn-craft" onclick="showCraftingTable()">🔨 Craft</button>
       <button class="btn-rulebook" onclick="showRulebook()">📖 Rules</button>
       <button class="btn-ghost-sm" id="logoutBtn" onclick="logout()" style="display:none">Sign out</button>
     </div>
   </div>
 
   <div class="mode-content">
-
-    <!-- ★ PROFILE / LEVEL CARD ★ -->
+    <!-- PROFILE CARD -->
     <div class="profile-card" id="profileCard" onclick="showLevelPanel()">
       <div class="pc-avatar-col">
         <div class="pc-avatar-ring" id="pcAvatarRing">
@@ -91,21 +109,22 @@
         <div class="pc-top-row">
           <div class="pc-username" id="pcUsername">Warrior</div>
           <div class="pc-level-tag" id="pcLevelTag">
-            <span id="pcLvlBadge">🥉</span>
-            <span id="pcLvlName">Rookie</span>
-            <span class="pc-lvl-num" id="pcLvlNum">Lv.1</span>
+            <span id="pcLvlBadge">⚔</span>
+            <span id="pcLvlName" class="pc-lvl-num">Lv.1</span>
           </div>
         </div>
+        <div id="pcClanBadge" class="pc-clan-badge" style="display:none"></div>
         <div class="pc-xp-row">
           <span class="pc-xp-label">XP</span>
           <div class="pc-xp-bar-wrap">
             <div class="pc-xp-bar" id="pcXpBar" style="width:0%"></div>
           </div>
-          <span class="pc-xp-text" id="pcXpText">0 / 100</span>
+          <span class="pc-xp-text" id="pcXpText">0 / 200</span>
         </div>
         <div class="pc-stats-row">
           <div class="pc-stat-chip"><span class="token-count" id="pcTokens">0</span> 🪙</div>
           <div class="pc-stat-chip"><span class="potion-count" id="pcPotions">0</span> 🧪</div>
+          <div class="pc-stat-chip" id="pcDailyChip" onclick="showDailyQuests()" style="cursor:pointer">📅 Daily</div>
           <div class="pc-tap-hint">Tap to view full progress →</div>
         </div>
       </div>
@@ -142,6 +161,15 @@
         <div class="mode-badge mode-badge-boss">+300 🪙 Reward</div>
       </div>
     </div>
+
+    <!-- Bottom row buttons -->
+    <div class="mode-bottom-row">
+      <button class="btn-mode-extra" onclick="showTradingHub()">🤝 Trading Hub</button>
+      <button class="btn-mode-extra" onclick="showAchievements()">🏅 Achievements</button>
+      <button class="btn-mode-extra" onclick="showClanPanel()">⚜️ Clan</button>
+      <button class="btn-mode-extra btn-discord" onclick="showDiscordPrompt()">💬 Discord</button>
+      <button class="btn-mode-extra" onclick="showTutorial()">📖 Tutorial</button>
+    </div>
   </div>
 </div>
 
@@ -173,13 +201,12 @@
           <div class="wt-row"><span style="color:#22d3ee">T3 Steel</span><span class="wt-dmg">11–12 dmg · 200 🪙</span></div>
           <div class="wt-row"><span style="color:#a855f7">T4 Shadow</span><span class="wt-dmg">13 dmg · 400 🪙</span></div>
           <div class="wt-row"><span style="color:#facc15">T5 Legendary</span><span class="wt-dmg">14 dmg · 800 🪙</span></div>
-          <div class="wt-row wt-divine"><span style="color:#ff6b35">T6 Divine ✦</span><span class="wt-dmg" style="color:#ff6b35">15 dmg · 1000 🪙 · Gentuga Tensho</span></div>
+          <div class="wt-row wt-divine"><span style="color:#ff6b35">T6 Divine ✦</span><span class="wt-dmg" style="color:#ff6b35">15 dmg · 1000 🪙</span></div>
         </div>
       </div>
       <div class="rule-section"><h3>💥 Damage Formula</h3><div class="formula-box">Damage = |Your Shield − Opponent's Weapon|</div><p>Match shield exactly = <span class="neon-text">0 damage (Perfect Block!)</span></p></div>
-      <div class="rule-section"><h3>🪙 Token Rewards</h3><ul><li>Win → <strong>+200 🪙</strong></li><li>Lose → <strong>+50 🪙</strong></li><li>Boss kill → <strong>+300 🪙</strong></li><li>Special round win → <strong>+30 🪙</strong></li></ul></div>
-      <div class="rule-section"><h3>⭐ XP &amp; Levels</h3><p>10 levels: Rookie → Grandmaster. XP uses compound interest. Tap your profile card on the main menu to view full progress.</p></div>
-      <div class="rule-section"><h3>✨ Trait Shop</h3><p>Spend <strong>500 🪙</strong> to roll a random trait on any weapon. 25 traits, rarities from Common to Mythic (0.00%).</p></div>
+      <div class="rule-section"><h3>⚜️ Clans</h3><p>You are assigned a random clan on signup. Upgrade versions (V1→V4) by completing quests. Each clan has unique buffs at V4.</p></div>
+      <div class="rule-section"><h3>🔨 Crafting</h3><p>Collect materials from daily quests and battles. Use the Crafting Table to craft special traits!</p></div>
     </div>
   </div>
 </div>
@@ -195,7 +222,7 @@
   </div>
 </div>
 
-<!-- ═══════ TRAIT SHOP MODAL ═══════ -->
+<!-- ═══════ TRAIT MODAL ═══════ -->
 <div id="modal-trait" class="modal-overlay hidden" onclick="closeTraitIfOutside(event)">
   <div class="modal-box modal-box-wide">
     <div class="modal-header">
@@ -206,17 +233,84 @@
   </div>
 </div>
 
-<!-- ═══════ ARSENAL SCREEN ═══════ -->
+<!-- ═══════ CRAFTING TABLE MODAL ═══════ -->
+<div id="modal-crafting" class="modal-overlay hidden" onclick="closeCraftingIfOutside(event)">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">🔨 Crafting Table</h2>
+      <button class="modal-close" onclick="hideCraftingTable()">✕</button>
+    </div>
+    <div class="modal-body" id="craftingBody"></div>
+  </div>
+</div>
+
+<!-- ═══════ DAILY QUESTS MODAL ═══════ -->
+<div id="modal-daily" class="modal-overlay hidden" onclick="closeDailyIfOutside(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title">📅 Daily Quests</h2>
+      <button class="modal-close" onclick="hideDailyQuests()">✕</button>
+    </div>
+    <div class="modal-body" id="dailyBody"></div>
+  </div>
+</div>
+
+<!-- ═══════ ACHIEVEMENTS MODAL ═══════ -->
+<div id="modal-achievements" class="modal-overlay hidden" onclick="closeAchievementsIfOutside(event)">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">🏅 Achievements</h2>
+      <button class="modal-close" onclick="hideAchievements()">✕</button>
+    </div>
+    <div class="modal-body" id="achievementsBody"></div>
+  </div>
+</div>
+
+<!-- ═══════ CLAN PANEL MODAL ═══════ -->
+<div id="modal-clan" class="modal-overlay hidden" onclick="closeClanIfOutside(event)">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">⚜️ Clan</h2>
+      <button class="modal-close" onclick="hideClanPanel()">✕</button>
+    </div>
+    <div class="modal-body" id="clanBody"></div>
+  </div>
+</div>
+
+<!-- ═══════ TRADING HUB ═══════ -->
+<div id="screen-trading" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="showScreen('screen-mode')">← Back</button>
+    <div class="logo-small">🤝 Trading Hub</div>
+    <div style="width:80px"></div>
+  </div>
+  <div class="trading-content">
+    <div class="trading-tabs">
+      <button class="trade-tab-btn active" id="tradeTabMy" onclick="setTradeTab('my')">My Listings</button>
+      <button class="trade-tab-btn" id="tradeTabMarket" onclick="setTradeTab('market')">Market</button>
+      <button class="trade-tab-btn" id="tradeTabOffers" onclick="setTradeTab('offers')">Offers <span id="tradeOffersBadge" class="trade-badge" style="display:none">0</span></button>
+    </div>
+    <div id="tradingBody" class="trading-body"></div>
+  </div>
+</div>
+
+<!-- ═══════ ARSENAL ═══════ -->
 <div id="screen-arsenal" class="screen">
   <div class="arsenal-header">
+    <div class="arsenal-title">
+      <span class="arsenal-title-icon">⚔️</span>
+      <div>
+        <div class="arsenal-title-text">Arsenal</div>
+        <div class="arsenal-title-sub" id="arsenalEquippedCount">0 / 12 equipped</div>
+      </div>
+    </div>
+    <button class="btn-shop-sm" onclick="showShopFromArsenal()">🛒 Shop</button>
     <button class="btn-back" onclick="hideArsenal()">← Back</button>
-    <div class="arsenal-title">⚔️ Arsenal</div>
-    <div class="arsenal-equipped-count" id="arsenalEquippedCount">0 / 12 equipped</div>
   </div>
   <div class="arsenal-shield-bar">
-    <span class="arsenal-shield-label">Shields:</span>
+    <span class="arsenal-shield-label">Your Shields:</span>
     <div class="arsenal-shield-list" id="arsenalShieldPreview"></div>
-    <span class="arsenal-hint" id="arsenalHint"></span>
+    <div class="arsenal-hint" id="arsenalHint"></div>
   </div>
   <div class="arsenal-filter-bar" id="arsenalFilterBar"></div>
   <div class="arsenal-grid-wrap">

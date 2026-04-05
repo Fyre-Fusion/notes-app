@@ -1930,3 +1930,224 @@ input::placeholder { color: var(--text3); }
   padding: 5px 8px;
   margin-top: 2px;
 }
+/* ══════════════════════════════════════════════
+   NEW FEATURE STYLES
+══════════════════════════════════════════════ */
+
+/* ── Clan badge on profile card ── */
+.pc-clan-badge {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-d); font-size: 11px; color: var(--text2);
+  flex-wrap: wrap;
+}
+.clan-version-chip {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px;
+  border: 1px solid; font-family: var(--font-d); letter-spacing: 0.5px;
+}
+
+/* ── Mode bottom row ── */
+.mode-bottom-row {
+  display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+  margin-top: -8px;
+}
+.btn-mode-extra {
+  padding: 8px 16px; background: var(--surface); color: var(--text2);
+  border: 1px solid var(--border2); border-radius: var(--r);
+  font-family: var(--font-b); font-size: 13px; cursor: pointer;
+  transition: border-color .2s, color .2s, background .2s;
+}
+.btn-mode-extra:hover { border-color: var(--accent); color: var(--accent2); background: var(--surface2); }
+.btn-discord { color: #5865F2 !important; border-color: rgba(88,101,242,0.4) !important; }
+.btn-discord:hover { background: rgba(88,101,242,0.1) !important; border-color: #5865F2 !important; }
+.btn-craft {
+  padding: 7px 14px; background: transparent; color: #facc15;
+  border: 1px solid rgba(250,204,21,0.4); border-radius: var(--r);
+  font-family: var(--font-b); font-size: 13px; cursor: pointer;
+  transition: background .2s, box-shadow .2s;
+}
+.btn-craft:hover { background: rgba(250,204,21,0.08); box-shadow: 0 0 10px rgba(250,204,21,0.2); }
+
+/* ── Tutorial screen ── */
+.tutorial-overlay {
+  position: fixed; inset: 0; background: rgba(4,2,12,0.92);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; z-index: 10;
+}
+.tutorial-box {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 20px; width: 100%; max-width: 500px;
+  box-shadow: 0 0 60px rgba(168,85,247,0.2);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.tut-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 24px; border-bottom: 1px solid var(--border);
+}
+.tut-title { font-family: var(--font-d); font-size: 1rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent2); }
+.tut-step-indicator { font-family: var(--font-d); font-size: 12px; color: var(--text3); letter-spacing: 1px; }
+.tut-content { padding: 32px 28px; min-height: 180px; display: flex; align-items: center; justify-content: center; }
+.tut-step { display: flex; flex-direction: column; gap: 16px; text-align: center; }
+.tut-step-title { font-family: var(--font-d); font-size: 1.3rem; color: var(--text); letter-spacing: 0.5px; }
+.tut-step-body { font-size: 15px; color: var(--text2); line-height: 1.8; }
+.tut-footer { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid var(--border); }
+.tut-dots { display: flex; gap: 6px; }
+.tut-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); transition: background .2s, transform .2s; }
+.tut-dot.active { background: var(--accent); transform: scale(1.3); }
+
+/* ── Crafting table ── */
+.craft-mat-inventory { background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; padding: 16px 20px; }
+.craft-mat-title { font-family: var(--font-d); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); margin-bottom: 12px; }
+.craft-mat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; }
+.craft-mat-chip {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 6px; text-align: center; opacity: 0.45; transition: opacity .2s;
+}
+.craft-mat-chip.has-mats { opacity: 1; border-color: var(--border2); }
+.cmc-emoji { font-size: 1.3rem; }
+.cmc-name { font-size: 9px; color: var(--text3); font-family: var(--font-d); letter-spacing: 0.3px; line-height: 1.2; }
+.cmc-count { font-family: var(--font-d); font-size: 12px; color: var(--accent2); }
+.craft-section-title { font-family: var(--font-d); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); margin: 4px 0; }
+.craft-recipe-card {
+  background: var(--bg3); border: 1.5px solid; border-radius: 14px;
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 10px;
+  transition: transform .15s;
+}
+.craft-recipe-card:hover { transform: translateY(-2px); }
+.crc-header { display: flex; gap: 12px; align-items: flex-start; }
+.crc-emoji { font-size: 2rem; flex-shrink: 0; }
+.crc-name { font-family: var(--font-d); font-size: 0.9rem; letter-spacing: 0.5px; }
+.crc-rarity { font-size: 10px; font-family: var(--font-d); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+.crc-desc { font-size: 12px; color: var(--text2); line-height: 1.5; font-style: italic; margin-top: 4px; }
+.crc-recipe { display: flex; gap: 6px; flex-wrap: wrap; }
+.crc-mat {
+  font-size: 11px; padding: 3px 8px; border-radius: 8px; font-family: var(--font-d);
+  border: 1px solid; background: transparent;
+}
+.crc-mat.ok { color: var(--green); border-color: var(--green)44; background: rgba(74,222,128,0.08); }
+.crc-mat.missing { color: var(--red); border-color: var(--red)44; background: rgba(244,63,94,0.08); }
+.crc-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.crc-weapon-select {
+  flex: 1; min-width: 160px; padding: 8px 10px; background: var(--surface);
+  border: 1px solid var(--border2); border-radius: var(--r); color: var(--text);
+  font-family: var(--font-b); font-size: 13px;
+}
+.crc-craft-btn {
+  padding: 8px 16px; background: rgba(250,204,21,0.12); color: #facc15;
+  border: 1px solid rgba(250,204,21,0.4); border-radius: var(--r);
+  font-family: var(--font-d); font-size: 11px; cursor: pointer;
+  transition: background .15s, box-shadow .15s; white-space: nowrap;
+}
+.crc-craft-btn:hover:not(:disabled) { background: rgba(250,204,21,0.22); box-shadow: 0 0 10px rgba(250,204,21,0.3); }
+.crc-craft-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ── Daily Quests ── */
+.daily-header { background: var(--surface); border: 1px solid var(--border2); border-radius: 10px; padding: 14px 18px; }
+.daily-header p { font-size: 13px; color: var(--text2); line-height: 1.7; }
+.daily-quest-card {
+  background: var(--bg3); border: 1.5px solid var(--border2);
+  border-radius: 14px; padding: 16px 18px; display: flex;
+  align-items: center; gap: 14px; transition: border-color .2s;
+}
+.daily-quest-card.dq-done { border-color: var(--green)44; }
+.daily-quest-card.dq-claimed { opacity: 0.6; }
+.dq-main { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.dq-title { font-family: var(--font-d); font-size: 12px; letter-spacing: 0.5px; color: var(--text); }
+.dq-progress-wrap { width: 100%; height: 5px; background: var(--border); border-radius: 5px; overflow: hidden; }
+.dq-progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--cyan)); border-radius: 5px; transition: width .5s ease; }
+.dq-sub { font-size: 11px; color: var(--text3); font-family: var(--font-d); }
+.dq-reward { display: flex; gap: 8px; font-size: 12px; color: var(--text2); flex-wrap: wrap; }
+.dq-claimed-badge { font-size: 11px; color: var(--green); font-family: var(--font-d); letter-spacing: 1px; white-space: nowrap; }
+
+/* ── Achievements ── */
+.ach-header { font-family: var(--font-d); font-size: 13px; color: var(--accent2); letter-spacing: 1px; text-align: center; margin-bottom: 4px; }
+.ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.ach-card {
+  background: var(--surface); border: 1.5px solid var(--border2); border-radius: 14px;
+  padding: 16px 12px; display: flex; flex-direction: column; align-items: center;
+  gap: 6px; text-align: center; transition: transform .15s; position: relative;
+}
+.ach-card.ach-done { border-color: var(--accent)66; background: rgba(168,85,247,0.06); }
+.ach-card.ach-locked { opacity: 0.45; filter: grayscale(0.5); }
+.ach-emoji { font-size: 2rem; }
+.ach-name { font-family: var(--font-d); font-size: 10px; letter-spacing: 0.5px; color: var(--text); line-height: 1.3; }
+.ach-desc { font-size: 10px; color: var(--text3); line-height: 1.4; font-style: italic; }
+.ach-check { position: absolute; top: 6px; right: 8px; color: var(--green); font-size: 11px; }
+
+/* ── Clan panel ── */
+.clan-hero {
+  background: var(--bg3); border: 1px solid; border-radius: 16px;
+  padding: 24px; display: flex; flex-direction: column; align-items: center;
+  gap: 8px; text-align: center;
+}
+.clan-emoji { font-size: 3rem; animation: float 4s ease-in-out infinite; }
+.clan-name { font-family: var(--font-d); font-size: 1.3rem; letter-spacing: 2px; text-transform: uppercase; }
+.clan-lore { font-size: 13px; color: var(--text2); font-style: italic; line-height: 1.6; }
+.clan-version-tag { font-family: var(--font-d); font-size: 11px; padding: 4px 14px; border-radius: 20px; border: 1px solid; letter-spacing: 1px; }
+.clan-buff { font-size: 14px; color: var(--text2); line-height: 1.6; }
+.clan-special-badge { font-family: var(--font-d); font-size: 11px; color: #facc15; letter-spacing: 1px; animation: special-pulse 1.4s ease-in-out infinite; }
+.clan-versions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.clan-ver-card {
+  background: var(--surface); border: 1px solid var(--border2); border-radius: 12px;
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 4px;
+  opacity: 0.45;
+}
+.clan-ver-card.unlocked { opacity: 1; }
+.clan-ver-card.current { border-color: var(--accent); background: rgba(168,85,247,0.08); }
+.cvc-header { font-family: var(--font-d); font-size: 11px; letter-spacing: 0.5px; }
+.cvc-buff { font-size: 11px; color: var(--text2); line-height: 1.5; }
+.cvc-special { font-size: 10px; color: #facc15; font-family: var(--font-d); }
+.clan-upgrade-section {
+  background: var(--surface); border: 1px solid var(--border2); border-radius: 12px;
+  padding: 16px 20px; display: flex; flex-direction: column; gap: 10px;
+}
+.clan-upgrade-title { font-family: var(--font-d); font-size: 12px; letter-spacing: 1px; color: var(--accent2); text-transform: uppercase; }
+.clan-upgrade-req { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--text2); }
+.clan-reroll-section {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 10px;
+}
+.clan-reroll-info { font-size: 13px; color: var(--text2); line-height: 1.6; }
+.all-clans-title { font-family: var(--font-d); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); margin-top: 4px; }
+.clan-all-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.clan-info-card { background: var(--surface); border: 1px solid; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.cic-header { font-family: var(--font-d); font-size: 12px; letter-spacing: 0.5px; }
+.cic-lore { font-size: 11px; color: var(--text2); font-style: italic; line-height: 1.5; }
+.cic-v4 { font-size: 11px; font-family: var(--font-d); line-height: 1.4; }
+
+/* ── Trading Hub ── */
+#screen-trading { background: var(--bg); flex-direction: column; }
+.trading-content { flex: 1; display: flex; flex-direction: column; gap: 0; overflow: hidden; }
+.trading-tabs { display: flex; gap: 4px; padding: 16px 20px 0; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.trade-tab-btn {
+  padding: 9px 20px; background: transparent; border: none; border-bottom: 2px solid transparent;
+  color: var(--text2); font-family: var(--font-d); font-size: 12px; letter-spacing: 0.5px; cursor: pointer;
+  transition: color .2s, border-color .2s;
+}
+.trade-tab-btn.active { color: var(--accent2); border-bottom-color: var(--accent); }
+.trade-tab-btn:hover:not(.active) { color: var(--text); }
+.trade-badge { display: inline-flex; background: var(--red); color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 10px; margin-left: 4px; }
+.trading-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.trade-section-title { font-family: var(--font-d); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); }
+.trade-list-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.trade-select {
+  flex: 1; min-width: 180px; padding: 10px 12px; background: var(--surface);
+  border: 1px solid var(--border2); border-radius: var(--r); color: var(--text);
+  font-family: var(--font-b); font-size: 14px;
+}
+.trade-price-input {
+  width: 130px; padding: 10px 12px; background: var(--surface);
+  border: 1px solid var(--border2); border-radius: var(--r); color: var(--text);
+  font-family: var(--font-b); font-size: 14px;
+}
+.trade-card {
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 12px;
+  padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  transition: border-color .15s;
+}
+.trade-card:hover { border-color: var(--border2); }
+.trade-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.trade-weapon { font-family: var(--font-d); font-size: 12px; color: var(--text); letter-spacing: 0.3px; }
+.trade-seller { font-size: 11px; color: var(--text3); font-style: italic; }
+.trade-price { font-family: var(--font-d); font-size: 14px; color: #facc15; white-space: nowrap; }
+.trading-empty { display: flex; align-items: center; justify-content: center; padding: 60px 24px; color: var(--text2); font-style: italic; text-align: center; }
