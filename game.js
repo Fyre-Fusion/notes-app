@@ -182,7 +182,7 @@ function getRandomClan(){return CLAN_KEYS[Math.floor(Math.random()*CLAN_KEYS.len
 function getRandomRollClan(){return ALL_CLAN_KEYS[Math.floor(Math.random()*ALL_CLAN_KEYS.length)];}
 
 // ══════════════════════════════════════════════
-// CRAFTING MATERIALS (30 types)
+// CRAFTING MATERIALS (34 types)
 // ══════════════════════════════════════════════
 const CRAFTING_MATERIALS=[
   {id:"iron_shard",name:"Iron Shard",emoji:"🔩",rarity:"Common"},{id:"shadow_dust",name:"Shadow Dust",emoji:"🌑",rarity:"Common"},
@@ -200,6 +200,11 @@ const CRAFTING_MATERIALS=[
   {id:"chaos_shard",name:"Chaos Shard",emoji:"🌪️",rarity:"Epic"},{id:"time_dust",name:"Time Dust",emoji:"⌛",rarity:"Legendary"},
   {id:"spider_silk",name:"Spider Silk",emoji:"🕸️",rarity:"Common"},{id:"ember_core",name:"Ember Core",emoji:"🪨",rarity:"Uncommon"},
   {id:"tide_pearl",name:"Tide Pearl",emoji:"🐚",rarity:"Rare"},{id:"eclipse_shard",name:"Eclipse Shard",emoji:"🌘",rarity:"Epic"},
+  // 4 new materials
+  {id:"spirit_fragment",name:"Spirit Fragment",emoji:"👻",rarity:"Mythic",shopCost:10000,shopChance:0.005},
+  {id:"antimatter_shard",name:"Anti-Matter Shard",emoji:"🌌",rarity:"Mythic",shopCost:35000,shopChance:0.001},
+  {id:"fusion_element_x",name:"Fusion Element X",emoji:"🔷",rarity:"Epic",shopCost:1300,shopChance:0.25,shopCostType:"tokens"},
+  {id:"fusion_element_y",name:"Fusion Element Y",emoji:"🔶",rarity:"Epic",shopCost:1700,shopChance:0.20,shopCostType:"tokens"},
 ];
 
 // ══════════════════════════════════════════════
@@ -906,6 +911,7 @@ function renderShopUI(){
     <button class="shop-tab-btn${shopTab==="potions"?" active":""}" onclick="setShopTab('potions')">🧪 Potions</button>
     <button class="shop-tab-btn${shopTab==="weapons"?" active":""}" onclick="setShopTab('weapons')">⚔️ Weapons</button>
     <button class="shop-tab-btn${shopTab==="accessories"?" active":""}" onclick="setShopTab('accessories')">💍 Accessories</button>
+    <button class="shop-tab-btn${shopTab==="mats"?" active":""}" onclick="setShopTab('mats')">📦 Rare Mats</button>
   </div>`;
 
   if(shopTab==="potions"){
@@ -934,6 +940,26 @@ function renderShopUI(){
       </div>`;
     }
     html+=`</div></div>`;body.innerHTML=html;
+  }else if(shopTab==="mats"){
+    const specialMats=CRAFTING_MATERIALS.filter(m=>m.shopCost);
+    let html=bal+`<div style="display:flex;flex-direction:column;gap:14px">
+    <p class="shop-hint" style="text-align:left">Purchase rare crafting materials. Success is not guaranteed — each attempt has a set chance!</p>`;
+    for(const mat of specialMats){
+      const have=playerMaterials[mat.id]||0;
+      const canAfford=localTokens>=mat.shopCost&&currentUser;
+      const chanceText=mat.shopChance>=0.1?(mat.shopChance*100).toFixed(0)+"%":(mat.shopChance*100).toFixed(1)+"%";
+      const c=RARITY_COLORS[mat.rarity]||"#94a3b8";
+      html+=`<div class="shop-item-card">
+        <div class="shop-item-icon">${mat.emoji}</div>
+        <div class="shop-item-info">
+          <div class="shop-item-name" style="color:${c}">${mat.name} <span style="font-size:10px;opacity:0.6">${mat.rarity}</span></div>
+          <div class="shop-item-desc">${chanceText} chance per attempt. You have: ${have}</div>
+          <div class="shop-item-cost">${mat.shopCost} 🪙 per attempt</div>
+        </div>
+        <button class="btn-primary" onclick="buySpecialMaterial('${mat.id}');renderShopUI();" ${canAfford?"":"disabled"}>Try (${mat.shopCost} 🪙)</button>
+      </div>`;
+    }
+    html+=`</div>`;body.innerHTML=html;
   }else{
     let html=bal+`<div class="weapon-shop-list">`;
     for(let t=1;t<=6;t++){
@@ -1096,112 +1122,279 @@ function showSettings(){showArsenal();}
 function hideSettings(){hideArsenal();}
 
 // ══════════════════════════════════════════════
-// TRADING HUB
+// TRADE ROOMS SYSTEM
 // ══════════════════════════════════════════════
-let tradeTab="my";
-function showTradingHub(){tradeTab="my";showScreen("screen-trading");renderTradingUI();}
-function setTradeTab(t){
-  tradeTab=t;
-  document.querySelectorAll(".trade-tab-btn").forEach(b=>b.classList.remove("active"));
-  const tabEl=document.getElementById(t==="my"?"tradeTabMy":t==="market"?"tradeTabMarket":"tradeTabOffers");
-  if(tabEl)tabEl.classList.add("active");
-  renderTradingUI();
+let tradeRoomCode=null,tradeRoomRole=null,tradeRoomPoll=null;
+let tradeOfferTab="weapons",myTradeOffer={weapons:[],mats:[],accs:[]};
+
+function showTradingHub(){
+  tradeRoomCode=null;tradeRoomRole=null;myTradeOffer={weapons:[],mats:[],accs:[]};
+  showScreen("screen-trading");
+  document.getElementById("tradeRoomLobby").classList.remove("hidden");
+  document.getElementById("tradeRoomWaiting").classList.add("hidden");
+  document.getElementById("tradeRoomActive").classList.add("hidden");
+  document.getElementById("tradeRoomError").textContent="";
 }
 
-function renderTradingUI(){
-  const body=document.getElementById("tradingBody");if(!body)return;
-  if(!currentUser){body.innerHTML=`<div class="trading-empty"><p>Sign in to access the Trading Hub!</p></div>`;return;}
+function genTradeCode(){return Math.random().toString(36).substring(2,8).toUpperCase();}
 
-  if(tradeTab==="my"){
-    let html=`<div class="trade-section-title">Your Listings</div>
-    <p style="color:var(--text2);font-size:13px;margin-bottom:16px">List weapons for others to buy. You earn coins!</p>
-    <div class="trade-list-controls">
-      <select id="tradeWeaponSel" class="trade-select">
-        <option value="">— Select weapon to list —</option>
-        ${ownedWeapons.filter(n=>!STARTER_WEAPON_NAMES.includes(n)).map(n=>{
-          const w=ALL_WEAPONS.find(x=>x.name===n);
-          return w?`<option value="${n}">${w.emoji} ${n} (T${w.tier}, ${w.dmg} dmg)`:""}).join("")}
-      </select>
-      <input type="number" id="tradeAskPrice" placeholder="Ask price 🪙" min="1" class="trade-price-input"/>
-      <button class="btn-primary" style="font-size:12px;padding:10px 18px" onclick="createListing()">List for Trade</button>
-    </div>
-    <div id="myListingsContainer"><p style="color:var(--text3);font-style:italic;margin-top:16px">Loading…</p></div>`;
-    body.innerHTML=html;loadMyListings();
-  }else if(tradeTab==="market"){
-    body.innerHTML=`<div class="trade-section-title">Market</div><p style="color:var(--text2);font-size:13px;margin-bottom:16px">Browse weapons listed by other players.</p><div id="marketContainer"><p style="color:var(--text3);font-style:italic">Loading…</p></div>`;
-    loadMarket();
+async function createTradeRoom(){
+  if(!currentUser){showToast("Sign in to create trade rooms!","red");return;}
+  const code=genTradeCode();
+  tradeRoomCode=code;tradeRoomRole="A";
+  try{
+    const{error}=await db.from("trade_rooms").insert({
+      code,player_a:currentUser.id,player_a_name:currentUser.username,
+      status:"waiting",offer_a:null,offer_b:null
+    });
+    if(error){
+      // Table might not exist — show instructions
+      document.getElementById("tradeRoomError").innerHTML=`⚠️ trade_rooms table not found. Add it in Supabase: <code>CREATE TABLE trade_rooms (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, code text UNIQUE, player_a text, player_a_name text, player_b text, player_b_name text, status text DEFAULT 'waiting', offer_a text, offer_b text, created_at timestamptz DEFAULT now());</code>`;
+      return;
+    }
+  }catch(e){
+    // Fallback: use localStorage-based local room for demo
+    localStorage.setItem("tradeRoom_"+code,JSON.stringify({code,player_a:currentUser.id,player_a_name:currentUser.username,status:"waiting",offer_a:null,offer_b:null}));
+  }
+  document.getElementById("tradeRoomCode").textContent=code;
+  document.getElementById("tradeRoomLobby").classList.add("hidden");
+  document.getElementById("tradeRoomWaiting").classList.remove("hidden");
+  // Poll for partner
+  tradeRoomPoll=setInterval(async()=>{
+    try{
+      const{data}=await db.from("trade_rooms").select("*").eq("code",code).maybeSingle();
+      if(data&&data.status==="active"&&data.player_b){
+        clearInterval(tradeRoomPoll);tradeRoomPoll=null;
+        document.getElementById("tradeRoomWaiting").classList.add("hidden");
+        startTradeRoomSession(data);
+      }
+    }catch(e){}
+  },2000);
+}
+
+async function joinTradeRoom(){
+  if(!currentUser){showToast("Sign in to join trade rooms!","red");return;}
+  const code=document.getElementById("tradeJoinCode").value.trim().toUpperCase();
+  const errEl=document.getElementById("tradeRoomError");errEl.textContent="";
+  if(!code||code.length!==6){errEl.textContent="Enter a valid 6-character code.";return;}
+  try{
+    const{data,error}=await db.from("trade_rooms").select("*").eq("code",code).maybeSingle();
+    if(error||!data){errEl.textContent="Room not found.";return;}
+    if(data.status!=="waiting"){errEl.textContent="Room is full or closed.";return;}
+    await db.from("trade_rooms").update({player_b:currentUser.id,player_b_name:currentUser.username,status:"active"}).eq("code",code);
+    tradeRoomCode=code;tradeRoomRole="B";
+    document.getElementById("tradeRoomLobby").classList.add("hidden");
+    startTradeRoomSession({...data,player_b:currentUser.id,player_b_name:currentUser.username,status:"active"});
+  }catch(e){errEl.textContent="Failed to join. Try again.";}
+}
+
+function startTradeRoomSession(data){
+  document.getElementById("traRoomCode").textContent=data.code;
+  const myName=tradeRoomRole==="A"?data.player_a_name:data.player_b_name;
+  const partnerName=tradeRoomRole==="A"?data.player_b_name:data.player_a_name;
+  document.getElementById("traPlayerA").textContent=myName+" (You)";
+  document.getElementById("traPlayerB").textContent=partnerName||"Partner";
+  document.getElementById("tradeRoomActive").classList.remove("hidden");
+  myTradeOffer={weapons:[],mats:[],accs:[]};
+  setTradeOfferTab("weapons");
+  // Poll for opponent offer
+  tradeRoomPoll=setInterval(pollTradeRoom,2000);
+}
+
+async function pollTradeRoom(){
+  if(!tradeRoomCode)return;
+  try{
+    const{data}=await db.from("trade_rooms").select("*").eq("code",tradeRoomCode).maybeSingle();
+    if(!data)return;
+    if(data.status==="completed"||data.status==="cancelled"){
+      clearInterval(tradeRoomPoll);tradeRoomPoll=null;
+      if(data.status==="completed"){completeTrade(data);}
+      else{showToast("Trade room closed.","info");showTradingHub();}
+      return;
+    }
+    // Show opponent's offer
+    const opponentOfferKey=tradeRoomRole==="A"?"offer_b":"offer_a";
+    const raw=data[opponentOfferKey];
+    const opponentOffer=raw?JSON.parse(raw):null;
+    renderOpponentOffer(opponentOffer);
+    // Check if both accepted
+    if(data.offer_a&&data.offer_b){
+      const offerA=JSON.parse(data.offer_a),offerB=JSON.parse(data.offer_b);
+      if(offerA.accepted&&offerB.accepted){
+        clearInterval(tradeRoomPoll);tradeRoomPoll=null;
+        completeTrade(data);
+      }
+    }
+  }catch(e){}
+}
+
+function renderOpponentOffer(offer){
+  const el=document.getElementById("traOpponentOffer");if(!el)return;
+  if(!offer||(!offer.weapons?.length&&!offer.mats?.length&&!offer.accs?.length)){
+    el.textContent="Waiting for opponent to select items…";return;
+  }
+  let html="";
+  if(offer.weapons?.length)html+=offer.weapons.map(n=>{const w=ALL_WEAPONS.find(x=>x.name===n);return`<div class="tra-offer-item">${w?.emoji||"⚔"} ${n}</div>`;}).join("");
+  if(offer.mats?.length)html+=offer.mats.map(m=>{const mat=CRAFTING_MATERIALS.find(x=>x.id===m.id);return`<div class="tra-offer-item">${mat?.emoji||"📦"} ${mat?.name||m.id} ×${m.qty}</div>`;}).join("");
+  if(offer.accs?.length)html+=offer.accs.map(id=>{const acc=ALL_ACCESSORIES.find(x=>x.id===id);return`<div class="tra-offer-item">${acc?.emoji||"💍"} ${acc?.name||id}</div>`;}).join("");
+  if(offer.accepted)html+=`<div class="tra-offer-accepted">✓ Accepted!</div>`;
+  el.innerHTML=html;
+  const acceptBtn=document.getElementById("traAcceptBtn");
+  if(acceptBtn)acceptBtn.style.display=(offer&&!offer.accepted)?"":"none";
+}
+
+function setTradeOfferTab(tab){
+  tradeOfferTab=tab;
+  document.querySelectorAll(".tra-tab").forEach(b=>b.classList.remove("active"));
+  const el=document.getElementById("traTab"+tab.charAt(0).toUpperCase()+tab.slice(1));
+  if(el)el.classList.add("active");
+  renderTradeOfferGrid();
+}
+
+function renderTradeOfferGrid(){
+  const grid=document.getElementById("traOfferGrid");if(!grid)return;
+  grid.innerHTML="";
+  if(tradeOfferTab==="weapons"){
+    const tradeable=ownedWeapons.filter(n=>!STARTER_WEAPON_NAMES.includes(n));
+    if(!tradeable.length){grid.innerHTML=`<p style="color:var(--text3);font-style:italic;font-size:13px">No non-starter weapons to trade.</p>`;return;}
+    tradeable.forEach(n=>{
+      const w=ALL_WEAPONS.find(x=>x.name===n);if(!w)return;
+      const ti=TIER_INFO[w.tier],selected=myTradeOffer.weapons.includes(n);
+      const card=document.createElement("div");card.className="tra-item-card"+(selected?" selected":"");
+      card.innerHTML=`<div class="tra-item-emoji">${w.emoji}</div><div class="tra-item-name">${n}</div><div class="tra-item-sub" style="color:${ti.color}">T${w.tier} · ${w.dmg} dmg</div>`;
+      card.onclick=()=>{
+        if(selected){myTradeOffer.weapons=myTradeOffer.weapons.filter(x=>x!==n);}
+        else{myTradeOffer.weapons.push(n);}
+        renderTradeOfferGrid();renderMyTradeSelected();
+      };
+      grid.appendChild(card);
+    });
+  }else if(tradeOfferTab==="mats"){
+    const hasMats=CRAFTING_MATERIALS.filter(m=>(playerMaterials[m.id]||0)>0);
+    if(!hasMats.length){grid.innerHTML=`<p style="color:var(--text3);font-style:italic;font-size:13px">No materials to trade.</p>`;return;}
+    hasMats.forEach(m=>{
+      const have=playerMaterials[m.id]||0;
+      const existing=myTradeOffer.mats.find(x=>x.id===m.id);
+      const offeredQty=existing?existing.qty:0;
+      const card=document.createElement("div");card.className="tra-item-card"+(offeredQty>0?" selected":"");
+      card.innerHTML=`<div class="tra-item-emoji">${m.emoji}</div><div class="tra-item-name">${m.name}</div><div class="tra-item-sub">Have: ${have}</div>
+      <div class="tra-qty-row">
+        <button onclick="event.stopPropagation();adjustMatOffer('${m.id}','${m.name}','${m.emoji}',-1)">-</button>
+        <span>${offeredQty}</span>
+        <button onclick="event.stopPropagation();adjustMatOffer('${m.id}','${m.name}','${m.emoji}',1)">+</button>
+      </div>`;
+      grid.appendChild(card);
+    });
   }else{
-    body.innerHTML=`<div class="trade-section-title">Completed Trades</div><div id="offersContainer"><p style="color:var(--text3);font-style:italic">Loading…</p></div>`;
-    loadOffers();
+    const accs=playerAccessories.filter(id=>id!==equippedAccessory);
+    if(!accs.length){grid.innerHTML=`<p style="color:var(--text3);font-style:italic;font-size:13px">No unequipped accessories to trade.</p>`;return;}
+    accs.forEach(id=>{
+      const acc=ALL_ACCESSORIES.find(x=>x.id===id);if(!acc)return;
+      const selected=myTradeOffer.accs.includes(id);
+      const c=RARITY_COLORS[acc.rarity]||"#94a3b8";
+      const card=document.createElement("div");card.className="tra-item-card"+(selected?" selected":"");
+      card.innerHTML=`<div class="tra-item-emoji">${acc.emoji}</div><div class="tra-item-name">${acc.name}</div><div class="tra-item-sub" style="color:${c}">${acc.rarity}</div>`;
+      card.onclick=()=>{
+        if(selected){myTradeOffer.accs=myTradeOffer.accs.filter(x=>x!==id);}
+        else{myTradeOffer.accs.push(id);}
+        renderTradeOfferGrid();renderMyTradeSelected();
+      };
+      grid.appendChild(card);
+    });
   }
 }
 
-async function createListing(){
-  const weaponName=document.getElementById("tradeWeaponSel")?.value;
-  const askPrice=parseInt(document.getElementById("tradeAskPrice")?.value);
-  if(!weaponName){showToast("Select a weapon!","red");return;}
-  if(!askPrice||askPrice<1){showToast("Enter a valid price!","red");return;}
-  if(!ownedWeapons.includes(weaponName)){showToast("You don't own this weapon!","red");return;}
-  try{
-    const{error}=await db.from("trade_listings").insert({seller_id:currentUser.id,seller_name:currentUser.username,weapon_name:weaponName,ask_price:askPrice,status:"active"});
-    if(error){showToast("Failed: "+error.message,"red");return;}
-    showToast(`${weaponName} listed for ${askPrice} 🪙!`,"gold");loadMyListings();
-  }catch(e){showToast("Error creating listing","red");}
+function adjustMatOffer(id,name,emoji,delta){
+  const have=playerMaterials[id]||0;
+  const existing=myTradeOffer.mats.find(x=>x.id===id);
+  let qty=(existing?existing.qty:0)+delta;
+  qty=Math.max(0,Math.min(have,qty));
+  if(existing){if(qty===0)myTradeOffer.mats=myTradeOffer.mats.filter(x=>x.id!==id);else existing.qty=qty;}
+  else if(qty>0){myTradeOffer.mats.push({id,name,emoji,qty});}
+  renderTradeOfferGrid();renderMyTradeSelected();
 }
 
-async function loadMyListings(){
-  const container=document.getElementById("myListingsContainer");if(!container||!currentUser)return;
-  try{
-    const{data}=await db.from("trade_listings").select("*").eq("seller_id",currentUser.id).eq("status","active");
-    if(!data||data.length===0){container.innerHTML=`<p style="color:var(--text3);font-style:italic">No active listings.</p>`;return;}
-    container.innerHTML=data.map(l=>{
-      const w=ALL_WEAPONS.find(x=>x.name===l.weapon_name),ti=w?TIER_INFO[w.tier]:TIER_INFO[1];
-      return`<div class="trade-card">
-        <div class="trade-weapon">${w?.emoji||"⚔"} ${l.weapon_name} <span style="color:${ti.color}">T${w?.tier||"?"}</span></div>
-        <div class="trade-price">${l.ask_price} 🪙</div>
-        <button class="ws-btn ws-btn-equipped" onclick="cancelListing('${l.id}')">Cancel</button>
-      </div>`;
-    }).join("");
-  }catch(e){container.innerHTML=`<p style="color:var(--red)">Failed to load.</p>`;}
+function renderMyTradeSelected(){
+  const el=document.getElementById("traSelectedOffer");if(!el)return;
+  const items=[];
+  myTradeOffer.weapons.forEach(n=>{const w=ALL_WEAPONS.find(x=>x.name===n);items.push(`${w?.emoji||"⚔"} ${n}`);});
+  myTradeOffer.mats.forEach(m=>items.push(`${m.emoji} ${m.name} ×${m.qty}`));
+  myTradeOffer.accs.forEach(id=>{const acc=ALL_ACCESSORIES.find(x=>x.id===id);items.push(`${acc?.emoji||"💍"} ${acc?.name||id}`);});
+  el.innerHTML=items.length?items.map(i=>`<span class="tra-sel-chip">${i}</span>`).join(""):"— Nothing selected —";
 }
 
-async function cancelListing(id){
-  try{await db.from("trade_listings").update({status:"cancelled"}).eq("id",id);showToast("Listing cancelled","info");loadMyListings();}catch(e){}
+async function sendTradeOffer(){
+  if(!tradeRoomCode){showToast("Not in a trade room!","red");return;}
+  const offerKey=tradeRoomRole==="A"?"offer_a":"offer_b";
+  const offerData={...myTradeOffer,accepted:false};
+  try{
+    await db.from("trade_rooms").update({[offerKey]:JSON.stringify(offerData)}).eq("code",tradeRoomCode);
+    showToast("Offer sent! Waiting for opponent to accept.","green");
+    document.getElementById("traStatus").textContent="Offer sent. Waiting for opponent…";
+  }catch(e){showToast("Failed to send offer.","red");}
 }
 
-async function loadMarket(){
-  const container=document.getElementById("marketContainer");if(!container)return;
+async function acceptTrade(){
+  if(!tradeRoomCode){showToast("Not in a trade room!","red");return;}
+  const offerKey=tradeRoomRole==="A"?"offer_a":"offer_b";
   try{
-    const{data}=await db.from("trade_listings").select("*").eq("status","active").neq("seller_id",currentUser.id).limit(50);
-    if(!data||data.length===0){container.innerHTML=`<p style="color:var(--text3);font-style:italic">No weapons for sale right now.</p>`;return;}
-    container.innerHTML=data.map(l=>{
-      const w=ALL_WEAPONS.find(x=>x.name===l.weapon_name),ti=w?TIER_INFO[w.tier]:TIER_INFO[1];
-      const canAfford=localTokens>=l.ask_price;
-      return`<div class="trade-card">
-        <div class="trade-info">
-          <div class="trade-weapon">${w?.emoji||"⚔"} ${l.weapon_name} <span style="color:${ti.color}">T${w?.tier||"?"} · ${w?.dmg||"?"} dmg</span></div>
-          <div class="trade-seller">by ${l.seller_name}</div>
-        </div>
-        <div class="trade-price">${l.ask_price} 🪙</div>
-        <button class="ws-btn ws-btn-buy" onclick="buyListing('${l.id}','${l.weapon_name.replace(/'/g,"\\'")}',${l.ask_price},'${l.seller_id}')" ${canAfford?"":"disabled"}>Buy</button>
-      </div>`;
-    }).join("");
-  }catch(e){container.innerHTML=`<p style="color:var(--red)">Failed to load market.</p>`;}
+    const{data}=await db.from("trade_rooms").select("*").eq("code",tradeRoomCode).maybeSingle();
+    if(!data)return;
+    const myOffer=data[offerKey]?JSON.parse(data[offerKey]):{...myTradeOffer};
+    myOffer.accepted=true;
+    await db.from("trade_rooms").update({[offerKey]:JSON.stringify(myOffer)}).eq("code",tradeRoomCode);
+    // Check if both accepted
+    const otherKey=tradeRoomRole==="A"?"offer_b":"offer_a";
+    const otherOffer=data[otherKey]?JSON.parse(data[otherKey]):null;
+    if(otherOffer&&otherOffer.accepted){
+      await db.from("trade_rooms").update({status:"completed"}).eq("code",tradeRoomCode);
+      clearInterval(tradeRoomPoll);tradeRoomPoll=null;
+      completeTrade({offer_a:tradeRoomRole==="A"?JSON.stringify(myOffer):data.offer_a,offer_b:tradeRoomRole==="B"?JSON.stringify(myOffer):data.offer_b});
+    }else{
+      showToast("You accepted! Waiting for opponent to accept too.","green");
+      document.getElementById("traStatus").textContent="You accepted! Waiting for opponent…";
+    }
+  }catch(e){showToast("Failed to accept.","red");}
 }
 
-async function buyListing(listingId,weaponName,price,sellerId){
-  if(localTokens<price){showToast("Not enough coins!","red");return;}
-  if(ownedWeapons.includes(weaponName)){showToast("You already own this!","info");return;}
-  try{
-    const{error}=await db.from("trade_listings").update({status:"sold",buyer_id:currentUser.id,buyer_name:currentUser.username}).eq("id",listingId).eq("status","active");
-    if(error){showToast("Trade failed: "+error.message,"red");return;}
-    localTokens-=price;ownedWeapons.push(weaponName);
-    playerStats.tradesCompleted=(playerStats.tradesCompleted||0)+1;
-    await saveTokenData();
-    try{const{data:sd}=await db.from("players").select("tokens").eq("id",sellerId).maybeSingle();if(sd)await db.from("players").update({tokens:(sd.tokens||0)+price}).eq("id",sellerId);}catch(e){}
-    showToast(`${weaponName} purchased for ${price} 🪙!`,"gold");
-    checkAchievements();loadMarket();updateTokenDisplay();
-  }catch(e){showToast("Trade error","red");}
+function completeTrade(data){
+  const offerA=data.offer_a?JSON.parse(data.offer_a):{weapons:[],mats:[],accs:[]};
+  const offerB=data.offer_b?JSON.parse(data.offer_b):{weapons:[],mats:[],accs:[]};
+  const myOffer=tradeRoomRole==="A"?offerA:offerB;
+  const theirOffer=tradeRoomRole==="A"?offerB:offerA;
+  // Remove my offered items
+  myOffer.weapons?.forEach(n=>{ownedWeapons=ownedWeapons.filter(x=>x!==n);myLoadout=myLoadout.filter(x=>x!==n);});
+  myOffer.mats?.forEach(m=>{playerMaterials[m.id]=Math.max(0,(playerMaterials[m.id]||0)-m.qty);});
+  myOffer.accs?.forEach(id=>{playerAccessories=playerAccessories.filter(x=>x!==id);});
+  // Add their offered items
+  theirOffer.weapons?.forEach(n=>{if(!ownedWeapons.includes(n))ownedWeapons.push(n);});
+  theirOffer.mats?.forEach(m=>{playerMaterials[m.id]=(playerMaterials[m.id]||0)+m.qty;});
+  theirOffer.accs?.forEach(id=>{if(!playerAccessories.includes(id))playerAccessories.push(id);});
+  playerStats.tradesCompleted=(playerStats.tradesCompleted||0)+1;
+  saveTokenData();checkAchievements();
+  showToast("Trade completed! 🤝","gold");
+  setTimeout(()=>showTradingHub(),1500);
+}
+
+function cancelTradeRoom(){
+  if(tradeRoomPoll){clearInterval(tradeRoomPoll);tradeRoomPoll=null;}
+  if(tradeRoomCode){try{db.from("trade_rooms").update({status:"cancelled"}).eq("code",tradeRoomCode).then(()=>{});}catch(e){}}
+  tradeRoomCode=null;tradeRoomRole=null;
+  document.getElementById("tradeRoomWaiting").classList.add("hidden");
+  document.getElementById("tradeRoomLobby").classList.remove("hidden");
+}
+
+function leaveTradeRoom(){
+  if(tradeRoomPoll){clearInterval(tradeRoomPoll);tradeRoomPoll=null;}
+  if(tradeRoomCode){try{db.from("trade_rooms").update({status:"cancelled"}).eq("code",tradeRoomCode).then(()=>{});}catch(e){}}
+  tradeRoomCode=null;tradeRoomRole=null;
+  showTradingHub();
+}
+
+function copyTradeCode(){
+  const code=document.getElementById("tradeRoomCode")?.textContent||"";
+  navigator.clipboard.writeText(code).catch(()=>{});
+  showToast("Code copied!","green");
 }
 
 async function loadOffers(){
@@ -1216,6 +1409,14 @@ async function loadOffers(){
   }catch(e){container.innerHTML=`<p style="color:var(--red)">Failed to load.</p>`;}
 }
 
+async function buyListing(listingId,weaponName,price,sellerId){
+  if(localTokens<price){showToast("Not enough coins!","red");return;}
+  if(ownedWeapons.includes(weaponName)){showToast("You already own this!","info");return;}
+  try{
+    const{error}=await db.from("trade_listings").update({status:"sold",buyer_id:currentUser.id,buyer_name:currentUser.username}).eq("id",listingId).eq("status","active");
+    if(error){showToast("Trade failed: "+error.message,"red");return;}
+    localTokens-=price;ownedWeapons.push(weaponName);
+    playerStats.tradesCompleted=(playerStats.tradesCompleted||0)+1;
 // ══════════════════════════════════════════════
 // DISCORD & TUTORIAL
 // ══════════════════════════════════════════════
@@ -1358,9 +1559,24 @@ function initGame(mode,names){
   WEAPONS=myLoadout.map(n=>ALL_WEAPONS.find(w=>w.name===n)).filter(Boolean);
   if(!WEAPONS.length)WEAPONS=ALL_WEAPONS.filter(w=>STARTER_WEAPON_NAMES.includes(w.name));
   SHIELD_VALUES=getShieldValues(WEAPONS);SHIELD_VALUES_A=SHIELD_VALUES;SHIELD_VALUES_B=SHIELD_VALUES;
-  const n=names||{A:currentUser?currentUser.username:"Player A",B:mode==="ai"?"The Machine":"Player B"};
+  const n=names||{A:currentUser?currentUser.username:"Player A",B:mode==="ai"?"🤖 The Machine":"Player B"};
   gs=freshGameState(n);specialActive=false;specialGuesserNow="A";
   renderGame();initEmojiChat();
+}
+
+// AI auto-pick weapon and shield for "vs AI" mode
+function aiMakeChoice(){
+  // Pick a weapon (prefer higher tier/damage)
+  const avail=WEAPONS.filter(w=>!gs.usedWeapons.includes(w.name));
+  const pool=avail.length>0?avail:WEAPONS;
+  // Weighted random — higher dmg = more likely
+  const totalDmg=pool.reduce((s,w)=>s+w.dmg,0);
+  let r=Math.random()*totalDmg,aiWeapon=pool[pool.length-1];
+  for(const w of pool){r-=w.dmg;if(r<=0){aiWeapon=w;break;}}
+  // Pick shield — try to counter playerA's last weapon if known, else random
+  const shields=SHIELD_VALUES_B.length?SHIELD_VALUES_B:getShieldValues(WEAPONS);
+  const aiShield=shields[Math.floor(Math.random()*shields.length)];
+  return{weapon:aiWeapon,shield:aiShield,potion:false};
 }
 
 // ══════════════════════════════════════════════
@@ -1448,7 +1664,12 @@ function renderGame(){
   document.getElementById("hpNameA").textContent=gs.names.A;document.getElementById("hpNameB").textContent=gs.names.B;
   updateHPBars();renderAvailableWeapons();hideOnlineWaiting();
   if(!specialActive&&Math.random()<SPECIAL_CHANCE){triggerSpecialShot();return;}
-  if(gs.phase==="A")renderPlayerATurn(false);else renderPlayerBTurn(false);
+  // In AI mode, only ever show Player A's turn
+  if(gs.phase==="A")renderPlayerATurn(false);
+  else if(gameMode==="ai"){
+    // Should not normally reach here, but guard against it
+    gs.phase="A";renderPlayerATurn(false);
+  }else renderPlayerBTurn(false);
 }
 function updateHPBars(){
   const pA=Math.max(0,gs.hpA/MAX_HP*100),pB=Math.max(0,gs.hpB/MAX_HP*100);
@@ -1544,11 +1765,13 @@ function renderPlayerBTurn(isBoss){
   const badge=document.getElementById("turnBadge"),phase=document.getElementById("turnPhase");
   if(badge)badge.textContent=gs.names.B+"'s Turn";
   const aWeapon=gs.pendingA&&gs.pendingA.weapon?gs.pendingA.weapon:null;
-  if(phase)phase.textContent=isBoss?"Choose weapon & shield to attack the Boss!":aWeapon?gs.names.A+" locked in. Shield "+aWeapon.dmg+" = Perfect Block!":"Pick your weapon & shield.";
+  // No hints about perfect blocks — just "pick your weapon & shield"
+  if(phase)phase.textContent=isBoss?"Choose weapon & shield to attack the Boss!":"Pick your weapon & shield.";
   const cb=document.getElementById("confirmBtn");if(cb)cb.disabled=true;
   const bAvail=isBoss?WEAPONS:WEAPONS.filter(w=>w.name!==(gs.pendingA&&gs.pendingA.weapon?gs.pendingA.weapon.name:null));
   renderWeaponGrid("weaponGrid",bAvail,w=>{selWeaponB=w;usingPotionB=false;checkBReady();});
-  renderShieldGrid("shieldGrid",SHIELD_VALUES_B.length?SHIELD_VALUES_B:getShieldValues(WEAPONS),v=>{selShieldB=v;checkBReady();},aWeapon?aWeapon.dmg:null);
+  // No perfect-counter highlight hint shown
+  renderShieldGrid("shieldGrid",SHIELD_VALUES_B.length?SHIELD_VALUES_B:getShieldValues(WEAPONS),v=>{selShieldB=v;checkBReady();},null);
   renderPotionRow("potionRow","B");
 }
 function checkBReady(){const cb=document.getElementById("confirmBtn");if(cb)cb.disabled=!(usingPotionB||(selWeaponB&&selShieldB!==null));}
@@ -1608,8 +1831,17 @@ function confirmChoice(){
     gs.pendingA={weapon:selWeaponA,shield:selShieldA,potion:usingPotionA};
     const cb=document.getElementById("confirmBtn");
     if(cb){cb.classList.add("locked-in");cb.textContent="✓ Locked In";cb.disabled=true;}
-    if(gameMode==="hotseat"){document.getElementById("passTitle").textContent="Pass to "+gs.names.B;document.getElementById("passSubtitle").textContent=gs.names.A+" has locked their choice. Hand the device over.";showScreen("screen-pass");}
-    else{gs.phase="B";renderGame();}
+    if(gameMode==="hotseat"){
+      document.getElementById("passTitle").textContent="Pass to "+gs.names.B;
+      document.getElementById("passSubtitle").textContent=gs.names.A+" has locked their choice. Hand the device over.";
+      showScreen("screen-pass");
+    }else if(gameMode==="ai"){
+      // AI auto-makes its choice immediately
+      gs.phase="B";
+      if(usingPotionA){gs.potionsA=Math.max(0,gs.potionsA-1);if(currentUser){localPotions=Math.max(0,localPotions-1);saveTokenData();}}
+      const aiChoice=aiMakeChoice();
+      resolveShot(gs.pendingA,aiChoice);
+    }else{gs.phase="B";renderGame();}
   }else{
     if(!usingPotionB&&(!selWeaponB||selShieldB===null))return;
     if(usingPotionB){gs.potionsB=Math.max(0,gs.potionsB-1);if(currentUser){localPotions=Math.max(0,localPotions-1);saveTokenData();updateDailyQuest("potion");}}
@@ -1662,11 +1894,11 @@ function showShotResult(cA,cB,dmgA,dmgB){
 }
 
 function nextAfterResult(){
-  gs.pendingA=null;
+  gs.pendingA=null;gs.phase="A";
   if(gameMode==="boss"){nextBossShot();return;}
   if(gs.hpA<=0||gs.hpB<=0||gs.shot>=SHOTS_PER_ROUND){endRound();}
   else{
-    gs.shot++;gs.phase="A";
+    gs.shot++;
     if(gameMode==="online"){
       if(onlineRole==="A"){showScreen("screen-game");renderGame();db.from("game_rooms").update({turn_status:"a_choosing",move_a:null,move_b:null,state:JSON.stringify(gs)}).eq("code",onlineRoom);}
       else{showScreen("screen-game");document.getElementById("gsShot").textContent="Shot "+gs.shot+" / "+SHOTS_PER_ROUND;updateHPBars();renderAvailableWeapons();showOnlineWaiting("Waiting for "+gs.names.A+" to choose…");}
@@ -1681,7 +1913,7 @@ function endRound(){
   if(lastRound){
     if(gs.isSuddenDeath){document.getElementById("roHpA").textContent=gs.hpA+" HP";document.getElementById("roHpB").textContent=gs.hpB+" HP";}
     else{document.getElementById("roHpA").textContent=gs.totalHpA+" HP total";document.getElementById("roHpB").textContent=gs.totalHpB+" HP total";}
-    if(gs.totalHpA===gs.totalHpB&&!gs.isSuddenDeath){document.getElementById("roLabel").textContent="It's a Tie after 3 Rounds!";document.getElementById("roNextBtn").textContent="⚡ Begin Sudden Death →";showScreen("screen-roundover");}
+    if(gs.totalHpA===gs.totalHpB&&!gs.isSuddenDeath){document.getElementById("roLabel").textContent="It's a Tie after 3 Rounds!";document.getElementById("roNextBtn").textContent="⚡ Begin Sudden Death →";showScreen("screen-roundover");setTimeout(playRoundWinAnimation,100);}
     else showGameOver();
   }else{
     document.getElementById("roHpA").textContent=gs.hpA+" HP  (total: "+gs.totalHpA+")";
@@ -1689,6 +1921,7 @@ function endRound(){
     document.getElementById("roLabel").textContent="Round "+gs.round+" Complete";
     document.getElementById("roNextBtn").textContent="Begin Round "+(gs.round+1)+" →";
     showScreen("screen-roundover");
+    setTimeout(playRoundWinAnimation,100);
   }
 }
 
@@ -1698,7 +1931,7 @@ function startNextRound(){
   if(gameMode==="online"){
     if(onlineRole==="A"){showScreen("screen-game");renderGame();db.from("game_rooms").update({turn_status:"a_choosing",move_a:null,move_b:null,state:JSON.stringify(gs)}).eq("code",onlineRoom);}
     else{showScreen("screen-game");document.getElementById("gsRound").textContent=gs.isSuddenDeath?"⚡ Sudden Death":"Round "+gs.round+" / "+TOTAL_ROUNDS;document.getElementById("gsShot").textContent="Shot 1 / "+SHOTS_PER_ROUND;updateHPBars();renderAvailableWeapons();showOnlineWaiting("Waiting for "+gs.names.A+" to choose…");}
-  }else{showScreen("screen-game");renderGame();}
+  }else{showScreen("screen-game");gs.phase="A";renderGame();}
 }
 
 // ══════════════════════════════════════════════
@@ -1741,7 +1974,33 @@ async function showGameOver(){
     }
   }
 }
+// playAgain kept for internal use but removed from game over screen
 function playAgain(){restoreTurnPanel();initGame(gameMode);showScreen("screen-game");}
+
+// ══════════════════════════════════════════════
+// WIN ROUND ANIMATIONS
+// ══════════════════════════════════════════════
+function playRoundWinAnimation(){
+  const container=document.getElementById("roundoverParticles");if(!container)return;
+  container.innerHTML="";
+  const colors=["#a855f7","#c084fc","#22d3ee","#4ade80","#facc15","#f43f5e","#ff6b35","#fff"];
+  const cx=window.innerWidth/2,cy=window.innerHeight/2;
+  for(let i=0;i<40;i++){
+    const p=document.createElement("div");p.className="ro-particle-burst";
+    const angle=(Math.PI*2*i)/40+(Math.random()-0.5)*0.5;
+    const dist=80+Math.random()*220;
+    const tx=Math.cos(angle)*dist,ty=Math.sin(angle)*dist-80;
+    const color=colors[Math.floor(Math.random()*colors.length)];
+    const size=4+Math.random()*8;
+    p.style.cssText=`position:fixed;left:${cx}px;top:${cy}px;width:${size}px;height:${size}px;background:${color};border-radius:50%;pointer-events:none;z-index:20;box-shadow:0 0 8px ${color};--tx:${tx}px;--ty:${ty}px;--dur:${0.6+Math.random()*0.7}s;--delay:${Math.random()*0.12}s;animation:ro-particle-fly var(--dur) var(--delay) ease-out forwards;`;
+    container.appendChild(p);
+    setTimeout(()=>p.remove(),1500);
+  }
+  // Trophy bounce
+  const trophy=document.getElementById("roTrophy");
+  if(trophy){trophy.style.display="block";trophy.classList.remove("ro-trophy-bounce");void trophy.offsetWidth;trophy.classList.add("ro-trophy-bounce");}
+}
+
 function confirmQuit(){
   if(confirm("Quit and return to the menu?")){
     // FIX: notify opponent if online
@@ -1764,10 +2023,13 @@ async function pollTick(){
   try{var res=await db.from("game_rooms").select("turn_status,state,last_result,status,move_a").eq("code",onlineRoom).maybeSingle();data=res.data;}catch(e){return;}
   if(!data)return;
 
-  // FIX: opponent quit — kick us back to menu
+  // Opponent quit — kick us back to menu with message
   if(data.status==="abandoned"){
     clearInterval(lobbyPoll);lobbyPoll=null;cleanupOnline();destroyEmojiChat();restoreTurnPanel();
-    showScreen("screen-mode");showToast("Opponent left the game.","red");return;
+    showScreen("screen-mode");
+    // Show prominent overlay message
+    showOpponentLeftMessage();
+    return;
   }
 
   const ts=data.turn_status;
@@ -1816,6 +2078,17 @@ function cleanupOnline(){
   if(lobbyPoll){clearInterval(lobbyPoll);lobbyPoll=null;}
   if(onlineSub){onlineSub.unsubscribe();onlineSub=null;}
   onlineRoom=null;onlineRole=null;lastHandledKey="";resultShownForKey="";
+}
+
+function showOpponentLeftMessage(){
+  const overlay=document.createElement("div");
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;";
+  overlay.innerHTML=`<div style="font-size:3rem">👋</div>
+    <div style="font-family:var(--font-d);font-size:1.8rem;color:#f43f5e;text-shadow:0 0 20px rgba(244,63,94,0.5);">Opponent left.</div>
+    <div style="font-size:14px;color:var(--text2);font-style:italic;">You have been returned to the main menu.</div>
+    <button class="btn-primary" onclick="this.parentNode.remove()">OK</button>`;
+  document.body.appendChild(overlay);
+  setTimeout(()=>{if(overlay.parentNode)overlay.remove();},6000);
 }
 function genCode(){return Math.random().toString(36).substring(2,8).toUpperCase();}
 
@@ -2054,17 +2327,145 @@ function subscribeEmojiChannel(code){
 function toggleEmojiPicker(){toggleChatPanel();}
 
 // ══════════════════════════════════════════════
+// WEAPON FUSION MACHINE
+// ══════════════════════════════════════════════
+let fusionWeapon1=null,fusionWeapon2=null;
+
+function showFusionMachine(){renderFusionUI();document.getElementById("modal-fusion").classList.remove("hidden");}
+function hideFusionMachine(){document.getElementById("modal-fusion").classList.add("hidden");}
+function closeFusionIfOutside(e){if(e.target===document.getElementById("modal-fusion"))hideFusionMachine();}
+
+function renderFusionUI(){
+  const body=document.getElementById("fusionBody");if(!body)return;
+  const hasFX=(playerMaterials["fusion_element_x"]||0)>0;
+  const hasFY=(playerMaterials["fusion_element_y"]||0)>0;
+  const canFuse=fusionWeapon1&&fusionWeapon2&&fusionWeapon1!==fusionWeapon2&&hasFX&&hasFY&&currentUser;
+
+  let html=`<div class="fusion-intro">
+    <p>Select two weapons from your arsenal, then consume <strong>🔷 Fusion Element X</strong> and <strong>🔶 Fusion Element Y</strong> to fuse them into a new super-weapon!</p>
+    <div class="fusion-mats-check">
+      <span class="${hasFX?"fusion-mat-ok":"fusion-mat-missing"}">🔷 Fusion Element X: ${playerMaterials["fusion_element_x"]||0}</span>
+      <span class="${hasFY?"fusion-mat-ok":"fusion-mat-missing"}">🔶 Fusion Element Y: ${playerMaterials["fusion_element_y"]||0}</span>
+    </div>
+  </div>
+  <div class="fusion-slots">
+    <div class="fusion-slot" id="fusionSlot1">
+      <div class="fusion-slot-label">Weapon 1</div>
+      ${fusionWeapon1?`<div class="fusion-slot-weapon">${(ALL_WEAPONS.find(w=>w.name===fusionWeapon1)?.emoji||"⚔")} ${fusionWeapon1}</div><button class="btn-ghost-sm" onclick="setFusionSlot(1,null)">✕</button>`:`<div class="fusion-slot-empty">— Select —</div>`}
+    </div>
+    <div class="fusion-cross">⚗️</div>
+    <div class="fusion-slot" id="fusionSlot2">
+      <div class="fusion-slot-label">Weapon 2</div>
+      ${fusionWeapon2?`<div class="fusion-slot-weapon">${(ALL_WEAPONS.find(w=>w.name===fusionWeapon2)?.emoji||"⚔")} ${fusionWeapon2}</div><button class="btn-ghost-sm" onclick="setFusionSlot(2,null)">✕</button>`:`<div class="fusion-slot-empty">— Select —</div>`}
+    </div>
+  </div>
+  <div class="fusion-weapon-list">
+    <div class="fusion-wl-title">Your Weapons</div>
+    <div class="fusion-wl-grid">`;
+  ownedWeapons.forEach(n=>{
+    const w=ALL_WEAPONS.find(x=>x.name===n);if(!w)return;
+    const ti=TIER_INFO[w.tier];
+    const sel=(fusionWeapon1===n||fusionWeapon2===n);
+    html+=`<div class="fusion-wl-card ${sel?"fusion-wl-selected":""}" onclick="pickFusionWeapon('${n.replace(/'/g,"\\'")}')">
+      <span style="font-size:1.3rem">${w.emoji}</span>
+      <span class="fusion-wl-name">${n}</span>
+      <span class="fusion-wl-tier" style="color:${ti.color}">T${w.tier}</span>
+    </div>`;
+  });
+  html+=`</div></div>
+  ${canFuse?`<div class="fusion-preview"><div class="fusion-preview-title">Fusion Result Preview</div><div class="fusion-preview-name">${getFusedWeaponName(fusionWeapon1,fusionWeapon2)}</div><div class="fusion-preview-sub">Combines traits, takes higher tier + bonus damage.</div></div>`:""}
+  <button class="btn-primary" onclick="performFusion()" ${canFuse?"":"disabled"} style="width:100%;margin-top:8px">⚗️ Fuse Weapons!</button>
+  <p style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">Both source weapons will be consumed. Get them from your arsenal first!</p>`;
+  body.innerHTML=html;
+}
+
+function getFusedWeaponName(w1,w2){
+  const parts1=w1.split(" "),parts2=w2.split(" ");
+  return parts1[0]+" "+parts2[parts2.length-1]+" [Fused]";
+}
+
+function setFusionSlot(slot,name){
+  if(slot===1)fusionWeapon1=name;else fusionWeapon2=name;
+  renderFusionUI();
+}
+
+function pickFusionWeapon(name){
+  if(fusionWeapon1===name){fusionWeapon1=null;}
+  else if(fusionWeapon2===name){fusionWeapon2=null;}
+  else if(!fusionWeapon1){fusionWeapon1=name;}
+  else if(!fusionWeapon2){fusionWeapon2=name;}
+  else{showToast("Clear a slot first!","red");}
+  renderFusionUI();
+}
+
+async function performFusion(){
+  if(!currentUser){showToast("Sign in to fuse!","red");return;}
+  if(!fusionWeapon1||!fusionWeapon2||fusionWeapon1===fusionWeapon2){showToast("Select two different weapons!","red");return;}
+  if((playerMaterials["fusion_element_x"]||0)<1){showToast("Need 🔷 Fusion Element X!","red");return;}
+  if((playerMaterials["fusion_element_y"]||0)<1){showToast("Need 🔶 Fusion Element Y!","red");return;}
+  if(!ownedWeapons.includes(fusionWeapon1)||!ownedWeapons.includes(fusionWeapon2)){showToast("You don't own both weapons!","red");return;}
+
+  const w1=ALL_WEAPONS.find(w=>w.name===fusionWeapon1);
+  const w2=ALL_WEAPONS.find(w=>w.name===fusionWeapon2);
+  if(!w1||!w2){showToast("Invalid weapons!","red");return;}
+
+  // Build fused weapon
+  const fusedTier=Math.min(6,Math.max(w1.tier,w2.tier)+1);
+  const fusedDmg=Math.min(16,Math.max(w1.dmg,w2.dmg)+2);
+  const fusedName=getFusedWeaponName(fusionWeapon1,fusionWeapon2);
+  const fusedEmoji="⚗️";
+  const fusedWeapon={name:fusedName,emoji:fusedEmoji,dmg:fusedDmg,tier:fusedTier,cost:0,fused:true};
+
+  // Consume materials
+  playerMaterials["fusion_element_x"]=Math.max(0,(playerMaterials["fusion_element_x"]||0)-1);
+  playerMaterials["fusion_element_y"]=Math.max(0,(playerMaterials["fusion_element_y"]||0)-1);
+
+  // Remove source weapons from owned (keep in ALL_WEAPONS reference)
+  ownedWeapons=ownedWeapons.filter(n=>n!==fusionWeapon1&&n!==fusionWeapon2);
+  myLoadout=myLoadout.filter(n=>n!==fusionWeapon1&&n!==fusionWeapon2);
+
+  // Add fused weapon (inject into ALL_WEAPONS array for this session and save to owned)
+  if(!ALL_WEAPONS.find(w=>w.name===fusedName)){ALL_WEAPONS.push(fusedWeapon);}
+  ownedWeapons.push(fusedName);
+  myLoadout.push(fusedName);
+
+  // Inherit traits
+  const trait1=weaponTraits[fusionWeapon1];
+  const trait2=weaponTraits[fusionWeapon2];
+  if(trait1||trait2){weaponTraits[fusedName]=trait1||trait2;}
+  delete weaponTraits[fusionWeapon1];delete weaponTraits[fusionWeapon2];
+
+  fusionWeapon1=null;fusionWeapon2=null;
+  await saveTokenData();
+  showToast(`⚗️ ${fusedName} forged! T${fusedTier} · ${fusedDmg} dmg`,"gold");
+  renderFusionUI();
+}
+
+// Material shop functions (buying special mats)
+async function buySpecialMaterial(matId){
+  if(!currentUser){showToast("Sign in first!","red");return;}
+  const mat=CRAFTING_MATERIALS.find(m=>m.id===matId);if(!mat||!mat.shopCost)return;
+  if(mat.shopCostType==="tokens"){
+    if(localTokens<mat.shopCost){showToast(`Need ${mat.shopCost} 🪙!`,"red");return;}
+    if(Math.random()>mat.shopChance){showToast(`${mat.emoji} No luck this time! Try again.`,"red");localTokens-=Math.floor(mat.shopCost*0.1);updateTokenDisplay();await saveTokenData();return;}
+    localTokens-=mat.shopCost;playerMaterials[matId]=(playerMaterials[matId]||0)+1;
+    updateTokenDisplay();await saveTokenData();showToast(`${mat.emoji} ${mat.name} obtained!`,"gold");
+  }else{
+    // $-cost (simulated as large token cost)
+    if(localTokens<mat.shopCost){showToast(`Need ${mat.shopCost} 🪙!`,"red");return;}
+    if(Math.random()>mat.shopChance){showToast(`${mat.emoji} ${mat.name}: Not this time…`,"red");localTokens-=Math.floor(mat.shopCost*0.02);updateTokenDisplay();await saveTokenData();return;}
+    localTokens-=mat.shopCost;playerMaterials[matId]=(playerMaterials[matId]||0)+1;
+    updateTokenDisplay();await saveTokenData();showToast(`${mat.emoji} ${mat.name} obtained!`,"gold");
+  }
+}
+
+// ══════════════════════════════════════════════
 // AUTH PARTICLES
 // ══════════════════════════════════════════════
 function spawnAuthParticles(){
-  const container=document.getElementById("authParticles");if(!container)return;
-  const emojis=["⚔","🛡","⭐","🌟","💫","✨","🔥","⚡","🌙","🌑","💧","🌿"];
-  for(let i=0;i<20;i++){
-    const p=document.createElement("div");p.className="auth-particle";
-    p.textContent=emojis[Math.floor(Math.random()*emojis.length)];
-    p.style.cssText=`left:${Math.random()*100}%;font-size:${0.8+Math.random()*1.2}rem;animation-duration:${8+Math.random()*12}s;animation-delay:${Math.random()*8}s;opacity:${0.1+Math.random()*0.3}`;
-    container.appendChild(p);
-  }
+  // Floating emoji particles disabled (change 1)
+  // const container=document.getElementById("authParticles");if(!container)return;
+  // ...
 }
 
 // ══════════════════════════════════════════════

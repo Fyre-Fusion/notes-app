@@ -96,6 +96,7 @@
       <button class="btn-settings" onclick="showArsenal()">⚔️ Arsenal</button>
       <button class="btn-trait" onclick="showTraitShop()">✨ Traits</button>
       <button class="btn-craft" onclick="showCraftingTable()">🔨 Craft</button>
+      <button class="btn-craft btn-fusion" onclick="showFusionMachine()">⚗️ Fuse</button>
       <button class="btn-rulebook" onclick="showRulebook()">📖 Rules</button>
       <button class="btn-ghost-sm" id="logoutBtn" onclick="logout()" style="display:none">Sign out</button>
     </div>
@@ -103,7 +104,7 @@
 
   <div class="mode-content">
     <!-- PROFILE CARD -->
-    <div class="profile-card" id="profileCard" onclick="showLevelPanel()">
+    <div class="profile-card" id="profileCard" onclick="showLevelPanel()" style="cursor:pointer">
       <div class="pc-avatar-col">
         <div class="pc-avatar-ring" id="pcAvatarRing">
           <div class="pc-avatar" id="pcAvatar">⚔</div>
@@ -126,9 +127,9 @@
           <span class="pc-xp-text" id="pcXpText">0 / 200</span>
         </div>
         <div class="pc-stats-row">
-          <div class="pc-stat-chip"><span class="token-count" id="pcTokens">0</span> 🪙</div>
-          <div class="pc-stat-chip"><span class="potion-count" id="pcPotions">0</span> 🧪</div>
-          <div class="pc-stat-chip" id="pcDailyChip" onclick="showDailyQuests()" style="cursor:pointer">📅 Daily</div>
+          <div class="pc-stat-chip" style="pointer-events:none"><span class="token-count" id="pcTokens">0</span> 🪙</div>
+          <div class="pc-stat-chip" style="pointer-events:none"><span class="potion-count" id="pcPotions">0</span> 🧪</div>
+          <div class="pc-stat-chip" id="pcDailyChip" onclick="showDailyQuests();event.stopPropagation();" style="cursor:pointer">📅 Daily</div>
           <div class="pc-tap-hint">Tap to view full progress →</div>
         </div>
       </div>
@@ -248,6 +249,17 @@
   </div>
 </div>
 
+<!-- ═══════ WEAPON FUSION MODAL ═══════ -->
+<div id="modal-fusion" class="modal-overlay hidden" onclick="closeFusionIfOutside(event)">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">⚗️ Weapon Fusion Machine</h2>
+      <button class="modal-close" onclick="hideFusionMachine()">✕</button>
+    </div>
+    <div class="modal-body" id="fusionBody"></div>
+  </div>
+</div>
+
 <!-- ═══════ DAILY QUESTS MODAL ═══════ -->
 <div id="modal-daily" class="modal-overlay hidden" onclick="closeDailyIfOutside(event)">
   <div class="modal-box">
@@ -281,20 +293,72 @@
   </div>
 </div>
 
-<!-- ═══════ TRADING HUB ═══════ -->
+<!-- ═══════ TRADING HUB (Trade Rooms) ═══════ -->
 <div id="screen-trading" class="screen">
   <div class="screen-header">
     <button class="btn-back" onclick="showScreen('screen-mode')">← Back</button>
-    <div class="logo-small">🤝 Trading Hub</div>
+    <div class="logo-small">🤝 Trade Rooms</div>
     <div style="width:80px"></div>
   </div>
-  <div class="trading-content">
-    <div class="trading-tabs">
-      <button class="trade-tab-btn active" id="tradeTabMy" onclick="setTradeTab('my')">My Listings</button>
-      <button class="trade-tab-btn" id="tradeTabMarket" onclick="setTradeTab('market')">Market</button>
-      <button class="trade-tab-btn" id="tradeTabOffers" onclick="setTradeTab('offers')">Offers <span id="tradeOffersBadge" class="trade-badge" style="display:none">0</span></button>
+  <div class="traderoom-content">
+    <div id="tradeRoomLobby" class="traderoom-lobby">
+      <div class="traderoom-intro">
+        <div class="tri-icon">🤝</div>
+        <div class="tri-title">Trade Rooms</div>
+        <div class="tri-sub">Create a private room and share the code with a friend, or join an existing room to trade weapons, materials and accessories.</div>
+      </div>
+      <div class="traderoom-actions">
+        <button class="btn-primary" onclick="createTradeRoom()">+ Create Trade Room</button>
+        <div class="traderoom-divider">or join</div>
+        <div class="traderoom-join-row">
+          <input type="text" id="tradeJoinCode" placeholder="Enter 6-char code" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;text-align:center"/>
+          <button class="btn-secondary" onclick="joinTradeRoom()">Join</button>
+        </div>
+        <p id="tradeRoomError" class="form-error"></p>
+      </div>
     </div>
-    <div id="tradingBody" class="trading-body"></div>
+
+    <div id="tradeRoomWaiting" class="traderoom-waiting hidden">
+      <div class="trw-title">Trade Room Created!</div>
+      <p class="trw-sub">Share this code with the player you want to trade with</p>
+      <div class="trw-code-box">
+        <span class="trw-code" id="tradeRoomCode">------</span>
+        <button class="btn-copy" onclick="copyTradeCode()">Copy</button>
+      </div>
+      <div class="waiting-pulse"><div class="pulse-ring"></div><span>Waiting for trader to join…</span></div>
+      <button class="btn-ghost" onclick="cancelTradeRoom()">Cancel Room</button>
+    </div>
+
+    <div id="tradeRoomActive" class="traderoom-active hidden">
+      <div class="tra-header">
+        <div class="tra-title">Trade Room · <span id="traRoomCode"></span></div>
+        <div class="tra-players"><span id="traPlayerA">You</span> ⇄ <span id="traPlayerB">Trader</span></div>
+      </div>
+      <div class="tra-body">
+        <div class="tra-section">
+          <div class="tra-section-title">What you offer</div>
+          <div class="tra-offer-tabs">
+            <button class="tra-tab active" id="traTabWeapons" onclick="setTradeOfferTab('weapons')">⚔ Weapons</button>
+            <button class="tra-tab" id="traTabMats" onclick="setTradeOfferTab('mats')">📦 Materials</button>
+            <button class="tra-tab" id="traTabAccs" onclick="setTradeOfferTab('accs')">💍 Accessories</button>
+          </div>
+          <div id="traOfferGrid" class="tra-offer-grid"></div>
+          <div class="tra-selected-label">Selected to offer:</div>
+          <div id="traSelectedOffer" class="tra-selected-list">— Nothing selected —</div>
+        </div>
+        <div class="tra-divider">⇄</div>
+        <div class="tra-section">
+          <div class="tra-section-title">Opponent's offer</div>
+          <div id="traOpponentOffer" class="tra-opponent-offer">Waiting for opponent to select items…</div>
+        </div>
+      </div>
+      <div class="tra-actions">
+        <button class="btn-primary" id="traSendOfferBtn" onclick="sendTradeOffer()">Send Offer</button>
+        <button class="btn-ghost" id="traAcceptBtn" onclick="acceptTrade()" style="display:none">✓ Accept Trade</button>
+        <button class="btn-ghost" onclick="leaveTradeRoom()">Leave Room</button>
+      </div>
+      <div id="traStatus" class="tra-status"></div>
+    </div>
   </div>
 </div>
 
@@ -463,7 +527,9 @@
 
 <!-- ═══════ ROUND OVER ═══════ -->
 <div id="screen-roundover" class="screen">
+  <div id="roundoverParticles" class="ro-particles"></div>
   <div class="roundover-content">
+    <div class="ro-trophy-anim" id="roTrophy">🏆</div>
     <div class="ro-eyebrow" id="roLabel">Round 1 Complete</div>
     <div class="ro-scores">
       <div class="ro-score"><div class="ro-name" id="roNameA">Player A</div><div class="ro-hp" id="roHpA">30 HP</div></div>
@@ -487,8 +553,7 @@
     </div>
     <div class="go-xp-award" id="goXpAward"></div>
     <div class="go-actions">
-      <button class="btn-primary" onclick="playAgain()">Play Again</button>
-      <button class="btn-ghost" onclick="showScreen('screen-mode')">Main Menu</button>
+      <button class="btn-primary" onclick="showScreen('screen-mode')">🏠 Home</button>
     </div>
   </div>
 </div>
