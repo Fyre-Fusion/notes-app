@@ -259,7 +259,7 @@ input::placeholder { color: var(--text3); }
   width: 100%; max-width: 640px; background: var(--bg2);
   border: 1px solid var(--border2); border-radius: 20px;
   padding: 20px 24px; display: flex; gap: 20px;
-  cursor: pointer; transition: border-color .2s, box-shadow .2s, transform .15s;
+  cursor: default;
   box-shadow: 0 4px 24px rgba(0,0,0,0.4);
   position: relative; overflow: hidden;
 }
@@ -268,7 +268,6 @@ input::placeholder { color: var(--text3); }
   background: linear-gradient(135deg, rgba(168,85,247,0.05) 0%, transparent 60%);
   pointer-events: none;
 }
-.profile-card:hover { border-color: var(--accent); box-shadow: 0 8px 40px rgba(168,85,247,0.2); transform: translateY(-2px); }
 
 .pc-avatar-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; flex-shrink: 0; }
 .pc-avatar-ring {
@@ -320,10 +319,10 @@ input::placeholder { color: var(--text3); }
 .pc-stat-chip:hover { border-color: var(--accent); }
 .pc-tap-hint { font-size: 11px; color: var(--text3); font-style: italic; margin-left: auto; }
 
-.mode-cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; max-width: 720px; }
+.mode-cards { display: flex; gap: 12px; flex-wrap: nowrap; justify-content: center; max-width: 900px; width: 100%; }
 .mode-card {
-  width: 200px; background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 18px; padding: 30px 22px 26px; text-align: center; cursor: pointer;
+  flex: 1 1 0; min-width: 0; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 18px; padding: 24px 14px 20px; text-align: center; cursor: pointer;
   transition: border-color .2s, transform .2s, box-shadow .2s;
   display: flex; flex-direction: column; gap: 10px; align-items: center;
   position: relative; overflow: hidden;
@@ -579,8 +578,9 @@ input::placeholder { color: var(--text3); }
   .auth-hero { min-height: 180px; padding: 32px 24px; border-right: none; border-bottom: 1px solid var(--border); }
   .hero-title { font-size: 2.6rem; }
   .auth-panel { width: 100%; padding: 28px 20px; }
-  .mode-cards { flex-direction: column; align-items: center; }
-  .mode-card { width: 100%; max-width: 300px; }
+  .mode-cards { gap: 8px; }
+  .mode-card { padding: 18px 8px 14px; }
+  .mode-card p { display: none; }
   .result-duel { flex-direction: column; }
   .rd-side { width: 100%; }
   .go-final-hp, .ro-scores { gap: 24px; padding: 20px 24px; }
@@ -674,7 +674,8 @@ input::placeholder { color: var(--text3); }
   .header-tokens, .header-potions { display: none; }
   .btn-shop { font-size: 11px; padding: 6px 10px; }
   .shop-item-card { flex-direction: column; text-align: center; align-items: flex-start; }
-  .mode-cards { gap: 14px; }
+  .mode-cards { gap: 6px; }
+  .mode-card h3 { font-size: 0.85rem; }
 }
 
 /* ══════════ EMOJI CHAT ══════════ */

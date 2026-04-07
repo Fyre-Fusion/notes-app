@@ -1417,6 +1417,12 @@ async function buyListing(listingId,weaponName,price,sellerId){
     if(error){showToast("Trade failed: "+error.message,"red");return;}
     localTokens-=price;ownedWeapons.push(weaponName);
     playerStats.tradesCompleted=(playerStats.tradesCompleted||0)+1;
+    updateTokenDisplay();await saveTokenData();
+    showToast(`⚔ ${weaponName} added to arsenal!`,"gold");
+    renderTradingHub();
+  }catch(e){showToast("Trade error: "+e.message,"red");}
+}
+
 // ══════════════════════════════════════════════
 // DISCORD & TUTORIAL
 // ══════════════════════════════════════════════
