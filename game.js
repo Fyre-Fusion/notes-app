@@ -55,7 +55,8 @@ const ALL_WEAPONS = [
   {name:"Jutte",emoji:"⚜️",dmg:14,tier:5,cost:800},{name:"Kaginawa",emoji:"🪝",dmg:14,tier:5,cost:800},
   {name:"Teporenki",emoji:"🔱",dmg:14,tier:5,cost:800},{name:"Shinobi-zue",emoji:"🌿",dmg:14,tier:5,cost:800},
   // T6
-  {name:"Gentuga Tensho",emoji:"🌠",dmg:15,tier:6,cost:1000},
+  {name:"Gentuga Tensho",emoji:"🌠",dmg:16,tier:6,cost:1000},
+  {name:"Atom Scythe",emoji:"⚛️",dmg:15,tier:6,cost:1000},
 ];
 
 const STARTER_WEAPON_NAMES = ["Shuriken","Kunai","Kama","Tekko","Sai","Fukiya","Tessen","Jitte","Hanbo","Rokushakubo","Kanabo","Tetsubo"];
@@ -159,9 +160,26 @@ const CLANS={
       3:{name:"Pyroclast",buff:"+2 dmg below 15 HP + 5% lifesteal"},
       4:{name:"Helltide",buff:"ERUPTION: +3 dmg all shots + every 3rd shot burns enemy for -2 HP next turn",special:true},
     }},
+  thunder:{name:"Thunder Clan",emoji:"⚡",color:"#facc15",lore:"Storm-born warriors who strike with the fury of lightning.",rollOnly:true,
+    versions:{
+      1:{name:"Stormborn",buff:"+1 dmg on every even-numbered shot"},
+      2:{name:"Thunderstrike",buff:"+2 dmg on every even-numbered shot"},
+      3:{name:"Tempest Knight",buff:"+2 dmg every even shot + 15% chance to stun (enemy loses 1 shield pt)"},
+      4:{name:"Thunder God",buff:"LIGHTNING SURGE: Every shot has 25% chance to deal +3 bonus dmg + chain lightning -2 HP",special:true},
+    }},
+  shadow:{name:"Shadow Clan",emoji:"🌑",color:"#7c3aed",lore:"Unseen assassins who manipulate darkness and strike from the void.",rollOnly:true,
+    versions:{
+      1:{name:"Shade",buff:"10% chance to deal double damage"},
+      2:{name:"Phantom",buff:"20% chance to deal double damage"},
+      3:{name:"Wraith",buff:"25% double dmg chance + opponent cannot see your weapon choice"},
+      4:{name:"Shadow Sovereign",buff:"VOID EXECUTION: 35% double dmg + first shot each round auto-crits",special:true},
+    }},
 };
 const CLAN_KEYS=["exorcist","eclipse","hydros","vulcryn"];
+const ALL_CLAN_KEYS=["exorcist","eclipse","hydros","vulcryn","thunder","shadow"];
+const ROLL_ONLY_CLANS=["thunder","shadow"];
 function getRandomClan(){return CLAN_KEYS[Math.floor(Math.random()*CLAN_KEYS.length)];}
+function getRandomRollClan(){return ALL_CLAN_KEYS[Math.floor(Math.random()*ALL_CLAN_KEYS.length)];}
 
 // ══════════════════════════════════════════════
 // CRAFTING MATERIALS (30 types)
@@ -833,13 +851,14 @@ function renderClanUI(){
   }
 
   html+=`<div class="clan-reroll-section">
-    <div class="clan-reroll-info">Don't like your clan? Reroll for ${CLAN_REROLL_COST} 🪙. Warning: resets your version to V1!</div>
+    <div class="clan-reroll-info">Don't like your clan? Reroll for ${CLAN_REROLL_COST} 🪙. Warning: resets your version to V1!<br><span style="color:#facc15;font-size:11px">⚡ Thunder &amp; Shadow clans can only be obtained via reroll!</span></div>
     <button class="btn-ghost" onclick="rerollClan()" ${localTokens>=CLAN_REROLL_COST?"":"disabled"}>🎲 Reroll Clan (${CLAN_REROLL_COST} 🪙)</button>
   </div>
   <div class="all-clans-title">All Clans</div><div class="clan-all-grid">`;
   for(const[key,c]of Object.entries(CLANS)){
+    const rollBadge=c.rollOnly?` <span style="font-size:9px;background:${c.color}22;border:1px solid ${c.color}44;padding:2px 6px;border-radius:6px;letter-spacing:0.5px">🎲 ROLL ONLY</span>`:"";
     html+=`<div class="clan-info-card" style="border-color:${c.color}44">
-      <div class="cic-header" style="color:${c.color}">${c.emoji} ${c.name}</div>
+      <div class="cic-header" style="color:${c.color}">${c.emoji} ${c.name}${rollBadge}</div>
       <div class="cic-lore">${c.lore}</div>
       <div class="cic-v4" style="color:${c.color}">V4: ${c.versions[4].buff}</div>
     </div>`;
@@ -862,7 +881,7 @@ async function rerollClan(){
   if(localTokens<CLAN_REROLL_COST){showToast(`Need ${CLAN_REROLL_COST} 🪙!`,"red");return;}
   if(!confirm(`Reroll clan for ${CLAN_REROLL_COST} 🪙? Resets to V1!`))return;
   localTokens-=CLAN_REROLL_COST;
-  const newKey=getRandomClan();playerClan={key:newKey,version:1};
+  const newKey=getRandomRollClan();playerClan={key:newKey,version:1};
   const c=CLANS[newKey];
   showToast(`${c.emoji} You joined ${c.name}!`,"gold");
   await saveTokenData();updateTokenDisplay();renderClanUI();
@@ -1901,11 +1920,13 @@ function copyRoomCode(){
 // EMOJI CHAT
 // ══════════════════════════════════════════════
 const EMOJI_CATEGORIES=[
-  {label:"⚔️",title:"Combat",emojis:["⚔️","🗡️","🛡️","🏹","🔱","💥","🩸","💀","👑","🔥","⚡","💫","🌀","🌪️","🌊","❄️","🧪","🪄"]},
-  {label:"😂",title:"Reactions",emojis:["😂","😤","😈","🤣","😭","👀","🫡","💪","🤡","😏","🥶","👋","🙏","😱","🤙","😎","🫠","🤬","🥳","😵","🤯","😇","🥺","🤫","🤐","😜","🤩","😮","🫢","😬","🙄","🥴","😡","🤑","🫵","🤌","✌️","🤘","🫶"]},
-  {label:"🐉",title:"Creatures",emojis:["🐉","🦅","🐍","🐺","🦁","🐻","🦊","🦄","🐲","🦂","🦋","🦎","🐯","🐗","🦉","🦚","🦜","🐝","🦟","🦗"]},
-  {label:"🌟",title:"Symbols",emojis:["🌟","💎","🏆","🎯","🔮","🎲","🏅","✨","💠","🔱","⚜️","🌙","🌠","🎭","🎪","🎰","🃏","🎴","♟️","🧿","🔔","💣","🧨","🎆","🎇"]},
-  {label:"👻",title:"Spooky",emojis:["👻","💀","🦴","🩸","🕯️","🔮","🌑","🕷️","🕸️","🦇","⚰️","🪦","🩻","👁️","🌚"]},
+  {label:"⚔️",title:"Combat",emojis:["⚔️","🗡️","🛡️","🏹","🔱","💥","🩸","💀","👑","🔥","⚡","💫","🌀","🌪️","🌊","❄️","🧪","🪄","🧲","🪃","💣","🏴‍☠️","⚜️","🗺️","🎯","🔮","🪬","🧿","☄️","🌋","🔩","⚙️","🔧","🪛","🔨","🪝","⛓️","🧨","🎆"]},
+  {label:"😂",title:"Reactions",emojis:["😂","😤","😈","🤣","😭","👀","🫡","💪","🤡","😏","🥶","👋","🙏","😱","🤙","😎","🫠","🤬","🥳","😵","🤯","😇","🥺","🤫","🤐","😜","🤩","😮","🫢","😬","🙄","🥴","😡","🤑","🫵","🤌","✌️","🤘","🫶","🖤","💀","😑","😒","😔","😣","😤","😩","😫","🤮","🤢","😐","🫤","😶","🙃","🥱","😴","🤥","👿","😾","🙀","😿","😸","😹","😻","🐱","🤝","🤜","🤛","👊","✊","🤞","🤙","🫳","🫴","👆","👇","☝️","🫵","🤟","🤙","🦾","🫂"]},
+  {label:"🐉",title:"Creatures",emojis:["🐉","🦅","🐍","🐺","🦁","🐻","🦊","🦄","🐲","🦂","🦋","🦎","🐯","🐗","🦉","🦚","🦜","🐝","🦟","🦗","🦈","🐙","🦑","🐊","🦁","🐅","🦬","🦏","🦛","🐘","🦒","🦦","🦫","🦥","🐓","🦃","🦩","🕊️","🦤","🪹","🐸","🦖","🦕","🦠","🐞","🪲","🐛","🦋","🐌","🐜","🪳","🕷️","🦟"]},
+  {label:"🌟",title:"Symbols",emojis:["🌟","💎","🏆","🎯","🔮","🎲","🏅","✨","💠","🔱","⚜️","🌙","🌠","🎭","🎪","🎰","🃏","🎴","♟️","🧿","🔔","💣","🧨","🎆","🎇","🌈","⭐","🌤️","🌩️","🌊","🪐","🌌","🌀","💫","🔯","⚡","☀️","🌒","🌓","🌔","🌕","🌖","🌗","🌘","🌙","🌛","🌜","🌝","🌞","🏵️","🎗️","🎖️","🎀","🎁","🎊","🎉","🎈","🎐","🎑","🧧","🪄","🎠","🎡","🎢","🎟️","🎫"]},
+  {label:"👻",title:"Spooky",emojis:["👻","💀","🦴","🩸","🕯️","🔮","🌑","🕷️","🕸️","🦇","⚰️","🪦","🩻","👁️","🌚","🧟","🧛","🧙","🧝","🧜","🧚","👹","👺","👿","😈","☠️","🤡","👾","🎃","🏚️","🌫️","🌑","🌒","🌘","🔒","🗝️","🔑","⛓️","🩹","🩺","🧬","☣️"]},
+  {label:"🌿",title:"Nature",emojis:["🌿","🌱","🌲","🌳","🌴","🌵","🎋","🎍","🍀","🍁","🍂","🍃","🌾","💐","🌸","🌺","🌻","🌹","🥀","🌷","🍄","🌾","🌊","🏔️","⛰️","🗻","🏕️","🌋","🏜️","🏝️","🌅","🌄","🌠","🌌","🌃","🌉","🌁","🌫️","🌈","⛅","🌤️","🌦️","🌧️","⛈️","🌩️","🌨️","❄️","💨","🌬️","🌀","🌈","🌂","☂️","🌡️","☀️","🌙","⭐","💫","✨"]},
+  {label:"💰",title:"Loot",emojis:["💰","🪙","💎","👑","🏆","🎁","🎀","💍","🧣","🎖️","🏅","🥇","🥈","🥉","🎗️","📦","🗃️","🧰","🪤","🎭","🎪","🎲","🃏","🎴","🀄","🧩","🪆","🪅","🎠","🎡","🎢","🛍️","🛒","📊","📈","📉","🧾","💹","💵","💴","💶","💷","🏦","💳","🪙"]},
 ];
 let chatPanelOpen=false,emojiChatSub=null,unreadCount=0,activeCatIndex=0,chatHistory=[];
 
