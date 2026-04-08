@@ -2179,3 +2179,300 @@ input::placeholder { color: var(--text3); }
 .iroll-rarity { font-size: 10px; }
 .iroll-pct { font-family: var(--font-d); font-size: 11px; color: var(--accent2); min-width: 42px; text-align: right; }
 .iroll-have { font-size: 10px; color: var(--text3); min-width: 28px; text-align: right; }
+
+/* ══════════════════════════════════════════════
+   RANKED MODE CARD
+══════════════════════════════════════════════ */
+.mode-card-ranked { border-color: rgba(250,204,21,0.25); }
+.mode-card-ranked:hover { border-color: #facc15; box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 20px rgba(250,204,21,0.25); }
+.mode-card-bg-ranked { background: linear-gradient(135deg, rgba(250,204,21,0.1), transparent); }
+.mode-badge-ranked { color: #facc15; border-color: rgba(250,204,21,0.3); }
+.mode-card-tourney { border-color: rgba(255,107,53,0.25); }
+.mode-card-tourney:hover { border-color: #ff6b35; box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 20px rgba(255,107,53,0.25); }
+.mode-card-bg-tourney { background: linear-gradient(135deg, rgba(255,107,53,0.1), transparent); }
+.mode-badge-tourney { color: #ff6b35; border-color: rgba(255,107,53,0.3); }
+
+/* ══════════════════════════════════════════════
+   RANKED LOBBY
+══════════════════════════════════════════════ */
+.ranked-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 40px 20px; }
+.ranked-hero { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.ranked-icon { font-size: 4rem; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 0 20px rgba(250,204,21,0.5)); }
+.ranked-title { font-family: var(--font-d); font-size: 1.8rem; color: #facc15; letter-spacing: 2px; text-shadow: 0 0 20px rgba(250,204,21,0.4); }
+.ranked-rating { font-family: var(--font-d); font-size: 1.1rem; color: var(--text2); letter-spacing: 1px; }
+.ranked-queue-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 18px; padding: 32px 40px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; width: 100%; max-width: 420px; }
+
+/* ══════════════════════════════════════════════
+   TOURNAMENT LOBBY
+══════════════════════════════════════════════ */
+.tourney-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; }
+#tourneyLobbyBody { width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 16px; }
+.tourney-intro { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.tourney-icon { font-size: 3.5rem; filter: drop-shadow(0 0 16px rgba(255,107,53,0.5)); }
+.tourney-title { font-family: var(--font-d); font-size: 1.6rem; color: #ff6b35; letter-spacing: 1.5px; }
+.tourney-sub { font-size: 13px; color: var(--text2); line-height: 1.7; }
+.tourney-size-row { display: flex; gap: 12px; }
+.tourney-size-btn { flex: 1; padding: 16px; background: var(--surface); border: 2px solid var(--border2); border-radius: 14px; font-family: var(--font-d); font-size: 1rem; letter-spacing: 1px; color: var(--text2); cursor: pointer; transition: all .2s; }
+.tourney-size-btn.active { background: rgba(255,107,53,0.12); border-color: #ff6b35; color: #ff6b35; box-shadow: 0 0 16px rgba(255,107,53,0.2); }
+.tourney-size-btn:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+.tourney-waiting { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.tourney-w-icon { font-size: 3rem; animation: float 2s ease-in-out infinite; }
+.tourney-w-title { font-family: var(--font-d); font-size: 1.3rem; color: var(--accent2); }
+.tourney-w-sub { font-size: 13px; color: var(--text3); font-style: italic; }
+.tourney-player-list { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 320px; }
+.tq-player { display: flex; align-items: center; gap: 10px; background: var(--surface2); border-radius: 10px; padding: 10px 16px; }
+.tq-num { font-family: var(--font-d); font-size: 12px; color: var(--text3); min-width: 20px; }
+.tq-name { font-family: var(--font-d); font-size: 13px; color: var(--text); }
+
+/* ══════════════════════════════════════════════
+   LEADERBOARD
+══════════════════════════════════════════════ */
+.lb-tabs { display: flex; gap: 4px; background: var(--surface); padding: 4px; border-radius: var(--r); border: 1px solid var(--border); margin-bottom: 12px; }
+.lb-tab { flex: 1; padding: 9px 6px; background: transparent; border: none; color: var(--text2); font-family: var(--font-d); font-size: 11px; letter-spacing: 0.5px; cursor: pointer; border-radius: 5px; transition: background .2s, color .2s; }
+.lb-tab.active { background: var(--accent); color: #fff; box-shadow: 0 0 12px var(--accent-glow); }
+.lb-tab:hover:not(.active) { color: var(--text); background: var(--surface2); }
+.lb-list { display: flex; flex-direction: column; gap: 4px; }
+.lb-row { display: flex; align-items: center; gap: 12px; background: var(--surface); border-radius: 10px; padding: 12px 16px; border: 1px solid var(--border2); }
+.lb-row.lb-me { background: var(--accent-glow); border-color: var(--accent); }
+.lb-rank { font-family: var(--font-d); font-size: 1rem; min-width: 36px; text-align: center; }
+.lb-name { flex: 1; font-family: var(--font-d); font-size: 13px; color: var(--text); }
+.lb-value { font-family: var(--font-d); font-size: 13px; color: var(--accent2); }
+.lb-loading { text-align: center; padding: 32px; color: var(--text3); font-style: italic; }
+.lb-err { text-align: center; padding: 20px; color: var(--red); font-size: 13px; }
+.btn-leaderboard { color: #ff6b35 !important; border-color: rgba(255,107,53,0.4) !important; }
+.btn-leaderboard:hover { box-shadow: 0 0 12px rgba(255,107,53,0.3) !important; border-color: #ff6b35 !important; }
+
+/* ══════════════════════════════════════════════
+   MOBILE OVERHAUL — complete responsive system
+══════════════════════════════════════════════ */
+
+/* Touch targets: min 44px on mobile */
+@media (max-width: 600px) {
+  /* ── Global ── */
+  html, body { overflow: hidden; font-size: 15px; }
+  .screen { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+  /* ── Auth screen ── */
+  .auth-split { flex-direction: column; min-height: 100vh; }
+  .auth-hero { min-height: unset; padding: 28px 20px 20px; border-right: none; border-bottom: 1px solid var(--border); gap: 14px; }
+  .hero-title { font-size: 2.4rem; letter-spacing: -1px; }
+  .hero-emblem { font-size: 3rem; }
+  .hero-sub { font-size: 14px; }
+  .hero-stats { gap: 16px; padding: 12px 20px; }
+  .hstat span { font-size: 1.6rem; }
+  .hero-level-ladder { gap: 4px; padding: 10px 14px; }
+  .hll-name { font-size: 9px; }
+  .auth-panel { width: 100%; padding: 24px 20px; gap: 20px; }
+  .auth-panel-title { font-size: 1.3rem; }
+  input[type="text"], input[type="password"] { font-size: 16px !important; } /* prevent iOS zoom */
+
+  /* ── Screen header ── */
+  .screen-header { padding: 12px 16px; }
+  .header-right { gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+  .btn-shop, .btn-settings, .btn-trait, .btn-craft, .btn-rulebook, .btn-ghost-sm {
+    font-size: 10px; padding: 6px 8px; border-radius: 6px;
+  }
+  .btn-craft.btn-fusion { display: none; } /* hide fusion from header on mobile, accessible via arsenal */
+
+  /* ── Profile card ── */
+  .profile-card { flex-direction: column; gap: 12px; padding: 14px 16px; border-radius: 16px; }
+  .pc-avatar-col { flex-direction: row; align-items: center; gap: 12px; }
+  .pc-avatar-ring { width: 56px; height: 56px; }
+  .pc-avatar { font-size: 1.7rem; }
+  .pc-username { font-size: 1rem; }
+  .pc-level-tag { padding: 3px 8px; }
+  .pc-lvl-num { font-size: 11px; }
+  .pc-xp-row { padding: 7px 10px; gap: 8px; }
+  .pc-xp-text { font-size: 10px; }
+  .pc-stat-chip { font-size: 11px; padding: 4px 10px; }
+  .pc-clan-badge { font-size: 11px; gap: 6px; }
+  .clan-version-chip, .race-chip { font-size: 9px; padding: 2px 6px; }
+
+  /* ── Mode cards ── */
+  .mode-content { padding: 16px 14px 32px; gap: 16px; }
+  .mode-section-label { font-size: 9px; }
+  .mode-cards { 
+    display: grid !important; 
+    grid-template-columns: repeat(2, 1fr) !important; 
+    gap: 8px !important; 
+    flex-wrap: unset !important;
+    width: 100%;
+    max-width: 100%;
+  }
+  .mode-card { padding: 18px 10px 14px; border-radius: 14px; gap: 6px; }
+  .mode-card h3 { font-size: 0.85rem; }
+  .mode-card p { font-size: 11px; line-height: 1.4; }
+  .mode-icon { font-size: 2rem; }
+  .mode-badge { font-size: 9px; padding: 2px 8px; }
+
+  /* ── Bottom row ── */
+  .mode-bottom-row { gap: 6px; }
+  .btn-mode-extra { font-size: 11px; padding: 8px 10px; border-radius: 8px; min-height: 36px; }
+
+  /* ── Modal ── */
+  .modal-overlay { padding: 8px; align-items: flex-end; }
+  .modal-box { border-radius: 20px 20px 0 0; max-height: 92vh; width: 100%; }
+  .modal-box-wide { max-width: 100%; }
+  .modal-header { padding: 16px 18px 12px; }
+  .modal-title { font-size: 1rem; }
+  .modal-body { padding: 14px 16px 20px; }
+
+  /* ── Shop ── */
+  .shop-tabs { gap: 2px; }
+  .shop-tab-btn { font-size: 10px; padding: 8px 4px; }
+  .shop-balance { padding: 12px 16px; gap: 12px; }
+  .shop-bal-value { font-size: 1.4rem; }
+  .shop-item-card { padding: 14px; gap: 12px; }
+  .shop-item-icon { font-size: 2rem; }
+  .ws-tier-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 6px; }
+  .ws-weapon-card { padding: 8px 6px; gap: 4px; }
+  .ws-weapon-emoji { font-size: 1.3rem; }
+  .ws-weapon-name { font-size: 10px; }
+  .ws-weapon-dmg { font-size: 10px; }
+  .ws-btn { font-size: 9px; padding: 3px 7px; }
+
+  /* ── Game screen ── */
+  .game-statusbar { padding: 8px 14px; }
+  .gs-round { font-size: 11px; }
+  .gs-shot { font-size: 11px; padding-left: 10px; }
+  .hp-bars { padding: 10px 14px; gap: 10px; }
+  .hp-name { font-size: 10px; max-width: 100px; }
+  .hp-num { font-size: 1rem; }
+  .hp-vs { font-size: 9px; }
+  .available-weapons { padding: 6px 14px; }
+  .aw-chip { font-size: 10px; padding: 2px 7px; }
+  .aw-label { font-size: 9px; }
+
+  /* ── Turn panel ── */
+  .turn-panel { padding: 14px; gap: 14px; }
+  .turn-player-badge { font-size: 1rem; }
+  .turn-phase { font-size: 13px; }
+  .weapon-grid { gap: 6px; }
+  .weapon-btn { padding: 8px 10px; font-size: 12px; min-width: 70px; }
+  .weapon-dmg { font-size: 10px; }
+  .shield-grid { gap: 5px; }
+  .shield-btn { min-width: 42px; height: 42px; font-size: 13px; }
+  .btn-confirm { font-size: 14px; padding: 14px; min-height: 48px; }
+  .btn-potion { font-size: 13px; padding: 10px; min-height: 44px; }
+
+  /* ── Result / Round over / Game over ── */
+  .result-content { padding: 28px 16px; gap: 16px; }
+  .result-duel { flex-direction: column; gap: 12px; }
+  .rd-side { width: 100%; }
+  .rd-name { font-size: 1rem; }
+  .rd-weapon { font-size: 1.3rem; }
+  .rd-dmg { font-size: 1.4rem; }
+  .roundover-content { padding: 32px 16px; gap: 20px; }
+  .ro-scores { flex-direction: column; gap: 12px; }
+  .gameover-content { padding: 32px 16px; gap: 20px; }
+  .go-final-hp { flex-direction: column; gap: 12px; }
+  .go-result { font-size: 1.8rem; }
+  .go-emblem { font-size: 4rem; }
+
+  /* ── Arsenal ── */
+  .arsenal-header { padding: 12px 14px; }
+  .arsenal-grid-wrap { padding: 12px 14px; }
+  .arsenal-grid { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 6px; }
+  .arsenal-card { padding: 10px 6px 8px; }
+  .arsenal-card-emoji { font-size: 1.4rem; }
+  .arsenal-card-name { font-size: 10px; }
+  .arsenal-equip-btn { font-size: 9px; padding: 4px 6px; }
+
+  /* ── Clan / Race / Item Roll modals ── */
+  .clan-hero, .race-hero { padding: 18px 16px; }
+  .clan-emoji, .race-emoji { font-size: 2.2rem; }
+  .clan-name, .race-name { font-size: 1.1rem; }
+  .clan-all-grid, .race-all-grid { gap: 8px; }
+  .iroll-pool-row { padding: 6px 10px; gap: 6px; }
+  .iroll-emoji { font-size: 1rem; }
+
+  /* ── Emoji chat ── */
+  .emoji-chat-panel { bottom: 10px; right: 10px; }
+  .ecp-window { width: 280px; max-height: 320px; }
+  .ecp-grid { grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .ecp-emoji-btn { font-size: 1.1rem; padding: 4px; }
+  .ecp-toggle { width: 44px; height: 44px; font-size: 1.2rem; }
+
+  /* ── Lobby ── */
+  .lobby-content { padding: 24px 16px; }
+  .lobby-box { padding: 24px 16px; }
+  .join-row { flex-direction: column; }
+  .join-row input { text-align: center; }
+
+  /* ── Ranked / Tournament screens ── */
+  .ranked-content { padding: 24px 16px; gap: 20px; }
+  .ranked-queue-box { padding: 24px 20px; }
+  .ranked-icon { font-size: 3rem; }
+  .ranked-title { font-size: 1.4rem; }
+  .tourney-content { padding: 20px 16px; }
+  #tourneyLobbyBody { max-width: 100%; }
+  .tourney-size-row { gap: 8px; }
+  .tourney-size-btn { padding: 14px 10px; font-size: 0.9rem; }
+
+  /* ── Leaderboard ── */
+  .lb-tabs { gap: 2px; }
+  .lb-tab { font-size: 10px; padding: 8px 4px; }
+  .lb-row { padding: 10px 12px; gap: 8px; }
+  .lb-rank { font-size: 0.9rem; min-width: 28px; }
+  .lb-name { font-size: 12px; }
+  .lb-value { font-size: 12px; }
+
+  /* ── Trading hub ── */
+  .tra-body { flex-direction: column; }
+  .tra-divider { text-align: center; padding: 4px 0; }
+  .traderoom-content { padding: 16px; }
+  .trw-code { font-size: 1.6rem; letter-spacing: 5px; }
+
+  /* ── Pass screen ── */
+  .pass-content { padding: 28px 20px; gap: 18px; }
+  .pass-icon { font-size: 3.5rem; }
+
+  /* ── Daily quests ── */
+  .daily-quest-card { padding: 14px 16px; }
+
+  /* ── Achievements ── */
+  .ach-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+  .ach-card { padding: 14px 10px; }
+
+  /* ── Crafting ── */
+  .craft-mat-grid { grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 4px; }
+  .crc-actions { flex-direction: column; }
+  .crc-weapon-select { width: 100%; }
+
+  /* ── Fusion ── */
+  .fusion-slots { flex-direction: column; gap: 8px; padding: 12px; }
+  .fusion-slot { min-width: unset; width: 100%; }
+  .fusion-wl-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+}
+
+/* Tablet: 601–900px tweaks */
+@media (min-width: 601px) and (max-width: 900px) {
+  .mode-cards {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 10px !important;
+    max-width: 100%;
+  }
+  .header-right { gap: 6px; }
+  .btn-shop, .btn-settings, .btn-trait, .btn-craft, .btn-rulebook { font-size: 11px; padding: 6px 10px; }
+  .modal-box-wide { max-width: 96vw; }
+  .result-duel { flex-direction: column; }
+  .rd-side { width: 100%; }
+}
+
+/* Prevent double-tap zoom on buttons */
+button { touch-action: manipulation; }
+
+/* Smooth scrolling in modals */
+.modal-body { -webkit-overflow-scrolling: touch; }
+
+/* Fix iOS input zoom */
+@media (max-width: 600px) {
+  input, select, textarea { font-size: 16px !important; }
+}
+
+/* Fix fixed overlays on iOS */
+@supports (-webkit-touch-callout: none) {
+  .modal-overlay { position: fixed; }
+  .screen { position: fixed; overflow-y: auto; }
+}

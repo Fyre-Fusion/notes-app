@@ -164,10 +164,25 @@
         <p>Both players face the<br>Warlord. Slay it first.</p>
         <div class="mode-badge mode-badge-boss">+300 🪙 Reward</div>
       </div>
+      <div class="mode-card mode-card-ranked" onclick="selectMode('ranked')">
+        <div class="mode-card-bg mode-card-bg-ranked"></div>
+        <div class="mode-icon">🏅</div>
+        <h3>Ranked</h3>
+        <p>Fight for rating.<br>Climb the leaderboard.</p>
+        <div class="mode-badge mode-badge-ranked">Competitive</div>
+      </div>
+      <div class="mode-card mode-card-tourney" onclick="selectMode('tournament')">
+        <div class="mode-card-bg mode-card-bg-tourney"></div>
+        <div class="mode-icon">🏆</div>
+        <h3>Tournament</h3>
+        <p>4 or 8 player brackets.<br>Only one survives.</p>
+        <div class="mode-badge mode-badge-tourney">+500 🪙 Prize</div>
+      </div>
     </div>
 
     <!-- Bottom row buttons -->
     <div class="mode-bottom-row">
+      <button class="btn-mode-extra btn-leaderboard" onclick="showLeaderboard()">🏆 Leaderboard</button>
       <button class="btn-mode-extra" onclick="showTradingHub()">🤝 Trading Hub</button>
       <button class="btn-mode-extra" onclick="showAchievements()">🏅 Achievements</button>
       <button class="btn-mode-extra" onclick="showClanPanel()">⚜️ Clan</button>
@@ -579,6 +594,51 @@
       <button class="modal-close" onclick="hideItemRoll()">✕</button>
     </div>
     <div class="modal-body" id="itemRollBody"></div>
+  </div>
+</div>
+
+
+<!-- ═══════ RANKED LOBBY ═══════ -->
+<div id="screen-ranked" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="leaveRankedLobby()">← Back</button>
+    <div class="logo-small">🏅 Ranked</div>
+    <div style="width:80px"></div>
+  </div>
+  <div class="ranked-content">
+    <div class="ranked-hero">
+      <div class="ranked-icon">🏅</div>
+      <div class="ranked-title">Ranked Matchmaking</div>
+      <div class="ranked-rating" id="rankedRatingDisplay">Your Rating: 1000</div>
+    </div>
+    <div class="ranked-queue-box">
+      <div class="waiting-pulse"><div class="pulse-ring large"></div><span id="rankedQueueStatus">Searching…</span></div>
+      <p class="shop-hint" style="margin-top:12px">Win to gain rating · Lose to drop · Rating affects matchmaking</p>
+    </div>
+    <button class="btn-ghost" onclick="leaveRankedLobby()">Cancel Search</button>
+  </div>
+</div>
+
+<!-- ═══════ TOURNAMENT LOBBY ═══════ -->
+<div id="screen-tournament" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="leaveTournament()">← Back</button>
+    <div class="logo-small">🏆 Tournament</div>
+    <div style="width:80px"></div>
+  </div>
+  <div class="tourney-content">
+    <div id="tourneyLobbyBody"></div>
+  </div>
+</div>
+
+<!-- ═══════ LEADERBOARD MODAL ═══════ -->
+<div id="modal-leaderboard" class="modal-overlay hidden" onclick="closeLeaderboardIfOutside(event)">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">🏆 Global Leaderboard</h2>
+      <button class="modal-close" onclick="hideLeaderboard()">✕</button>
+    </div>
+    <div class="modal-body" id="leaderboardBody"></div>
   </div>
 </div>
 

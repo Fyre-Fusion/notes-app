@@ -366,34 +366,115 @@ function rollTrait(){
 }
 
 // ══════════════════════════════════════════════
-// ACHIEVEMENTS (25)
+// ACHIEVEMENTS (100)
 // ══════════════════════════════════════════════
 const ACHIEVEMENTS=[
+  // ── WINS ──
   {id:"first_win",name:"First Blood",emoji:"🗡️",desc:"Win your first match",check:s=>s.wins>=1},
+  {id:"wins_5",name:"Street Fighter",emoji:"🥊",desc:"Win 5 matches",check:s=>s.wins>=5},
   {id:"wins_10",name:"Seasoned Warrior",emoji:"⚔️",desc:"Win 10 matches",check:s=>s.wins>=10},
-  {id:"wins_50",name:"Veteran",emoji:"🛡️",desc:"Win 50 matches",check:s=>s.wins>=50},
+  {id:"wins_25",name:"Battle-Hardened",emoji:"🛡️",desc:"Win 25 matches",check:s=>s.wins>=25},
+  {id:"wins_50",name:"Veteran",emoji:"🌟",desc:"Win 50 matches",check:s=>s.wins>=50},
   {id:"wins_100",name:"Warlord",emoji:"👑",desc:"Win 100 matches",check:s=>s.wins>=100},
+  {id:"wins_250",name:"Conqueror",emoji:"🔱",desc:"Win 250 matches",check:s=>s.wins>=250},
+  {id:"wins_500",name:"Destroyer",emoji:"💀",desc:"Win 500 matches",check:s=>s.wins>=500},
+  {id:"wins_1000",name:"Eternal Champion",emoji:"🌠",desc:"Win 1,000 matches",check:s=>s.wins>=1000},
+  // ── PERFECT BLOCKS ──
   {id:"perfect_1",name:"Deflector",emoji:"🔄",desc:"Get your first perfect block",check:s=>s.perfectBlocks>=1},
   {id:"perfect_10",name:"Shield Savant",emoji:"🛡️",desc:"Get 10 perfect blocks",check:s=>s.perfectBlocks>=10},
   {id:"perfect_50",name:"Untouchable",emoji:"💎",desc:"Get 50 perfect blocks",check:s=>s.perfectBlocks>=50},
+  {id:"perfect_100",name:"Mirror Wall",emoji:"🪞",desc:"Get 100 perfect blocks",check:s=>s.perfectBlocks>=100},
+  {id:"perfect_250",name:"Ghost Armor",emoji:"👻",desc:"Get 250 perfect blocks",check:s=>s.perfectBlocks>=250},
+  {id:"perfect_500",name:"Absolute Defense",emoji:"🏰",desc:"Get 500 perfect blocks",check:s=>s.perfectBlocks>=500},
+  // ── BOSS ──
   {id:"boss_kill",name:"Slayer",emoji:"💀",desc:"Kill the boss",check:s=>s.bossKills>=1},
   {id:"boss_kill_5",name:"Boss Hunter",emoji:"🏆",desc:"Kill the boss 5 times",check:s=>s.bossKills>=5},
+  {id:"boss_kill_10",name:"Warlord Bane",emoji:"⚔️",desc:"Kill the boss 10 times",check:s=>s.bossKills>=10},
+  {id:"boss_kill_25",name:"Legend Slayer",emoji:"🌋",desc:"Kill the boss 25 times",check:s=>s.bossKills>=25},
+  // ── LEVELS ──
   {id:"level_10",name:"Rising Star",emoji:"⭐",desc:"Reach level 10",check:(s,lvl)=>lvl>=10},
+  {id:"level_25",name:"Adept",emoji:"🌙",desc:"Reach level 25",check:(s,lvl)=>lvl>=25},
   {id:"level_50",name:"Champion",emoji:"🌟",desc:"Reach level 50",check:(s,lvl)=>lvl>=50},
   {id:"level_100",name:"Legend",emoji:"💠",desc:"Reach level 100",check:(s,lvl)=>lvl>=100},
+  {id:"level_200",name:"Mythwalker",emoji:"🔱",desc:"Reach level 200",check:(s,lvl)=>lvl>=200},
+  {id:"level_500",name:"Transcendent",emoji:"✨",desc:"Reach level 500",check:(s,lvl)=>lvl>=500},
+  {id:"level_1000",name:"Immortal",emoji:"🌠",desc:"Reach level 1000 (MAX)",check:(s,lvl)=>lvl>=1000},
+  // ── WEAPONS ──
   {id:"buy_weapon",name:"Arms Dealer",emoji:"🛒",desc:"Purchase your first weapon",check:s=>s.weaponsBought>=1},
-  {id:"buy_10",name:"Arsenal Owner",emoji:"⚔️",desc:"Own 10+ non-starter weapons",check:s=>s.weaponsBought>=10},
+  {id:"buy_5",name:"Collector",emoji:"🗡️",desc:"Buy 5 weapons",check:s=>s.weaponsBought>=5},
+  {id:"buy_10",name:"Arsenal Owner",emoji:"⚔️",desc:"Buy 10 weapons",check:s=>s.weaponsBought>=10},
+  {id:"buy_25",name:"Armory",emoji:"🏰",desc:"Buy 25 weapons",check:s=>s.weaponsBought>=25},
+  {id:"all_t1",name:"T1 Complete",emoji:"🥉",desc:"Own all Tier 1 starter weapons",check:(s,l,c,owned)=>ALL_WEAPONS.filter(w=>w.tier===1).every(w=>owned.includes(w.name))},
+  {id:"divine_weapon",name:"Divine Arsenal",emoji:"🌠",desc:"Own the Gentuga Tensho",check:(s,l,c,owned)=>owned.includes("Gentuga Tensho")},
+  {id:"own_t6",name:"Atomic Forge",emoji:"⚛️",desc:"Own the Atom Scythe",check:(s,l,c,owned)=>owned.includes("Atom Scythe")},
+  {id:"fused_first",name:"Alchemist",emoji:"⚗️",desc:"Perform your first weapon fusion",check:s=>(s.fusionsPerformed||0)>=1},
+  {id:"fused_5",name:"Master Alchemist",emoji:"🔮",desc:"Perform 5 weapon fusions",check:s=>(s.fusionsPerformed||0)>=5},
+  // ── CLAN ──
+  {id:"clan_v2",name:"Clan Adept",emoji:"🌿",desc:"Reach V2 in your clan",check:(s,l,clan)=>clan&&clan.version>=2},
+  {id:"clan_v3",name:"Clan Elite",emoji:"🌙",desc:"Reach V3 in your clan",check:(s,l,clan)=>clan&&clan.version>=3},
   {id:"clan_v4",name:"Clan Master",emoji:"⚜️",desc:"Reach V4 in your clan",check:(s,l,clan)=>clan&&clan.version===4},
+  {id:"clan_upgrades_3",name:"Devoted Warrior",emoji:"🔥",desc:"Upgrade your clan 3 times",check:s=>(s.clanUpgrades||0)>=3},
+  // ── TRAITS ──
   {id:"craft_first",name:"Crafter",emoji:"🔨",desc:"Craft your first trait",check:s=>s.traitsCrafted>=1},
   {id:"craft_5",name:"Master Crafter",emoji:"🏭",desc:"Craft 5 traits",check:s=>s.traitsCrafted>=5},
-  {id:"trade_first",name:"Trader",emoji:"🤝",desc:"Complete your first trade",check:s=>s.tradesCompleted>=1},
-  {id:"daily_7",name:"Devoted",emoji:"📅",desc:"Complete 7 daily quests",check:s=>s.dailyCompleted>=7},
-  {id:"divine_weapon",name:"Divine Arsenal",emoji:"🌠",desc:"Own the Gentuga Tensho",check:(s,l,c,owned)=>owned.includes("Gentuga Tensho")},
+  {id:"craft_10",name:"Forge Lord",emoji:"⚙️",desc:"Craft 10 traits",check:s=>s.traitsCrafted>=10},
+  {id:"mythic_trait",name:"Mythic Bearer",emoji:"🔮",desc:"Obtain any Mythic trait",check:(s,l,c,o,wt)=>Object.values(wt).some(t=>t&&t.rarity==="Mythic")},
+  {id:"legendary_trait",name:"Legendary Edge",emoji:"🌟",desc:"Obtain any Legendary trait",check:(s,l,c,o,wt)=>Object.values(wt).some(t=>t&&t.rarity==="Legendary")},
+  {id:"traits_rolled_10",name:"Gambler",emoji:"🎲",desc:"Roll traits 10 times",check:s=>(s.traitsRolled||0)>=10},
+  {id:"traits_rolled_50",name:"High Roller",emoji:"🃏",desc:"Roll traits 50 times",check:s=>(s.traitsRolled||0)>=50},
+  // ── ECONOMY ──
   {id:"tokens_1000",name:"Wealthy",emoji:"💰",desc:"Earn 1,000 total coins",check:s=>s.totalTokensEarned>=1000},
   {id:"tokens_10000",name:"Mogul",emoji:"🤑",desc:"Earn 10,000 total coins",check:s=>s.totalTokensEarned>=10000},
+  {id:"tokens_50000",name:"Tycoon",emoji:"💎",desc:"Earn 50,000 total coins",check:s=>s.totalTokensEarned>=50000},
+  {id:"tokens_100000",name:"King of Coin",emoji:"👑",desc:"Earn 100,000 total coins",check:s=>s.totalTokensEarned>=100000},
+  {id:"trade_first",name:"Trader",emoji:"🤝",desc:"Complete your first trade",check:s=>s.tradesCompleted>=1},
+  {id:"trade_10",name:"Merchant",emoji:"🏪",desc:"Complete 10 trades",check:s=>s.tradesCompleted>=10},
+  {id:"sold_mats_5",name:"Scrap Dealer",emoji:"🔩",desc:"Sell 5 materials",check:s=>(s.materialsSold||0)>=5},
+  {id:"sold_mats_25",name:"Black Market",emoji:"💼",desc:"Sell 25 materials",check:s=>(s.materialsSold||0)>=25},
+  // ── ONLINE ──
   {id:"online_win",name:"Online Victor",emoji:"🌐",desc:"Win your first online match",check:s=>s.onlineWins>=1},
-  {id:"mythic_trait",name:"Mythic Bearer",emoji:"🔮",desc:"Obtain any Mythic trait",check:(s,l,c,o,wt)=>Object.values(wt).some(t=>t&&t.rarity==="Mythic")},
-  {id:"all_t1",name:"T1 Complete",emoji:"🥉",desc:"Own all Tier 1 starter weapons",check:(s,l,c,owned)=>ALL_WEAPONS.filter(w=>w.tier===1).every(w=>owned.includes(w.name))},
+  {id:"online_wins_10",name:"Net Warrior",emoji:"🌐",desc:"Win 10 online matches",check:s=>s.onlineWins>=10},
+  {id:"online_wins_50",name:"Digital Slayer",emoji:"💻",desc:"Win 50 online matches",check:s=>s.onlineWins>=50},
+  // ── RANKED ──
+  {id:"ranked_first",name:"Ranked Rookie",emoji:"🏅",desc:"Play your first ranked match",check:s=>(s.rankedWins||0)+(s.rankedLosses||0)>=1},
+  {id:"ranked_win_1",name:"Ranked Victor",emoji:"🥇",desc:"Win your first ranked match",check:s=>(s.rankedWins||0)>=1},
+  {id:"ranked_win_10",name:"Ranked Warrior",emoji:"🏆",desc:"Win 10 ranked matches",check:s=>(s.rankedWins||0)>=10},
+  {id:"ranked_win_50",name:"Ranked Elite",emoji:"🔱",desc:"Win 50 ranked matches",check:s=>(s.rankedWins||0)>=50},
+  {id:"rated_1100",name:"Climber",emoji:"📈",desc:"Reach 1100 ranked rating",check:s=>(s.rankedRating||1000)>=1100},
+  {id:"rated_1250",name:"Contender",emoji:"⚡",desc:"Reach 1250 ranked rating",check:s=>(s.rankedRating||1000)>=1250},
+  {id:"rated_1500",name:"Grandmaster",emoji:"💠",desc:"Reach 1500 ranked rating",check:s=>(s.rankedRating||1000)>=1500},
+  // ── TOURNAMENT ──
+  {id:"tourney_first",name:"Tournament Debut",emoji:"🎪",desc:"Enter your first tournament",check:s=>(s.tournamentsPlayed||0)>=1},
+  {id:"tourney_win",name:"Tournament Champion",emoji:"🏆",desc:"Win a tournament",check:s=>(s.tournamentsWon||0)>=1},
+  {id:"tourney_wins_3",name:"Serial Champion",emoji:"👑",desc:"Win 3 tournaments",check:s=>(s.tournamentsWon||0)>=3},
+  // ── DAILY / GRIND ──
+  {id:"daily_3",name:"Dedicated",emoji:"📅",desc:"Complete 3 daily quests",check:s=>s.dailyCompleted>=3},
+  {id:"daily_7",name:"Devoted",emoji:"📅",desc:"Complete 7 daily quests",check:s=>s.dailyCompleted>=7},
+  {id:"daily_30",name:"Iron Routine",emoji:"🗓️",desc:"Complete 30 daily quests",check:s=>s.dailyCompleted>=30},
+  {id:"daily_100",name:"Ascetic",emoji:"🧘",desc:"Complete 100 daily quests",check:s=>s.dailyCompleted>=100},
+  {id:"item_roll_1",name:"Lucky Draw",emoji:"🎲",desc:"Perform your first item roll",check:s=>(s.itemsRolled||0)>=1},
+  {id:"item_roll_10",name:"Fortune Seeker",emoji:"🎰",desc:"Perform 10 item rolls",check:s=>(s.itemsRolled||0)>=10},
+  // ── COMBAT STATS ──
+  {id:"shots_100",name:"Trigger Happy",emoji:"🎯",desc:"Fire 100 shots total",check:s=>(s.totalShots||0)>=100},
+  {id:"shots_500",name:"Bullet Storm",emoji:"💥",desc:"Fire 500 shots total",check:s=>(s.totalShots||0)>=500},
+  {id:"shots_1000",name:"Unstoppable Force",emoji:"⚡",desc:"Fire 1,000 shots total",check:s=>(s.totalShots||0)>=1000},
+  {id:"rounds_50",name:"Seasoned",emoji:"🌀",desc:"Play 50 rounds",check:s=>(s.totalRoundsPlayed||0)>=50},
+  {id:"rounds_200",name:"Arena Regular",emoji:"🏟️",desc:"Play 200 rounds",check:s=>(s.totalRoundsPlayed||0)>=200},
+  {id:"streak_3",name:"Hot Streak",emoji:"🔥",desc:"Win 3 matches in a row",check:s=>(s.maxConsecutiveWins||0)>=3},
+  {id:"streak_5",name:"Unstoppable",emoji:"💫",desc:"Win 5 matches in a row",check:s=>(s.maxConsecutiveWins||0)>=5},
+  {id:"streak_10",name:"God Mode",emoji:"🌠",desc:"Win 10 matches in a row",check:s=>(s.maxConsecutiveWins||0)>=10},
+  // ── ACCESSORIES ──
+  {id:"acc_first",name:"Accessorized",emoji:"💍",desc:"Equip your first accessory",check:s=>(s.accessoriesOwned||0)>=1},
+  {id:"acc_5",name:"Fashionista",emoji:"👑",desc:"Own 5 accessories",check:s=>(s.accessoriesOwned||0)>=5},
+  {id:"acc_all",name:"Full Set",emoji:"🌟",desc:"Own all 10 accessories",check:s=>(s.accessoriesOwned||0)>=10},
+  // ── MISC / SECRET ──
+  {id:"first_loss",name:"Baptism of Fire",emoji:"🔥",desc:"Lose your first match",check:s=>s.losses>=1},
+  {id:"loss_10",name:"Punching Bag",emoji:"🥊",desc:"Lose 10 matches",check:s=>s.losses>=10},
+  {id:"use_potion",name:"Medic",emoji:"🧪",desc:"Use a potion in battle",check:s=>s.wins+s.losses>=1},
+  {id:"thunder_clan",name:"Storm Rider",emoji:"⚡",desc:"Join the Thunder Clan",check:(s,l,clan)=>clan&&clan.key==="thunder"},
+  {id:"shadow_clan",name:"Void Walker",emoji:"🌑",desc:"Join the Shadow Clan",check:(s,l,clan)=>clan&&clan.key==="shadow"},
+  {id:"heavenly_race",name:"Celestial Born",emoji:"✨",desc:"Be of the Heavenly Race",check:(s,l,c,o,wt,race)=>race==="heavenly"},
+  {id:"supernatural_race",name:"Beyond Mortal",emoji:"👻",desc:"Be of the Supernatural Race",check:(s,l,c,o,wt,race)=>race==="supernatural"},
 ];
 
 // ══════════════════════════════════════════════
@@ -435,11 +516,11 @@ let playerMaterials={};    // {mat_id: count}
 let playerAccessories=[];  // [acc_id, ...]
 let equippedAccessory=null;
 let playerAchievements={}; // {ach_id: true}
-let playerStats={wins:0,losses:0,perfectBlocks:0,bossKills:0,weaponsBought:0,traitsCrafted:0,tradesCompleted:0,dailyCompleted:0,totalTokensEarned:0,onlineWins:0};
+let playerStats=defaultStats();
 let dailyQuests=null;
 let dailyQuestKey="";
 
-function defaultStats(){return{wins:0,losses:0,perfectBlocks:0,bossKills:0,weaponsBought:0,traitsCrafted:0,tradesCompleted:0,dailyCompleted:0,totalTokensEarned:0,onlineWins:0};}
+function defaultStats(){return{wins:0,losses:0,perfectBlocks:0,bossKills:0,weaponsBought:0,traitsCrafted:0,tradesCompleted:0,dailyCompleted:0,totalTokensEarned:0,onlineWins:0,rankedWins:0,rankedLosses:0,rankedRating:1000,tournamentsWon:0,tournamentsPlayed:0,itemsRolled:0,materialsSold:0,fusionsPerformed:0,traitsRolled:0,clanUpgrades:0,accessoriesOwned:0,totalShots:0,totalDamageDealt:0,totalRoundsPlayed:0,consecutiveWins:0,maxConsecutiveWins:0};}
 
 function loadInventoryFromData(data){
   localTokens=data?.tokens??0; localPotions=data?.potions??0; localXP=data?.xp??0;
@@ -462,29 +543,63 @@ function loadInventoryFromData(data){
   }catch(e){dailyQuests=generateDailyQuests();dailyQuestKey=todayKey;}
 }
 
+let _dbLoadedOnce=false;
+function updateRankedRating(won){
+  const k=32;
+  const rating=playerStats.rankedRating||1000;
+  const opponentRating=1000; // default opponent rating
+  const expected=1/(1+Math.pow(10,(opponentRating-rating)/400));
+  const change=Math.round(k*(won?1:0-expected));
+  playerStats.rankedRating=Math.max(0,rating+change);
+  showToast((won?"📈":"📉")+" Ranked Rating: "+(playerStats.rankedRating)+(won?" (+"+change+")":" ("+change+")"),"info");
+}
 async function loadTokenData(){
   if(!currentUser){
     localTokens=0;localPotions=0;localXP=0;
     ownedWeapons=[...STARTER_WEAPON_NAMES];myLoadout=[...STARTER_WEAPON_NAMES.slice(0,LOADOUT_SIZE)];
     weaponTraits={};playerClan=null;playerRace=null;playerMaterials={};playerAccessories=[];equippedAccessory=null;playerAchievements={};playerStats=defaultStats();dailyQuests=null;
-    updateTokenDisplay();return;
+    _dbLoadedOnce=false;updateTokenDisplay();return;
   }
-  try{const{data}=await db.from("players").select("*").eq("id",currentUser.id).maybeSingle();loadInventoryFromData(data);}catch(e){}
+  let data=null;
+  for(let attempt=0;attempt<3;attempt++){
+    try{
+      const res=await db.from("players").select("*").eq("id",currentUser.id).maybeSingle();
+      if(res.data){data=res.data;break;}
+      if(res.error)console.warn("[load] attempt",attempt+1,res.error.message);
+    }catch(e){console.warn("[load] attempt",attempt+1,e);}
+    if(attempt<2)await new Promise(r=>setTimeout(r,700*(attempt+1)));
+  }
+  if(data){loadInventoryFromData(data);_dbLoadedOnce=true;}
+  else if(!_dbLoadedOnce){showToast("⚠️ Could not reach server. Progress may not load.","red");}
+  // If _dbLoadedOnce already true and fetch failed: silently keep in-memory state (NO WIPE)
   updateTokenDisplay();
 }
 
-async function saveTokenData(){
-  if(!currentUser)return;
-  try{
-    await db.from("players").update({
+let _saveQueue=Promise.resolve(); // serialise saves — no overlapping writes
+function saveTokenData(){
+  if(!currentUser)return Promise.resolve();
+  // Chain onto existing queue so rapid calls never race
+  _saveQueue=_saveQueue.then(async()=>{
+    const payload={
       tokens:localTokens,potions:localPotions,owned_weapons:JSON.stringify(ownedWeapons),
       loadout:JSON.stringify(myLoadout),xp:localXP,weapon_traits:JSON.stringify(weaponTraits),
       clan:JSON.stringify(playerClan),race:playerRace,materials:JSON.stringify(playerMaterials),
       accessories:JSON.stringify(playerAccessories),equipped_accessory:equippedAccessory,
       achievements:JSON.stringify(playerAchievements),stats:JSON.stringify(playerStats),
       daily_quests:JSON.stringify({key:dailyQuestKey,quests:dailyQuests}),
-    }).eq("id",currentUser.id);
-  }catch(e){}
+    };
+    for(let attempt=0;attempt<3;attempt++){
+      try{
+        const{error}=await db.from("players").update(payload).eq("id",currentUser.id);
+        if(!error)return; // success
+        console.warn("[save] attempt",attempt+1,"DB error:",error.message);
+      }catch(e){console.warn("[save] attempt",attempt+1,"exception:",e);}
+      if(attempt<2)await new Promise(r=>setTimeout(r,400*(attempt+1)));
+    }
+    // All 3 attempts failed — cache locally so next save gets it
+    console.error("[save] Failed to save after 3 attempts. XP/tokens held in memory.");
+  });
+  return _saveQueue;
 }
 
 // ══════════════════════════════════════════════
@@ -555,7 +670,7 @@ function checkAchievements(){
   for(const a of ACHIEVEMENTS){
     if(playerAchievements[a.id])continue;
     try{
-      if(a.check(playerStats,lvl,playerClan,ownedWeapons,weaponTraits)){
+      if(a.check(playerStats,lvl,playerClan,ownedWeapons,weaponTraits,playerRace)){
         playerAchievements[a.id]=true;newUnlocked=true;
         showToast(`🏅 Achievement: ${a.name}!`,"gold");
       }
@@ -695,7 +810,7 @@ async function rollTraitOnWeapon(weaponName,btnEl){
   localTokens-=TRAIT_ROLL_COST;updateTokenDisplay();
   if(btnEl){btnEl.disabled=true;btnEl.textContent="Rolling...";}
   setTimeout(async()=>{
-    const trait=rollTrait();weaponTraits[weaponName]=trait;await saveTokenData();
+    const trait=rollTrait();weaponTraits[weaponName]=trait;playerStats.traitsRolled=(playerStats.traitsRolled||0)+1;await saveTokenData();
     showToast(`${trait.emoji} ${trait.name} — ${trait.rarity}!`,trait.rarity==="Mythic"||trait.rarity==="Legendary"?"gold":"info");
     renderTraitUI();
   },800);
@@ -896,7 +1011,7 @@ async function upgradeClan(){
   if(!playerClan||playerClan.version>=4){showToast("Already at max version!","info");return;}
   if(localTokens<CLAN_UPGRADE_COST){showToast(`Need ${CLAN_UPGRADE_COST} 🪙!`,"red");return;}
   if(!confirm(`Upgrade to V${playerClan.version+1} for ${CLAN_UPGRADE_COST} 🪙?`))return;
-  localTokens-=CLAN_UPGRADE_COST;playerClan.version++;
+  localTokens-=CLAN_UPGRADE_COST;playerClan.version++;playerStats.clanUpgrades=(playerStats.clanUpgrades||0)+1;
   const clan=CLANS[playerClan.key];
   showToast(`${clan.emoji} V${playerClan.version} — ${clan.versions[playerClan.version].name} unlocked!`,"gold");
   await saveTokenData();updateTokenDisplay();renderClanUI();
@@ -961,6 +1076,7 @@ async function performItemRoll(){
   if(!canRollNow()){showToast(`Next roll in ${formatRollCooldown()}`,"info");return;}
   const mat=rollRandomMaterial();
   addMaterial(mat.id,1);
+  playerStats.itemsRolled=(playerStats.itemsRolled||0)+1;
   setLastRollTime(Date.now());
   await saveTokenData();
   const c=RARITY_COLORS[mat.rarity]||"#94a3b8";
@@ -1294,7 +1410,7 @@ let tradeRoomCode=null,tradeRoomRole=null,tradeRoomPoll=null;
 let tradeOfferTab="weapons",myTradeOffer={weapons:[],mats:[],accs:[]};
 
 function showTradingHub(){
-  tradeRoomCode=null;tradeRoomRole=null;myTradeOffer={weapons:[],mats:[],accs:[]};
+  tradeRoomCode=null;tradeRoomRole=null;myTradeOffer={weapons:[],mats:[],accs:[]};_tradeCompleted=false;
   showScreen("screen-trading");
   document.getElementById("tradeRoomLobby").classList.remove("hidden");
   document.getElementById("tradeRoomWaiting").classList.add("hidden");
@@ -1361,7 +1477,7 @@ function startTradeRoomSession(data){
   document.getElementById("traPlayerA").textContent=myName+" (You)";
   document.getElementById("traPlayerB").textContent=partnerName||"Partner";
   document.getElementById("tradeRoomActive").classList.remove("hidden");
-  myTradeOffer={weapons:[],mats:[],accs:[]};
+  myTradeOffer={weapons:[],mats:[],accs:[]};_tradeCompleted=false;
   setTradeOfferTab("weapons");
   // Poll for opponent offer
   tradeRoomPoll=setInterval(pollTradeRoom,2000);
@@ -1374,8 +1490,8 @@ async function pollTradeRoom(){
     if(!data)return;
     if(data.status==="completed"||data.status==="cancelled"){
       clearInterval(tradeRoomPoll);tradeRoomPoll=null;
-      if(data.status==="completed"){completeTrade(data);}
-      else{showToast("Trade room closed.","info");showTradingHub();}
+      if(data.status==="completed"&&!_tradeCompleted){_tradeCompleted=true;completeTrade(data);}
+      else if(data.status==="cancelled"){showToast("Trade room closed.","info");showTradingHub();}
       return;
     }
     // Show opponent's offer
@@ -1386,7 +1502,8 @@ async function pollTradeRoom(){
     // Check if both accepted
     if(data.offer_a&&data.offer_b){
       const offerA=JSON.parse(data.offer_a),offerB=JSON.parse(data.offer_b);
-      if(offerA.accepted&&offerB.accepted){
+      if(offerA.accepted&&offerB.accepted&&!_tradeCompleted){
+        _tradeCompleted=true;
         clearInterval(tradeRoomPoll);tradeRoomPoll=null;
         completeTrade(data);
       }
@@ -1406,7 +1523,11 @@ function renderOpponentOffer(offer){
   if(offer.accepted)html+=`<div class="tra-offer-accepted">✓ Accepted!</div>`;
   el.innerHTML=html;
   const acceptBtn=document.getElementById("traAcceptBtn");
-  if(acceptBtn)acceptBtn.style.display=(offer&&!offer.accepted)?"":"none";
+  // Show accept button as long as trade not yet completed and opponent has sent something
+  if(acceptBtn){
+    const hasItems=offer&&(offer.weapons?.length||offer.mats?.length||offer.accs?.length);
+    acceptBtn.style.display=(hasItems&&!_tradeCompleted)?"":"none";
+  }
 }
 
 function setTradeOfferTab(tab){
@@ -1421,8 +1542,8 @@ function renderTradeOfferGrid(){
   const grid=document.getElementById("traOfferGrid");if(!grid)return;
   grid.innerHTML="";
   if(tradeOfferTab==="weapons"){
-    const tradeable=ownedWeapons.filter(n=>!STARTER_WEAPON_NAMES.includes(n));
-    if(!tradeable.length){grid.innerHTML=`<p style="color:var(--text3);font-style:italic;font-size:13px">No non-starter weapons to trade.</p>`;return;}
+    const tradeable=ownedWeapons.filter(n=>ALL_WEAPONS.find(w=>w.name===n)); // all owned weapons are tradeable
+    if(!tradeable.length){grid.innerHTML=`<p style="color:var(--text3);font-style:italic;font-size:13px">No weapons to trade.</p>`;return;}
     tradeable.forEach(n=>{
       const w=ALL_WEAPONS.find(x=>x.name===n);if(!w)return;
       const ti=TIER_INFO[w.tier],selected=myTradeOffer.weapons.includes(n);
@@ -1452,8 +1573,8 @@ function renderTradeOfferGrid(){
       grid.appendChild(card);
     });
   }else{
-    const accs=playerAccessories.filter(id=>id!==equippedAccessory);
-    if(!accs.length){grid.innerHTML=`<p style="color:var(--text3);font-style:italic;font-size:13px">No unequipped accessories to trade.</p>`;return;}
+    const accs=playerAccessories; // ALL accessories tradeable — equipped ones auto-unequip on trade
+    if(!accs.length){grid.innerHTML=`<p style="color:var(--text3);font-style:italic;font-size:13px">No accessories to trade.</p>`;return;}
     accs.forEach(id=>{
       const acc=ALL_ACCESSORIES.find(x=>x.id===id);if(!acc)return;
       const selected=myTradeOffer.accs.includes(id);
@@ -1491,54 +1612,100 @@ function renderMyTradeSelected(){
 
 async function sendTradeOffer(){
   if(!tradeRoomCode){showToast("Not in a trade room!","red");return;}
+  const hasItems=myTradeOffer.weapons.length||myTradeOffer.mats.length||myTradeOffer.accs.length;
+  if(!hasItems){showToast("Select at least one item to offer!","red");return;}
   const offerKey=tradeRoomRole==="A"?"offer_a":"offer_b";
   const offerData={...myTradeOffer,accepted:false};
+  const btn=document.getElementById("traSendOfferBtn");
+  if(btn){btn.disabled=true;btn.textContent="Sending…";}
   try{
-    await db.from("trade_rooms").update({[offerKey]:JSON.stringify(offerData)}).eq("code",tradeRoomCode);
-    showToast("Offer sent! Waiting for opponent to accept.","green");
-    document.getElementById("traStatus").textContent="Offer sent. Waiting for opponent…";
-  }catch(e){showToast("Failed to send offer.","red");}
+    const{error}=await db.from("trade_rooms").update({[offerKey]:JSON.stringify(offerData)}).eq("code",tradeRoomCode);
+    if(error){showToast("Failed: "+error.message,"red");if(btn){btn.disabled=false;btn.textContent="Send Offer";}return;}
+    showToast("✓ Offer sent!","green");
+    const statusEl=document.getElementById("traStatus");
+    if(statusEl)statusEl.textContent="Offer sent. Waiting for opponent to accept…";
+    if(btn){btn.textContent="✓ Offer Sent";} // keep disabled — they can re-send to update
+    // Show accept button in case opponent already sent their offer
+    const{data}=await db.from("trade_rooms").select("*").eq("code",tradeRoomCode).maybeSingle();
+    if(data){const oppKey=tradeRoomRole==="A"?"offer_b":"offer_a";const oppOffer=data[oppKey]?JSON.parse(data[oppKey]):null;renderOpponentOffer(oppOffer);}
+  }catch(e){showToast("Failed to send offer.","red");if(btn){btn.disabled=false;btn.textContent="Send Offer";}}
 }
 
+let _tradeCompleted=false; // guard against double-complete
 async function acceptTrade(){
   if(!tradeRoomCode){showToast("Not in a trade room!","red");return;}
+  if(_tradeCompleted)return;
   const offerKey=tradeRoomRole==="A"?"offer_a":"offer_b";
+  const otherKey=tradeRoomRole==="A"?"offer_b":"offer_a";
+  const btn=document.getElementById("traAcceptBtn");
+  if(btn){btn.disabled=true;btn.textContent="Accepting…";}
   try{
+    // Always re-fetch fresh data before accepting
     const{data}=await db.from("trade_rooms").select("*").eq("code",tradeRoomCode).maybeSingle();
-    if(!data)return;
-    const myOffer=data[offerKey]?JSON.parse(data[offerKey]):{...myTradeOffer};
+    if(!data){showToast("Room not found.","red");return;}
+    if(data.status==="completed"){
+      if(!_tradeCompleted){_tradeCompleted=true;clearInterval(tradeRoomPoll);tradeRoomPoll=null;completeTrade(data);}
+      return;
+    }
+    // Build my offer: use what's in DB if already sent, else use local selection
+    let myOffer=data[offerKey]?JSON.parse(data[offerKey]):{...myTradeOffer,accepted:false};
     myOffer.accepted=true;
     await db.from("trade_rooms").update({[offerKey]:JSON.stringify(myOffer)}).eq("code",tradeRoomCode);
-    // Check if both accepted
-    const otherKey=tradeRoomRole==="A"?"offer_b":"offer_a";
-    const otherOffer=data[otherKey]?JSON.parse(data[otherKey]):null;
+    // Re-fetch to check if other side already accepted
+    const{data:fresh}=await db.from("trade_rooms").select("*").eq("code",tradeRoomCode).maybeSingle();
+    if(!fresh)return;
+    const otherOffer=fresh[otherKey]?JSON.parse(fresh[otherKey]):null;
     if(otherOffer&&otherOffer.accepted){
-      await db.from("trade_rooms").update({status:"completed"}).eq("code",tradeRoomCode);
-      clearInterval(tradeRoomPoll);tradeRoomPoll=null;
-      completeTrade({offer_a:tradeRoomRole==="A"?JSON.stringify(myOffer):data.offer_a,offer_b:tradeRoomRole==="B"?JSON.stringify(myOffer):data.offer_b});
+      if(!_tradeCompleted){
+        _tradeCompleted=true;
+        await db.from("trade_rooms").update({status:"completed"}).eq("code",tradeRoomCode);
+        clearInterval(tradeRoomPoll);tradeRoomPoll=null;
+        completeTrade({
+          offer_a:tradeRoomRole==="A"?JSON.stringify(myOffer):fresh.offer_a,
+          offer_b:tradeRoomRole==="B"?JSON.stringify(myOffer):fresh.offer_b,
+        });
+      }
     }else{
-      showToast("You accepted! Waiting for opponent to accept too.","green");
-      document.getElementById("traStatus").textContent="You accepted! Waiting for opponent…";
+      showToast("✓ Accepted! Waiting for opponent…","green");
+      const statusEl=document.getElementById("traStatus");
+      if(statusEl)statusEl.textContent="You accepted! Waiting for opponent…";
+      if(btn){btn.disabled=true;btn.textContent="✓ Accepted";}
     }
-  }catch(e){showToast("Failed to accept.","red");}
+  }catch(e){
+    showToast("Failed to accept: "+e.message,"red");
+    if(btn){btn.disabled=false;btn.textContent="✓ Accept Trade";}
+  }
 }
 
 function completeTrade(data){
-  const offerA=data.offer_a?JSON.parse(data.offer_a):{weapons:[],mats:[],accs:[]};
-  const offerB=data.offer_b?JSON.parse(data.offer_b):{weapons:[],mats:[],accs:[]};
-  const myOffer=tradeRoomRole==="A"?offerA:offerB;
-  const theirOffer=tradeRoomRole==="A"?offerB:offerA;
-  // Remove my offered items
-  myOffer.weapons?.forEach(n=>{ownedWeapons=ownedWeapons.filter(x=>x!==n);myLoadout=myLoadout.filter(x=>x!==n);});
-  myOffer.mats?.forEach(m=>{playerMaterials[m.id]=Math.max(0,(playerMaterials[m.id]||0)-m.qty);});
-  myOffer.accs?.forEach(id=>{playerAccessories=playerAccessories.filter(x=>x!==id);});
-  // Add their offered items
-  theirOffer.weapons?.forEach(n=>{if(!ownedWeapons.includes(n))ownedWeapons.push(n);});
-  theirOffer.mats?.forEach(m=>{playerMaterials[m.id]=(playerMaterials[m.id]||0)+m.qty;});
-  theirOffer.accs?.forEach(id=>{if(!playerAccessories.includes(id))playerAccessories.push(id);});
-  playerStats.tradesCompleted=(playerStats.tradesCompleted||0)+1;
-  saveTokenData();checkAchievements();
-  showToast("Trade completed! 🤝","gold");
+  try{
+    const offerA=data.offer_a?JSON.parse(data.offer_a):{weapons:[],mats:[],accs:[]};
+    const offerB=data.offer_b?JSON.parse(data.offer_b):{weapons:[],mats:[],accs:[]};
+    const myOffer=tradeRoomRole==="A"?offerA:offerB;
+    const theirOffer=tradeRoomRole==="A"?offerB:offerA;
+    // Remove my offered items
+    myOffer.weapons?.forEach(n=>{
+      ownedWeapons=ownedWeapons.filter(x=>x!==n);
+      myLoadout=myLoadout.filter(x=>x!==n);
+    });
+    myOffer.mats?.forEach(m=>{
+      if(m&&m.id)playerMaterials[m.id]=Math.max(0,(playerMaterials[m.id]||0)-(m.qty||1));
+    });
+    myOffer.accs?.forEach(id=>{
+      playerAccessories=playerAccessories.filter(x=>x!==id);
+      if(equippedAccessory===id)equippedAccessory=null; // auto-unequip if traded
+    });
+    // Add their offered items
+    theirOffer.weapons?.forEach(n=>{if(n&&!ownedWeapons.includes(n))ownedWeapons.push(n);});
+    theirOffer.mats?.forEach(m=>{if(m&&m.id)playerMaterials[m.id]=(playerMaterials[m.id]||0)+(m.qty||1);});
+    theirOffer.accs?.forEach(id=>{if(id&&!playerAccessories.includes(id))playerAccessories.push(id);});
+    playerStats.tradesCompleted=(playerStats.tradesCompleted||0)+1;
+    saveTokenData();checkAchievements();
+    showToast("Trade completed! 🤝","gold");
+  }catch(e){
+    console.error("completeTrade error:",e);
+    showToast("Trade error — please check your inventory.","red");
+  }
   setTimeout(()=>showTradingHub(),1500);
 }
 
@@ -1714,6 +1881,8 @@ let gameMode=null;
 function selectMode(mode){
   gameMode=mode;restoreTurnPanel();
   if(mode==="online")showScreen("screen-lobby");
+  else if(mode==="ranked"){showRankedLobby();}
+  else if(mode==="tournament"){showTournamentLobby();}
   else if(mode==="boss"){initBossGame();showScreen("screen-game");}
   else{initGame(mode);showScreen("screen-game");}
 }
@@ -1825,7 +1994,7 @@ function nextBossShot(){gs.shot++;gs.phase="A";showScreen("screen-game");renderB
 function dropRandomAccessory(){
   const unowned=ALL_ACCESSORIES.filter(a=>!playerAccessories.includes(a.id));if(!unowned.length)return;
   const dropped=unowned[Math.floor(Math.random()*unowned.length)];
-  playerAccessories.push(dropped.id);saveTokenData();
+  playerAccessories.push(dropped.id);playerStats.accessoriesOwned=(playerStats.accessoriesOwned||0)+1;saveTokenData();
   showToast(`💍 Accessory Drop: ${dropped.emoji} ${dropped.name}!`,"gold");
 }
 
@@ -2046,7 +2215,7 @@ function resolveShot(cA,cB){
   if(!cB.potion)gs.hpB=Math.max(0,gs.hpB-dmgToB);else gs.hpB=Math.min(MAX_HP,gs.hpB+POTION_HEAL);
   if(cA.weapon&&!gs.usedWeapons.includes(cA.weapon.name))gs.usedWeapons.push(cA.weapon.name);
   if(cB.weapon&&!gs.usedWeapons.includes(cB.weapon.name))gs.usedWeapons.push(cB.weapon.name);
-  if(currentUser){awardXP("shot");updateDailyQuest("shot");}
+  if(currentUser){awardXP("shot");updateDailyQuest("shot");playerStats.totalShots=(playerStats.totalShots||0)+1;}
   // Track T4 use for daily quest
   if((cA.weapon&&cA.weapon.tier>=4)||(cB.weapon&&cB.weapon.tier>=4))updateDailyQuest("useT4");
   showShotResult(cA,cB,dmgToA,dmgToB);
@@ -2123,8 +2292,19 @@ async function showGameOver(){
 
   if(currentUser&&gameMode!=="boss"){
     const isWin=!tie&&aWins;
-    if(isWin){playerStats.wins=(playerStats.wins||0)+1;if(gameMode==="online")playerStats.onlineWins=(playerStats.onlineWins||0)+1;updateDailyQuest("win");if(gameMode==="online")updateDailyQuest("online");}
-    else playerStats.losses=(playerStats.losses||0)+1;
+    if(isWin){
+      playerStats.wins=(playerStats.wins||0)+1;
+      playerStats.consecutiveWins=(playerStats.consecutiveWins||0)+1;
+      playerStats.maxConsecutiveWins=Math.max(playerStats.maxConsecutiveWins||0,playerStats.consecutiveWins);
+      if(gameMode==="online")playerStats.onlineWins=(playerStats.onlineWins||0)+1;
+      if(gameMode==="ranked"){playerStats.rankedWins=(playerStats.rankedWins||0)+1;updateRankedRating(true);}
+      updateDailyQuest("win");if(gameMode==="online"||gameMode==="ranked")updateDailyQuest("online");
+    }else{
+      playerStats.losses=(playerStats.losses||0)+1;
+      playerStats.consecutiveWins=0;
+      if(gameMode==="ranked"){playerStats.rankedLosses=(playerStats.rankedLosses||0)+1;updateRankedRating(false);}
+    }
+    playerStats.totalRoundsPlayed=(playerStats.totalRoundsPlayed||0)+TOTAL_ROUNDS;
     await awardXP(isWin?"win":"loss");
     const xpGained=getXpForAction(isWin?"win":"loss",getCurrentLevelNum(localXP));
     const goXp=document.getElementById("goXpAward");
@@ -2610,6 +2790,7 @@ async function performFusion(){
   delete weaponTraits[fusionWeapon1];delete weaponTraits[fusionWeapon2];
 
   fusionWeapon1=null;fusionWeapon2=null;
+  playerStats.fusionsPerformed=(playerStats.fusionsPerformed||0)+1;
   await saveTokenData();
   showToast(`⚗️ ${fusedName} forged! T${fusedTier} · ${fusedDmg} dmg`,"gold");
   renderFusionUI();
@@ -2621,6 +2802,7 @@ async function sellMaterial(matId){
   if((playerMaterials[matId]||0)<=0){showToast("No "+mat.name+" to sell!","red");return;}
   playerMaterials[matId]=(playerMaterials[matId]||0)-1;
   localTokens+=mat.shopCost;
+  playerStats.materialsSold=(playerStats.materialsSold||0)+1;
   updateTokenDisplay();await saveTokenData();
   showToast(`${mat.emoji} Sold ${mat.name} for ${mat.shopCost} 🪙!`,"gold");
 }
@@ -2669,6 +2851,302 @@ function spawnAuthParticles(){
 //   status text DEFAULT 'active', buyer_id text, buyer_name text,
 //   created_at timestamptz DEFAULT now()
 // );
+
+
+// ══════════════════════════════════════════════
+// GLOBAL LEADERBOARD
+// ══════════════════════════════════════════════
+function showLeaderboard(){renderLeaderboardUI();document.getElementById("modal-leaderboard").classList.remove("hidden");}
+function hideLeaderboard(){document.getElementById("modal-leaderboard").classList.add("hidden");}
+function closeLeaderboardIfOutside(e){if(e.target===document.getElementById("modal-leaderboard"))hideLeaderboard();}
+
+let lbTab="wins";
+function setLbTab(t){lbTab=t;renderLeaderboardUI();}
+
+async function renderLeaderboardUI(){
+  const body=document.getElementById("leaderboardBody");if(!body)return;
+  body.innerHTML=`<div class="lb-tabs">
+    <button class="lb-tab${lbTab==="wins"?" active":""}" onclick="setLbTab('wins')">⚔️ Wins</button>
+    <button class="lb-tab${lbTab==="ranked"?" active":""}" onclick="setLbTab('ranked')">🏅 Ranked</button>
+    <button class="lb-tab${lbTab==="level"?" active":""}" onclick="setLbTab('level')">⭐ Level</button>
+    <button class="lb-tab${lbTab==="tokens"?" active":""}" onclick="setLbTab('tokens')">🪙 Coins</button>
+  </div><div class="lb-loading">Loading…</div>`;
+
+  try{
+    let query;
+    if(lbTab==="wins")       query=await db.from("players").select("username,stats,xp").limit(50);
+    else if(lbTab==="ranked")query=await db.from("players").select("username,stats,xp").limit(50);
+    else if(lbTab==="level") query=await db.from("players").select("username,xp").order("xp",{ascending:false}).limit(50);
+    else                     query=await db.from("players").select("username,tokens").order("tokens",{ascending:false}).limit(50);
+
+    const {data,error}=query;
+    if(error||!data){body.innerHTML+="<p class='lb-err'>Failed to load leaderboard.</p>";return;}
+
+    let rows=data.map(p=>{
+      let stats={};try{stats=p.stats?JSON.parse(p.stats):{};}catch(e){}
+      const lvl=getCurrentLevelNum(p.xp||0);
+      return{
+        username:p.username,
+        wins:stats.wins||0,
+        rankedRating:stats.rankedRating||1000,
+        level:lvl,
+        tokens:p.tokens||0,
+        xp:p.xp||0,
+      };
+    });
+
+    if(lbTab==="wins")        rows.sort((a,b)=>b.wins-a.wins);
+    else if(lbTab==="ranked") rows.sort((a,b)=>b.rankedRating-a.rankedRating);
+    else if(lbTab==="level")  rows.sort((a,b)=>b.xp-a.xp);
+    else                      rows.sort((a,b)=>b.tokens-a.tokens);
+
+    let html=`<div class="lb-tabs">
+      <button class="lb-tab${lbTab==="wins"?" active":""}" onclick="setLbTab('wins')">⚔️ Wins</button>
+      <button class="lb-tab${lbTab==="ranked"?" active":""}" onclick="setLbTab('ranked')">🏅 Ranked</button>
+      <button class="lb-tab${lbTab==="level"?" active":""}" onclick="setLbTab('level')">⭐ Level</button>
+      <button class="lb-tab${lbTab==="tokens"?" active":""}" onclick="setLbTab('tokens')">🪙 Coins</button>
+    </div><div class="lb-list">`;
+
+    rows.forEach((row,i)=>{
+      const isMe=currentUser&&row.username===currentUser.username;
+      const rank=i+1;
+      const rankEmoji=rank===1?"🥇":rank===2?"🥈":rank===3?"🥉":`#${rank}`;
+      let value="";
+      if(lbTab==="wins")        value=`${row.wins} wins`;
+      else if(lbTab==="ranked") value=`${row.rankedRating} pts`;
+      else if(lbTab==="level")  value=`Lv.${row.level}`;
+      else                      value=`${row.tokens} 🪙`;
+      html+=`<div class="lb-row${isMe?" lb-me":""}">
+        <div class="lb-rank">${rankEmoji}</div>
+        <div class="lb-name">${isMe?"<strong>"+row.username+"</strong>":row.username}</div>
+        <div class="lb-value">${value}</div>
+      </div>`;
+    });
+    html+=`</div>`;
+    body.innerHTML=html;
+  }catch(e){body.innerHTML="<p class='lb-err'>Error: "+e.message+"</p>";}
+}
+
+// ══════════════════════════════════════════════
+// RANKED MODE
+// ══════════════════════════════════════════════
+let rankedRoom=null,rankedRole=null,rankedPoll=null;
+
+function showRankedLobby(){
+  if(!currentUser){showToast("Sign in to play ranked!","red");showScreen("screen-mode");return;}
+  document.getElementById("rankedQueueStatus").textContent="Searching for opponent…";
+  document.getElementById("rankedRatingDisplay").textContent="Your Rating: "+(playerStats.rankedRating||1000);
+  showScreen("screen-ranked");
+  joinRankedQueue();
+}
+
+function leaveRankedLobby(){
+  leaveRankedQueue();
+  showScreen("screen-mode");
+}
+
+async function joinRankedQueue(){
+  const userId=currentUser.id,userName=currentUser.username;
+  const rating=playerStats.rankedRating||1000;
+  try{
+    // Remove any stale entry first
+    await db.from("ranked_queue").delete().eq("player_id",userId);
+    // Add to queue
+    await db.from("ranked_queue").insert({player_id:userId,player_name:userName,rating,joined_at:new Date().toISOString()});
+    // Poll for a match
+    rankedPoll=setInterval(checkRankedQueue,2000);
+  }catch(e){
+    document.getElementById("rankedQueueStatus").textContent="Queue unavailable. Run migration.sql.";
+  }
+}
+
+async function checkRankedQueue(){
+  if(!currentUser)return;
+  try{
+    const{data}=await db.from("ranked_queue").select("*").order("joined_at",{ascending:true}).limit(10);
+    if(!data||data.length<2)return;
+    const me=data.find(p=>p.player_id===currentUser.id);
+    if(!me)return;
+    // Find closest rating opponent
+    const others=data.filter(p=>p.player_id!==currentUser.id);
+    if(!others.length)return;
+    others.sort((a,b)=>Math.abs(a.rating-(playerStats.rankedRating||1000))-Math.abs(b.rating-(playerStats.rankedRating||1000)));
+    const opponent=others[0];
+    // Only the player who joined FIRST creates the room (avoid race)
+    if(me.joined_at<=opponent.joined_at){
+      clearInterval(rankedPoll);rankedPoll=null;
+      // Remove both from queue
+      await db.from("ranked_queue").delete().in("player_id",[currentUser.id,opponent.player_id]);
+      // Create game room
+      const code=genCode();
+      const initState=freshGameState({A:currentUser.username,B:opponent.player_name});
+      await db.from("game_rooms").insert({code,player_a:currentUser.id,player_a_name:currentUser.username,state:JSON.stringify(initState),status:"active",turn_status:"a_choosing",move_a:null,move_b:null,last_result:null});
+      // Write match code for opponent to find
+      await db.from("ranked_queue").insert({player_id:"match_"+opponent.player_id,player_name:code,rating:0,joined_at:new Date().toISOString()}).catch(()=>{});
+      gameMode="ranked";rankedRoom=code;rankedRole="A";
+      onlineRoom=code;onlineRole="A";
+      startOnlineGame({state:JSON.stringify(initState)},"A");
+      subscribeToRoom(code);startGamePoll();
+    }else{
+      // Wait for match code written by the other player
+      const matchEntry=data.find(p=>p.player_id==="match_"+currentUser.id);
+      if(matchEntry){
+        clearInterval(rankedPoll);rankedPoll=null;
+        await db.from("ranked_queue").delete().eq("player_id","match_"+currentUser.id);
+        const code=matchEntry.player_name;
+        const{data:roomData}=await db.from("game_rooms").select("*").eq("code",code).maybeSingle();
+        if(roomData){
+          gameMode="ranked";rankedRoom=code;rankedRole="B";
+          onlineRoom=code;onlineRole="B";
+          const roomState=JSON.parse(roomData.state);roomState.names.B=currentUser.username;
+          await db.from("game_rooms").update({player_b:currentUser.id,player_b_name:currentUser.username,state:JSON.stringify(roomState)}).eq("code",code);
+          startOnlineGame({state:JSON.stringify(roomState)},"B");
+          subscribeToRoom(code);startGamePoll();
+        }
+      }
+    }
+  }catch(e){console.warn("ranked queue check error",e);}
+}
+
+async function leaveRankedQueue(){
+  if(rankedPoll){clearInterval(rankedPoll);rankedPoll=null;}
+  if(currentUser){try{await db.from("ranked_queue").delete().eq("player_id",currentUser.id);}catch(e){}}
+}
+
+// ══════════════════════════════════════════════
+// TOURNAMENT MODE
+// ══════════════════════════════════════════════
+let tourneySize=4,tourneyPoll=null,myTourneyId=null,tourneyPhase="idle";
+
+function showTournamentLobby(){
+  if(!currentUser){showToast("Sign in to join tournaments!","red");showScreen("screen-mode");return;}
+  showScreen("screen-tournament");
+  renderTournamentLobby();
+}
+
+function renderTournamentLobby(){
+  const body=document.getElementById("tourneyLobbyBody");if(!body)return;
+  body.innerHTML=`
+    <div class="tourney-intro">
+      <div class="tourney-icon">🏆</div>
+      <div class="tourney-title">Tournament Mode</div>
+      <div class="tourney-sub">Choose your bracket size. Once all players join, you'll be matched automatically. Quit = disqualification.</div>
+    </div>
+    <div class="tourney-size-row">
+      <button class="tourney-size-btn${tourneySize===4?" active":""}" onclick="setTourneySize(4)">4 Players</button>
+      <button class="tourney-size-btn${tourneySize===8?" active":""}" onclick="setTourneySize(8)">8 Players</button>
+    </div>
+    <button class="btn-primary" style="width:100%" onclick="joinTournament()">Join Tournament (${tourneySize} players)</button>
+    <button class="btn-ghost" style="width:100%;margin-top:8px" onclick="showScreen('screen-mode')">← Back</button>`;
+}
+
+function setTourneySize(n){tourneySize=n;renderTournamentLobby();}
+
+async function joinTournament(){
+  if(!currentUser){showToast("Sign in first!","red");return;}
+  const userId=currentUser.id,userName=currentUser.username;
+  const body=document.getElementById("tourneyLobbyBody");
+  try{
+    // Remove old entry
+    await db.from("tournament_queue").delete().eq("player_id",userId);
+    await db.from("tournament_queue").insert({player_id:userId,player_name:userName,bracket_size:tourneySize,joined_at:new Date().toISOString(),status:"waiting"});
+    myTourneyId=userId;
+    body.innerHTML=`<div class="tourney-waiting">
+      <div class="tourney-w-icon">⏳</div>
+      <div class="tourney-w-title">Waiting for players…</div>
+      <div id="tourneyPlayerList" class="tourney-player-list"></div>
+      <div class="tourney-w-sub">Tournament starts when ${tourneySize} players join.</div>
+      <button class="btn-ghost" onclick="leaveTournament()">Leave Queue</button>
+    </div>`;
+    playerStats.tournamentsPlayed=(playerStats.tournamentsPlayed||0)+1;
+    await saveTokenData();
+    tourneyPoll=setInterval(checkTournamentQueue,2500);
+  }catch(e){
+    body.innerHTML=`<p style="color:var(--red)">Tournament queue unavailable. Run migration.sql.</p>
+    <button class="btn-ghost" onclick="showScreen('screen-mode')">Back</button>`;
+  }
+}
+
+async function checkTournamentQueue(){
+  try{
+    const{data}=await db.from("tournament_queue").select("*").eq("bracket_size",tourneySize).eq("status","waiting").order("joined_at",{ascending:true});
+    if(!data)return;
+    // Update player list display
+    const listEl=document.getElementById("tourneyPlayerList");
+    if(listEl)listEl.innerHTML=data.map((p,i)=>`<div class="tq-player"><span class="tq-num">${i+1}</span><span class="tq-name">${p.player_name}${p.player_id===currentUser.id?" (You)":""}</span></div>`).join("");
+    if(data.length<tourneySize)return;
+    // We have enough players — first joiner orchestrates
+    const me=data.find(p=>p.player_id===currentUser.id);if(!me)return;
+    const isOrchestrator=data[0].player_id===currentUser.id;
+    clearInterval(tourneyPoll);tourneyPoll=null;
+    if(isOrchestrator){
+      // Mark all as "matched"
+      await db.from("tournament_queue").update({status:"matched"}).in("player_id",data.slice(0,tourneySize).map(p=>p.player_id));
+      // Shuffle and create pairs
+      const players=[...data.slice(0,tourneySize)].sort(()=>Math.random()-0.5);
+      const pairs=[];
+      for(let i=0;i<players.length;i+=2)pairs.push([players[i],players[i+1]]);
+      // Create game rooms for each pair and write matchups to tournament_matches table
+      for(const [pA,pB] of pairs){
+        const code=genCode();
+        const initState=freshGameState({A:pA.player_name,B:pB.player_name});
+        await db.from("game_rooms").insert({code,player_a:pA.player_id,player_a_name:pA.player_name,state:JSON.stringify(initState),status:"active",turn_status:"a_choosing",move_a:null,move_b:null,last_result:null}).catch(()=>{});
+        // Write matchup for both players to discover
+        await db.from("tournament_queue").update({match_code:code}).eq("player_id",pA.player_id).catch(()=>{});
+        await db.from("tournament_queue").update({match_code:code}).eq("player_id",pB.player_id).catch(()=>{});
+      }
+    }
+    // All players: poll until match_code appears for them
+    let attempts=0;
+    const waitForMatch=setInterval(async()=>{
+      attempts++;if(attempts>20){clearInterval(waitForMatch);showToast("Tournament match not found.","red");showScreen("screen-mode");return;}
+      const{data:myRow}=await db.from("tournament_queue").select("match_code,status").eq("player_id",currentUser.id).maybeSingle();
+      if(myRow&&myRow.match_code){
+        clearInterval(waitForMatch);
+        const code=myRow.match_code;
+        const{data:roomData}=await db.from("game_rooms").select("*").eq("code",code).maybeSingle();
+        if(!roomData){showToast("Room not found.","red");showScreen("screen-mode");return;}
+        const isA=roomData.player_a===currentUser.id;
+        gameMode="tournament";
+        onlineRoom=code;onlineRole=isA?"A":"B";
+        const roomState=JSON.parse(roomData.state);
+        if(!isA){roomState.names.B=currentUser.username;await db.from("game_rooms").update({player_b:currentUser.id,player_b_name:currentUser.username,state:JSON.stringify(roomState)}).eq("code",code);}
+        showToast("🏆 Tournament match starting!","gold");
+        startOnlineGame({state:JSON.stringify(roomState)},isA?"A":"B");
+        subscribeToRoom(code);startGamePoll();
+      }
+    },1500);
+  }catch(e){console.warn("tournament queue check",e);}
+}
+
+async function leaveTournament(){
+  if(tourneyPoll){clearInterval(tourneyPoll);tourneyPoll=null;}
+  if(currentUser){try{await db.from("tournament_queue").delete().eq("player_id",currentUser.id);}catch(e){}}
+  showScreen("screen-mode");
+}
+
+// Tournament disqualification on quit
+const _origConfirmQuit=window.confirmQuit;
+// Override confirmQuit to handle tournament DQ
+function confirmQuit(){
+  if(gameMode==="tournament"){
+    if(!confirm("Quitting a tournament match will DISQUALIFY you. Are you sure?"))return;
+    showToast("❌ Disqualified from tournament","red");
+  }else if(!confirm("Quit and return to the menu?")){return;}
+  if(gameMode==="online"||gameMode==="ranked"||gameMode==="tournament"){
+    db.from("game_rooms").update({status:"abandoned"}).eq("code",onlineRoom).then(()=>{});
+  }
+  cleanupOnline();destroyEmojiChat();restoreTurnPanel();showScreen("screen-mode");
+}
+
+// Award tournament win bonus
+async function checkTournamentWin(){
+  if(gameMode!=="tournament")return;
+  playerStats.tournamentsWon=(playerStats.tournamentsWon||0)+1;
+  await awardTokens(500,"Tournament Win! 🏆");
+  showToast("🏆 Tournament Victory! +500 🪙","gold");
+  await saveTokenData();checkAchievements();
+}
 
 // ══════════════════════════════════════════════
 // INIT
