@@ -114,7 +114,7 @@
         <div class="pc-top-row">
           <div class="pc-username" id="pcUsername">Warrior</div>
           <div class="pc-level-tag" id="pcLevelTag">
-            <span id="pcLvlBadge">⚔</span>
+            <span id="pcLvlBadge" style="display:none"></span>
             <span id="pcLvlName" class="pc-lvl-num">Lv.1</span>
           </div>
         </div>
@@ -171,6 +171,8 @@
       <button class="btn-mode-extra" onclick="showTradingHub()">🤝 Trading Hub</button>
       <button class="btn-mode-extra" onclick="showAchievements()">🏅 Achievements</button>
       <button class="btn-mode-extra" onclick="showClanPanel()">⚜️ Clan</button>
+      <button class="btn-mode-extra" onclick="showRacePanel()">🌍 Race</button>
+      <button class="btn-mode-extra" onclick="showItemRoll()">🎲 Item Roll</button>
       <button class="btn-mode-extra btn-discord" onclick="showDiscordPrompt()">💬 Discord</button>
       <button class="btn-mode-extra" onclick="showTutorial()">📖 Tutorial</button>
     </div>
@@ -554,6 +556,29 @@
     <div class="go-actions">
       <button class="btn-primary" onclick="showScreen('screen-mode')">🏠 Home</button>
     </div>
+  </div>
+</div>
+
+
+<!-- ═══════ RACE MODAL ═══════ -->
+<div id="modal-race" class="modal-overlay hidden" onclick="closeRaceIfOutside(event)">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">🌍 Race</h2>
+      <button class="modal-close" onclick="hideRacePanel()">✕</button>
+    </div>
+    <div class="modal-body" id="raceBody"></div>
+  </div>
+</div>
+
+<!-- ═══════ ITEM ROLL MODAL ═══════ -->
+<div id="modal-itemroll" class="modal-overlay hidden" onclick="closeItemRollIfOutside(event)">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">🎲 Item Roll</h2>
+      <button class="modal-close" onclick="hideItemRoll()">✕</button>
+    </div>
+    <div class="modal-body" id="itemRollBody"></div>
   </div>
 </div>
 

@@ -2146,3 +2146,36 @@ input::placeholder { color: var(--text3); }
   .fusion-slots { gap: 8px; padding: 14px; }
   .fusion-slot { min-width: 120px; padding: 12px 14px; }
 }
+/* ══════════ RACE PANEL ══════════ */
+.race-hero { border: 1.5px solid; border-radius: 18px; padding: 24px 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 20px; text-align: center; }
+.race-emoji { font-size: 2.8rem; line-height: 1; }
+.race-name { font-family: var(--font-d); font-size: 1.3rem; font-weight: 700; letter-spacing: 1px; }
+.race-lore { font-size: 13px; color: var(--text2); font-style: italic; max-width: 340px; line-height: 1.5; }
+.race-perks { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; width: 100%; max-width: 380px; }
+.race-perk { background: var(--surface2); border-radius: 8px; padding: 7px 12px; font-size: 12px; color: var(--text); text-align: left; }
+.all-races-title { font-family: var(--font-d); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); margin: 0 0 10px; }
+.race-all-grid { display: flex; flex-direction: column; gap: 12px; }
+.race-card { border: 1.5px solid; border-radius: 14px; padding: 14px 16px; }
+.race-card.race-mine { box-shadow: 0 0 16px var(--accent-glow); }
+.race-card-header { font-family: var(--font-d); font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.race-mine-tag { font-size: 9px; padding: 2px 8px; border-radius: 6px; border: 1px solid; letter-spacing: 0.5px; }
+.race-chance-tag { font-size: 9px; padding: 2px 8px; border-radius: 6px; background: var(--surface2); color: var(--text3); margin-left: auto; }
+.race-card-lore { font-size: 12px; color: var(--text2); font-style: italic; margin-bottom: 8px; }
+.race-card-perks { display: flex; flex-direction: column; gap: 4px; }
+.rcp-item { font-size: 11px; color: var(--text); background: var(--surface2); border-radius: 6px; padding: 5px 10px; }
+/* Race chip in profile card */
+.race-chip { font-family: var(--font-d); font-size: 10px; padding: 3px 10px; border-radius: 8px; border: 1px solid; letter-spacing: 0.5px; }
+
+/* ══════════ ITEM ROLL ══════════ */
+.iroll-header { text-align: center; padding: 20px 16px 16px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.iroll-clock { font-size: 2.5rem; line-height: 1; }
+.iroll-title { font-family: var(--font-d); font-size: 1.1rem; color: var(--text); letter-spacing: 0.5px; }
+.iroll-countdown { font-family: var(--font-d); font-size: 1.6rem; color: var(--accent2); text-shadow: 0 0 14px var(--accent-glow); }
+.iroll-pool-title { font-family: var(--font-d); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); margin: 4px 0 10px; }
+.iroll-pool-grid { display: flex; flex-direction: column; gap: 6px; max-height: 340px; overflow-y: auto; }
+.iroll-pool-row { display: flex; align-items: center; gap: 8px; background: var(--surface2); border-radius: 10px; padding: 8px 12px; }
+.iroll-emoji { font-size: 1.2rem; flex-shrink: 0; }
+.iroll-name { font-family: var(--font-d); font-size: 12px; flex: 1; }
+.iroll-rarity { font-size: 10px; }
+.iroll-pct { font-family: var(--font-d); font-size: 11px; color: var(--accent2); min-width: 42px; text-align: right; }
+.iroll-have { font-size: 10px; color: var(--text3); min-width: 28px; text-align: right; }

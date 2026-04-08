@@ -182,6 +182,23 @@ function getRandomClan(){return CLAN_KEYS[Math.floor(Math.random()*CLAN_KEYS.len
 function getRandomRollClan(){return ALL_CLAN_KEYS[Math.floor(Math.random()*ALL_CLAN_KEYS.length)];}
 
 // ══════════════════════════════════════════════
+// RACES SYSTEM
+// ══════════════════════════════════════════════
+const RACES = {
+  human:        {name:"Human Race",        emoji:"🧑",  color:"#94a3b8", chance:0.50, lore:"Resilient and adaptable warriors forged by will alone.",        perks:["+10% coin bonus from all sources","Faster clan upgrade (5% off)","Balanced stats in all areas"]},
+  oni:          {name:"Oni Race",           emoji:"👹",  color:"#f43f5e", chance:0.20, lore:"Demonic warriors of raw power and unstoppable fury.",           perks:["+2 base damage on all attacks","Opponent starts with 1 less HP per round","+1 dmg for every 3 HP lost (Berserker Blood)"]},
+  heavenly:     {name:"Heavenly Race",      emoji:"✨",  color:"#facc15", chance:0.10, lore:"Chosen by the divine — rare, radiant, and untouchable.",        perks:["Divine Shield: 15% chance to negate all damage","+25% XP from all actions","Perfect blocks restore 2 HP (Blessed)"]},
+  supernatural: {name:"Supernatural Race", emoji:"👻",  color:"#a855f7", chance:0.20, lore:"Beings beyond the mortal realm, bending fate itself.",          perks:["Phase Shift: 20% dodge per round","Soul sight: see opponent shield hint once per match","Cursed aura: enemy trait effectiveness -10%"]},
+};
+const RACE_KEYS = ["human","oni","heavenly","supernatural"];
+
+function getRandomRace(){
+  const r=Math.random(); let cum=0;
+  for(const key of RACE_KEYS){cum+=RACES[key].chance;if(r<cum)return key;}
+  return "human";
+}
+
+// ══════════════════════════════════════════════
 // CRAFTING MATERIALS (34 types)
 // ══════════════════════════════════════════════
 const CRAFTING_MATERIALS=[
@@ -413,6 +430,7 @@ let ownedWeapons=[...STARTER_WEAPON_NAMES];
 let myLoadout=[...STARTER_WEAPON_NAMES.slice(0,LOADOUT_SIZE)];
 let weaponTraits={};
 let playerClan=null;       // {key, version}
+let playerRace=null;       // race key string
 let playerMaterials={};    // {mat_id: count}
 let playerAccessories=[];  // [acc_id, ...]
 let equippedAccessory=null;
@@ -429,6 +447,7 @@ function loadInventoryFromData(data){
   try{const ml=data?.loadout;if(ml){myLoadout=JSON.parse(ml).filter(n=>ownedWeapons.includes(n));if(myLoadout.length>LOADOUT_SIZE)myLoadout=myLoadout.slice(0,LOADOUT_SIZE);}else{myLoadout=ownedWeapons.slice(0,LOADOUT_SIZE);}}catch(e){myLoadout=ownedWeapons.slice(0,LOADOUT_SIZE);}
   try{weaponTraits=data?.weapon_traits?JSON.parse(data.weapon_traits):{};}catch(e){weaponTraits={};}
   try{playerClan=data?.clan?JSON.parse(data.clan):null;}catch(e){playerClan=null;}
+  try{playerRace=data?.race||null;}catch(e){playerRace=null;}
   try{playerMaterials=data?.materials?JSON.parse(data.materials):{};}catch(e){playerMaterials={};}
   try{playerAccessories=data?.accessories?JSON.parse(data.accessories):[];}catch(e){playerAccessories=[];}
   try{equippedAccessory=data?.equipped_accessory||null;}catch(e){equippedAccessory=null;}
@@ -447,7 +466,7 @@ async function loadTokenData(){
   if(!currentUser){
     localTokens=0;localPotions=0;localXP=0;
     ownedWeapons=[...STARTER_WEAPON_NAMES];myLoadout=[...STARTER_WEAPON_NAMES.slice(0,LOADOUT_SIZE)];
-    weaponTraits={};playerClan=null;playerMaterials={};playerAccessories=[];equippedAccessory=null;playerAchievements={};playerStats=defaultStats();dailyQuests=null;
+    weaponTraits={};playerClan=null;playerRace=null;playerMaterials={};playerAccessories=[];equippedAccessory=null;playerAchievements={};playerStats=defaultStats();dailyQuests=null;
     updateTokenDisplay();return;
   }
   try{const{data}=await db.from("players").select("*").eq("id",currentUser.id).maybeSingle();loadInventoryFromData(data);}catch(e){}
@@ -460,7 +479,7 @@ async function saveTokenData(){
     await db.from("players").update({
       tokens:localTokens,potions:localPotions,owned_weapons:JSON.stringify(ownedWeapons),
       loadout:JSON.stringify(myLoadout),xp:localXP,weapon_traits:JSON.stringify(weaponTraits),
-      clan:JSON.stringify(playerClan),materials:JSON.stringify(playerMaterials),
+      clan:JSON.stringify(playerClan),race:playerRace,materials:JSON.stringify(playerMaterials),
       accessories:JSON.stringify(playerAccessories),equipped_accessory:equippedAccessory,
       achievements:JSON.stringify(playerAchievements),stats:JSON.stringify(playerStats),
       daily_quests:JSON.stringify({key:dailyQuestKey,quests:dailyQuests}),
@@ -484,7 +503,7 @@ function updateTokenDisplay(){
   set("pcUsername",el=>el.textContent=currentUser?currentUser.username:"Guest");
   set("pcAvatar",el=>el.textContent=badge);
   set("pcAvatarRing",el=>el.style.boxShadow=`0 0 0 3px ${color}55, 0 0 20px ${color}33`);
-  set("pcLvlBadge",el=>el.textContent=badge);
+  set("pcLvlBadge",el=>el.textContent="");
   set("pcLvlName",el=>{el.textContent=`Lv.${lvl}`;el.style.color=color;});
   set("pcXpBar",el=>{el.style.width=prog+"%";el.style.background=`linear-gradient(90deg,${color},${color}cc)`;el.style.boxShadow=`0 0 10px ${color}66`;});
   set("pcXpText",el=>el.textContent=lvl>=MAX_LEVEL?"MAX LEVEL":`${localXP} / ${nextXp}`);
@@ -497,7 +516,9 @@ function updateTokenDisplay(){
     if(playerClan&&CLANS[playerClan.key]){
       const c=CLANS[playerClan.key],ver=c.versions[playerClan.version];
       cb.style.display="flex";
-      cb.innerHTML=`<span style="color:${c.color}">${c.emoji} ${c.name}</span><span class="clan-version-chip" style="color:${c.color};border-color:${c.color}44">V${playerClan.version} — ${ver.name}</span>`;
+      let badgeHtml=`<span style="color:${c.color}">${c.emoji} ${c.name}</span><span class="clan-version-chip" style="color:${c.color};border-color:${c.color}44">V${playerClan.version} — ${ver.name}</span>`;
+      if(playerRace&&RACES[playerRace]){const rc=RACES[playerRace];badgeHtml+=`<span class="race-chip" style="color:${rc.color};border-color:${rc.color}44">${rc.emoji} ${rc.name}</span>`;}
+      cb.innerHTML=badgeHtml;
     }else{cb.style.display="none";}
   }
   updateUserPill();
@@ -895,6 +916,151 @@ async function rerollClan(){
 // ══════════════════════════════════════════════
 // SHOP
 // ══════════════════════════════════════════════
+
+// ══════════════════════════════════════════════
+// ITEM ROLL (every 2 hours)
+// ══════════════════════════════════════════════
+const ITEM_ROLL_COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2 hours
+const ITEM_ROLL_KEY = "klocvork_lastroll";
+
+// Build rollable pool from CRAFTING_MATERIALS using shopChance as weight
+function buildItemRollPool(){
+  // All mats with shopChance get included; others default to 5% weight
+  return CRAFTING_MATERIALS.map(m=>({mat:m, weight: m.shopChance!=null ? m.shopChance : 0.05}));
+}
+
+function rollRandomMaterial(){
+  const pool = buildItemRollPool();
+  const total = pool.reduce((s,p)=>s+p.weight,0);
+  let r = Math.random()*total;
+  for(const p of pool){r-=p.weight;if(r<=0)return p.mat;}
+  return pool[pool.length-1].mat;
+}
+
+function getLastRollTime(){
+  try{const v=localStorage.getItem(ITEM_ROLL_KEY);return v?parseInt(v):0;}catch(e){return 0;}
+}
+function setLastRollTime(t){try{localStorage.setItem(ITEM_ROLL_KEY,String(t));}catch(e){}}
+
+function getNextRollMs(){
+  const last=getLastRollTime();
+  const next=last+ITEM_ROLL_COOLDOWN_MS;
+  return Math.max(0,next-Date.now());
+}
+
+function canRollNow(){return getNextRollMs()===0;}
+
+function formatRollCooldown(){
+  const ms=getNextRollMs();if(ms<=0)return "Ready!";
+  const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
+  return h>0?`${h}h ${m}m`:`${m}m ${s}s`;
+}
+
+async function performItemRoll(){
+  if(!currentUser){showToast("Sign in to roll items!","red");return;}
+  if(!canRollNow()){showToast(`Next roll in ${formatRollCooldown()}`,"info");return;}
+  const mat=rollRandomMaterial();
+  addMaterial(mat.id,1);
+  setLastRollTime(Date.now());
+  await saveTokenData();
+  const c=RARITY_COLORS[mat.rarity]||"#94a3b8";
+  showToast(`🎲 Item Roll: ${mat.emoji} ${mat.name}!`,mat.rarity==="Mythic"||mat.rarity==="Legendary"?"gold":"green");
+  renderItemRollUI();
+}
+
+function showItemRoll(){renderItemRollUI();document.getElementById("modal-itemroll").classList.remove("hidden");}
+function hideItemRoll(){document.getElementById("modal-itemroll").classList.add("hidden");}
+function closeItemRollIfOutside(e){if(e.target===document.getElementById("modal-itemroll"))hideItemRoll();}
+
+let _rollCountdownInterval=null;
+function renderItemRollUI(){
+  const body=document.getElementById("itemRollBody");if(!body)return;
+  if(_rollCountdownInterval)clearInterval(_rollCountdownInterval);
+
+  const pool=buildItemRollPool();
+  const totalWeight=pool.reduce((s,p)=>s+p.weight,0);
+
+  function buildHTML(){
+    const ready=canRollNow();
+    const cdText=formatRollCooldown();
+    let html=`<div class="iroll-header">
+      <div class="iroll-clock">${ready?"🎲":"⏳"}</div>
+      <div class="iroll-title">${ready?"Item Roll Ready!":"Next Roll In"}</div>
+      <div class="iroll-countdown" id="irollCountdown">${ready?"Now!":cdText}</div>
+      <button class="btn-primary" onclick="performItemRoll()" ${ready&&currentUser?"":"disabled"} style="margin-top:8px">
+        ${ready?"🎲 Roll Now":"Cooling down…"}
+      </button>
+      <p class="shop-hint" style="margin-top:8px">Roll a random crafting material every 2 hours!</p>
+    </div>
+    <div class="iroll-pool-title">Drop Table</div>
+    <div class="iroll-pool-grid">`;
+    const sorted=[...pool].sort((a,b)=>b.weight-a.weight);
+    for(const p of sorted){
+      const pct=(p.weight/totalWeight*100).toFixed(1);
+      const c=RARITY_COLORS[p.mat.rarity]||"#94a3b8";
+      html+=`<div class="iroll-pool-row">
+        <span class="iroll-emoji">${p.mat.emoji}</span>
+        <span class="iroll-name" style="color:${c}">${p.mat.name}</span>
+        <span class="iroll-rarity" style="color:${c}88">${p.mat.rarity}</span>
+        <span class="iroll-pct">${pct}%</span>
+        <span class="iroll-have">×${playerMaterials[p.mat.id]||0}</span>
+      </div>`;
+    }
+    html+=`</div>`;
+    return html;
+  }
+
+  body.innerHTML=buildHTML();
+  // Live countdown
+  _rollCountdownInterval=setInterval(()=>{
+    const el=document.getElementById("irollCountdown");
+    if(!el){clearInterval(_rollCountdownInterval);return;}
+    if(canRollNow()){clearInterval(_rollCountdownInterval);renderItemRollUI();}
+    else el.textContent=formatRollCooldown();
+  },1000);
+}
+
+// ══════════════════════════════════════════════
+// RACE PANEL
+// ══════════════════════════════════════════════
+function showRacePanel(){renderRaceUI();document.getElementById("modal-race").classList.remove("hidden");}
+function hideRacePanel(){document.getElementById("modal-race").classList.add("hidden");}
+function closeRaceIfOutside(e){if(e.target===document.getElementById("modal-race"))hideRacePanel();}
+
+function renderRaceUI(){
+  const body=document.getElementById("raceBody");if(!body)return;
+  if(!currentUser){body.innerHTML=`<p style="color:var(--text2);text-align:center;padding:24px">Sign in to view your race!</p>`;return;}
+
+  const myRaceKey=playerRace||"human";
+  const myRace=RACES[myRaceKey];
+
+  let html=`<div class="race-hero" style="border-color:${myRace.color}44;background:${myRace.color}0a">
+    <div class="race-emoji" style="color:${myRace.color}">${myRace.emoji}</div>
+    <div class="race-name" style="color:${myRace.color}">${myRace.name}</div>
+    <div class="race-lore">${myRace.lore}</div>
+    <div class="race-perks">`;
+  myRace.perks.forEach(p=>{html+=`<div class="race-perk">✦ ${p}</div>`;});
+  html+=`</div></div>
+  <div class="all-races-title">All Races</div>
+  <div class="race-all-grid">`;
+
+  for(const[key,r] of Object.entries(RACES)){
+    const isMine=key===myRaceKey;
+    html+=`<div class="race-card ${isMine?"race-mine":""}" style="border-color:${r.color}44">
+      <div class="race-card-header" style="color:${r.color}">${r.emoji} ${r.name}
+        ${isMine?`<span class="race-mine-tag" style="background:${r.color}22;border-color:${r.color}44;color:${r.color}">Your Race</span>`:""}
+        <span class="race-chance-tag">${(r.chance*100).toFixed(0)}% chance</span>
+      </div>
+      <div class="race-card-lore">${r.lore}</div>
+      <div class="race-card-perks">`;
+    r.perks.forEach(p=>{html+=`<div class="rcp-item">✦ ${p}</div>`;});
+    html+=`</div></div>`;
+  }
+  html+=`</div>
+  <p style="font-size:11px;color:var(--text3);text-align:center;margin-top:16px">Races are assigned at account creation. Each race is permanent.</p>`;
+  body.innerHTML=html;
+}
+
 let shopTab="potions";
 function showShop(){shopTab="potions";renderShopUI();document.getElementById("modal-shop").classList.remove("hidden");}
 function hideShop(){document.getElementById("modal-shop").classList.add("hidden");}
@@ -941,22 +1107,22 @@ function renderShopUI(){
     }
     html+=`</div></div>`;body.innerHTML=html;
   }else if(shopTab==="mats"){
-    const specialMats=CRAFTING_MATERIALS.filter(m=>m.shopCost);
+    // Mats are items you collect and can SELL for coins — show sellable materials
+    const sellableMats=CRAFTING_MATERIALS.filter(m=>m.shopCost);
     let html=bal+`<div style="display:flex;flex-direction:column;gap:14px">
-    <p class="shop-hint" style="text-align:left">Purchase rare crafting materials. Success is not guaranteed — each attempt has a set chance!</p>`;
-    for(const mat of specialMats){
+    <p class="shop-hint" style="text-align:left">These are rare materials you can <strong>sell</strong> for coins. Collect them from battles, daily quests, and the item roll!</p>`;
+    for(const mat of sellableMats){
       const have=playerMaterials[mat.id]||0;
-      const canAfford=localTokens>=mat.shopCost&&currentUser;
-      const chanceText=mat.shopChance>=0.1?(mat.shopChance*100).toFixed(0)+"%":(mat.shopChance*100).toFixed(1)+"%";
+      const sellPrice=mat.shopCost;
       const c=RARITY_COLORS[mat.rarity]||"#94a3b8";
       html+=`<div class="shop-item-card">
         <div class="shop-item-icon">${mat.emoji}</div>
         <div class="shop-item-info">
           <div class="shop-item-name" style="color:${c}">${mat.name} <span style="font-size:10px;opacity:0.6">${mat.rarity}</span></div>
-          <div class="shop-item-desc">${chanceText} chance per attempt. You have: ${have}</div>
-          <div class="shop-item-cost">${mat.shopCost} 🪙 per attempt</div>
+          <div class="shop-item-desc">You have: <strong>${have}</strong></div>
+          <div class="shop-item-cost">Sell value: ${sellPrice} 🪙 each</div>
         </div>
-        <button class="btn-primary" onclick="buySpecialMaterial('${mat.id}');renderShopUI();" ${canAfford?"":"disabled"}>Try (${mat.shopCost} 🪙)</button>
+        <button class="btn-primary" onclick="sellMaterial('${mat.id}');renderShopUI();" ${have>0&&currentUser?"":"disabled"}>Sell 1 (${sellPrice} 🪙)</button>
       </div>`;
     }
     html+=`</div>`;body.innerHTML=html;
@@ -978,7 +1144,7 @@ function renderShopUI(){
           ${trait?`<div class="ws-weapon-trait" title="${trait.desc}">${trait.emoji}</div>`:""}
           ${owned
             ?`<button class="ws-btn ${equipped?"ws-btn-equipped":"ws-btn-equip"}" onclick="toggleEquip('${w.name.replace(/'/g,"\\'")}')"> ${equipped?"✓ On":"Equip"}</button>`
-            :`<button class="ws-btn ws-btn-buy" onclick="buyWeapon('${w.name.replace(/'/g,"\\'")}'")" ${canAfford&&currentUser?"":"disabled"}>${w.cost} 🪙</button>`}
+            :`<button class="ws-btn ws-btn-buy" onclick="buyWeapon('${w.name.replace(/'/g,"\\'")}')" ${canAfford&&currentUser?"":"disabled"}>${w.cost} 🪙</button>`}
         </div>`;
       });
       html+=`</div>`;
@@ -1490,13 +1656,15 @@ async function signUp(username,password){
     if(ex){setAuthError("Username already taken.");return;}
     const hashed=await hashPassword(password);
     const assignedClan=getRandomClan();
+    const assignedRace=getRandomRace();
     const{data,error}=await db.from("players").insert({
       username:username.toLowerCase(),password_hash:hashed,tokens:0,potions:0,xp:0,
-      clan:JSON.stringify({key:assignedClan,version:1}),
+      clan:JSON.stringify({key:assignedClan,version:1}),race:assignedRace,
       stats:JSON.stringify(defaultStats()),
     }).select("id,username").single();
     if(error){setAuthError("Sign up failed: "+error.message);return;}
-    setAuthError(`Account created! You joined ${CLANS[assignedClan].emoji} ${CLANS[assignedClan].name}!`,true);
+    const raceData=RACES[assignedRace];
+    setAuthError(`Account created! Clan: ${CLANS[assignedClan].emoji} ${CLANS[assignedClan].name} · Race: ${raceData.emoji} ${raceData.name}!`,true);
     setTimeout(()=>{saveSession({id:data.id,username:data.username});updateUserPill();loadTokenData().then(()=>showScreen("screen-mode"));},1000);
   }catch(e){setAuthError("Something went wrong.");}
   finally{setAuthLoading(false);}
@@ -1523,7 +1691,7 @@ function playAsGuest(){
   ownedWeapons=[...STARTER_WEAPON_NAMES];myLoadout=[...STARTER_WEAPON_NAMES.slice(0,LOADOUT_SIZE)];
   dailyQuests=null;updateUserPill();updateTokenDisplay();showScreen("screen-mode");
 }
-function logout(){clearSession();localTokens=0;localPotions=0;localXP=0;weaponTraits={};playerClan=null;updateUserPill();updateTokenDisplay();showScreen("screen-auth");}
+function logout(){clearSession();localTokens=0;localPotions=0;localXP=0;weaponTraits={};playerClan=null;playerRace=null;updateUserPill();updateTokenDisplay();showScreen("screen-auth");}
 function updateUserPill(){const btn=document.getElementById("logoutBtn");if(btn)btn.style.display=currentUser?"":"none";}
 
 // ══════════════════════════════════════════════
@@ -2446,6 +2614,17 @@ async function performFusion(){
   showToast(`⚗️ ${fusedName} forged! T${fusedTier} · ${fusedDmg} dmg`,"gold");
   renderFusionUI();
 }
+
+async function sellMaterial(matId){
+  if(!currentUser){showToast("Sign in to sell materials!","red");return;}
+  const mat=CRAFTING_MATERIALS.find(m=>m.id===matId);if(!mat||!mat.shopCost)return;
+  if((playerMaterials[matId]||0)<=0){showToast("No "+mat.name+" to sell!","red");return;}
+  playerMaterials[matId]=(playerMaterials[matId]||0)-1;
+  localTokens+=mat.shopCost;
+  updateTokenDisplay();await saveTokenData();
+  showToast(`${mat.emoji} Sold ${mat.name} for ${mat.shopCost} 🪙!`,"gold");
+}
+
 
 // Material shop functions (buying special mats)
 async function buySpecialMaterial(matId){
