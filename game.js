@@ -125,7 +125,9 @@ function getLevelBadge(l){
 const XP_BASE_RATE=1.18;
 function getXpForAction(action,lvl){
   const base={win:50,loss:15,boss:80,special:30,shot:2};
-  return Math.round((base[action]||5)*Math.pow(XP_BASE_RATE,Math.min((lvl||1)-1,50)));
+  // Shot XP caps at level 10 scaling to prevent runaway per-shot gains
+  const capLvl=action==="shot"?Math.min((lvl||1)-1,10):Math.min((lvl||1)-1,50);
+  return Math.round((base[action]||5)*Math.pow(XP_BASE_RATE,capLvl));
 }
 
 // ══════════════════════════════════════════════
@@ -1879,7 +1881,7 @@ function showToast(msg,type="info"){
 // ══════════════════════════════════════════════
 let gameMode=null;
 function selectMode(mode){
-  gameMode=mode;restoreTurnPanel();
+  gameMode=mode;_gameOverFired=false;restoreTurnPanel();
   if(mode==="online")showScreen("screen-lobby");
   else if(mode==="ranked"){showRankedLobby();}
   else if(mode==="tournament"){showTournamentLobby();}
@@ -1899,6 +1901,7 @@ function freshGameState(names){
 let SHIELD_VALUES_A=[],SHIELD_VALUES_B=[];
 
 function initGame(mode,names){
+  _gameOverFired=false;
   WEAPONS=myLoadout.map(n=>ALL_WEAPONS.find(w=>w.name===n)).filter(Boolean);
   if(!WEAPONS.length)WEAPONS=ALL_WEAPONS.filter(w=>STARTER_WEAPON_NAMES.includes(w.name));
   SHIELD_VALUES=getShieldValues(WEAPONS);SHIELD_VALUES_A=SHIELD_VALUES;SHIELD_VALUES_B=SHIELD_VALUES;
@@ -1927,6 +1930,7 @@ function aiMakeChoice(){
 // ══════════════════════════════════════════════
 let bossHp=BOSS_HP_MAX;
 function initBossGame(){
+  _gameOverFired=false;
   bossHp=BOSS_HP_MAX;
   WEAPONS=myLoadout.map(n=>ALL_WEAPONS.find(w=>w.name===n)).filter(Boolean);
   if(!WEAPONS.length)WEAPONS=ALL_WEAPONS.filter(w=>STARTER_WEAPON_NAMES.includes(w.name));
@@ -2280,7 +2284,9 @@ function startNextRound(){
 // ══════════════════════════════════════════════
 // GAME OVER
 // ══════════════════════════════════════════════
+let _gameOverFired=false; // prevent double-fire
 async function showGameOver(){
+  if(_gameOverFired)return; _gameOverFired=true;
   const finalA=gs.totalHpA||gs.hpA,finalB=gs.totalHpB||gs.hpB;
   const aWins=finalA>finalB,tie=finalA===finalB;
   document.getElementById("goEmblem").textContent=tie?"🤝":"🏆";
@@ -2291,7 +2297,10 @@ async function showGameOver(){
   else{const w=aWins?gs.names.A:gs.names.B;document.getElementById("goResult").textContent=w+" Wins!";document.getElementById("goSubtitle").textContent=aWins?gs.names.B+" has been defeated.":gs.names.A+" has been defeated.";}
 
   if(currentUser&&gameMode!=="boss"){
-    const isWin=!tie&&aWins;
+    // In AI/hotseat mode, A is always the local player
+    // In online/ranked, A is whoever has onlineRole==="A"
+    const localIsA=(gameMode!=="online"&&gameMode!=="ranked")||onlineRole==="A";
+    const isWin=!tie&&(localIsA?aWins:!aWins);
     if(isWin){
       playerStats.wins=(playerStats.wins||0)+1;
       playerStats.consecutiveWins=(playerStats.consecutiveWins||0)+1;
@@ -2305,12 +2314,21 @@ async function showGameOver(){
       if(gameMode==="ranked"){playerStats.rankedLosses=(playerStats.rankedLosses||0)+1;updateRankedRating(false);}
     }
     playerStats.totalRoundsPlayed=(playerStats.totalRoundsPlayed||0)+TOTAL_ROUNDS;
-    await awardXP(isWin?"win":"loss");
-    const xpGained=getXpForAction(isWin?"win":"loss",getCurrentLevelNum(localXP));
+    // Calculate XP and tokens THEN save once — prevents race condition double-saves
+    const lvlBefore=getCurrentLevelNum(localXP);
+    const xpGained=getXpForAction(isWin?"win":"loss",lvlBefore);
+    localXP+=xpGained;
+    const lvlAfter=getCurrentLevelNum(localXP);
+    if(lvlAfter>lvlBefore)showToast(`🎉 Level Up! Lv.${lvlAfter}`,"gold");
+    const coinsGained=tie?TOKENS_LOSS:(aWins?TOKENS_WIN:TOKENS_LOSS);
+    const coinReason=tie?"Draw.":(aWins?"Victory!":"Better luck next time.");
+    localTokens+=coinsGained;
+    if(coinsGained>0)playerStats.totalTokensEarned=(playerStats.totalTokensEarned||0)+coinsGained;
+    showToast("+"+coinsGained+" 🪙  "+coinReason,"gold");
     const goXp=document.getElementById("goXpAward");
-    if(goXp)goXp.innerHTML=`<span class="go-xp-badge">+${xpGained} XP ✨ Lv.${getCurrentLevelNum(localXP)}</span>`;
-    if(!tie){if(aWins)await awardTokens(TOKENS_WIN,"Victory!");else await awardTokens(TOKENS_LOSS,"Better luck next time.");}
-    else await awardTokens(TOKENS_LOSS,"Draw.");
+    if(goXp)goXp.innerHTML=`<span class="go-xp-badge">+${xpGained} XP ✨ Lv.${lvlAfter}</span>`;
+    updateTokenDisplay();
+    await saveTokenData(); // single save with everything in it
     checkAchievements();
     if(isWin&&Math.random()<0.08)dropRandomAccessory();
   }
@@ -2873,14 +2891,15 @@ async function renderLeaderboardUI(){
   </div><div class="lb-loading">Loading…</div>`;
 
   try{
-    let query;
-    if(lbTab==="wins")       query=await db.from("players").select("username,stats,xp").limit(50);
-    else if(lbTab==="ranked")query=await db.from("players").select("username,stats,xp").limit(50);
-    else if(lbTab==="level") query=await db.from("players").select("username,xp").order("xp",{ascending:false}).limit(50);
-    else                     query=await db.from("players").select("username,tokens").order("tokens",{ascending:false}).limit(50);
-
-    const {data,error}=query;
-    if(error||!data){body.innerHTML+="<p class='lb-err'>Failed to load leaderboard.</p>";return;}
+    // Fetch all players with needed fields, sort client-side (stats is JSON so can't DB-sort)
+    const {data,error}=await db.from("players").select("username,stats,xp,tokens").limit(200);
+    if(error){body.innerHTML=`<div class="lb-tabs">
+      <button class="lb-tab${lbTab==="wins"?" active":""}" onclick="setLbTab('wins')">⚔️ Wins</button>
+      <button class="lb-tab${lbTab==="ranked"?" active":""}" onclick="setLbTab('ranked')">🏅 Ranked</button>
+      <button class="lb-tab${lbTab==="level"?" active":""}" onclick="setLbTab('level')">⭐ Level</button>
+      <button class="lb-tab${lbTab==="tokens"?" active":""}" onclick="setLbTab('tokens')">🪙 Coins</button>
+    </div><p class='lb-err'>Could not load: ${error.message}<br><small>Make sure RLS policy allows SELECT on players table.</small></p>`;return;}
+    if(!data||data.length===0){body.innerHTML+="<p class='lb-err'>No players found.</p>";return;}
 
     let rows=data.map(p=>{
       let stats={};try{stats=p.stats?JSON.parse(p.stats):{};}catch(e){}
