@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KlocVork — Arena</title>
+  <title>Arena of Supremacy</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -21,12 +21,12 @@
   <div class="auth-split">
     <div class="auth-hero">
       <div class="hero-emblem">⚔</div>
-      <h1 class="hero-title">KlocVork<br><em>Arena</em></h1>
+      <h1 class="hero-title">Arena of<br><em>Supremacy</em></h1>
       <p class="hero-sub">A game of blades, shields,<br>and hidden intentions.</p>
       <div class="hero-stats">
-        <div class="hstat"><span>70+</span>Weapons</div>
+        <div class="hstat"><span>100+</span>Weapons</div>
         <div class="hstat"><span>1000</span>Levels</div>
-        <div class="hstat"><span>100</span>Traits</div>
+        <div class="hstat"><span>300+</span>Materials</div>
       </div>
       <div class="hero-level-ladder">
         <div class="hll-item"><span class="hll-badge">🌿</span><span class="hll-name">Exorcist</span></div>
@@ -90,13 +90,15 @@
 <!-- ═══════ MODE SELECT ═══════ -->
 <div id="screen-mode" class="screen">
   <div class="screen-header">
-    <div class="logo-small">⚔ KlocVork</div>
+    <div class="logo-small">⚔ Arena of Supremacy</div>
     <div class="header-right">
       <button class="btn-shop" onclick="showShop()">🛒 Shop</button>
       <button class="btn-settings" onclick="showArsenal()">⚔️ Arsenal</button>
       <button class="btn-trait" onclick="showTraitShop()">✨ Traits</button>
       <button class="btn-craft" onclick="showCraftingTable()">🔨 Craft</button>
       <button class="btn-craft btn-fusion" onclick="showFusionMachine()">⚗️ Fuse</button>
+      <button class="btn-craft btn-chests" onclick="showChestShop()">📦 Chests</button>
+      <button class="btn-craft btn-sets" onclick="showSetsPanel()">🎯 Sets</button>
       <button class="btn-rulebook" onclick="showRulebook()">📖 Rules</button>
       <button class="btn-ghost-sm" id="logoutBtn" onclick="logout()" style="display:none">Sign out</button>
     </div>
@@ -465,7 +467,7 @@
       <div class="gs-round" id="gsRound">Round 1 / 3</div>
       <div class="gs-shot" id="gsShot">Shot 1 / 6</div>
     </div>
-    <button class="btn-ghost-sm" onclick="confirmQuit()">✕ Quit</button>
+    <button class="btn-quit"  onclick="confirmQuit()">✕ Quit</button>
   </div>
   <div class="hp-bars">
     <div class="hp-side">
@@ -672,6 +674,29 @@
       <button class="modal-close" onclick="hideLeaderboard()">✕</button>
     </div>
     <div class="modal-body" id="leaderboardBody"></div>
+  </div>
+</div>
+
+
+<!-- ═══════ CHESTS MODAL ═══════ -->
+<div id="modal-chests" class="modal-overlay hidden" onclick="closeChestIfOutside(event)">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">📦 Chests</h2>
+      <button class="modal-close" onclick="hideChestShop()">✕</button>
+    </div>
+    <div class="modal-body" id="chestsBody"></div>
+  </div>
+</div>
+
+<!-- ═══════ SETS MODAL ═══════ -->
+<div id="modal-sets" class="modal-overlay hidden" onclick="closeSetsIfOutside(event)">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">🎯 Weapon Sets</h2>
+      <button class="modal-close" onclick="hideSetsPanel()">✕</button>
+    </div>
+    <div class="modal-body" id="setsBody"></div>
   </div>
 </div>
 

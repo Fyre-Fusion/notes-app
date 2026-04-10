@@ -68,7 +68,7 @@ const ALL_WEAPONS = [
   {name:"Titan Crusher",emoji:"⚙️",dmg:15,tier:6,cost:1200},
   {name:"Astral Dagger",emoji:"✨",dmg:15,tier:6,cost:1200},
   // T7 — Transcendent (dmg 17+, ultra rare)
-  {name:"Gentuga Tensho",emoji:"🌠",dmg:18,tier:7,cost:2500},
+  {name:"Getsuga Tensho",emoji:"🌠",dmg:18,tier:7,cost:2500},
   {name:"Void Emperor Blade",emoji:"🫥",dmg:17,tier:7,cost:2500},
   {name:"Singularity Edge",emoji:"💫",dmg:17,tier:7,cost:2500},
 ];
@@ -218,7 +218,7 @@ const RACES = {
   supernatural: {name:"Supernatural Race", emoji:"👻",  color:"#a855f7", chance:0.20, lore:"Beings beyond the mortal realm, bending fate itself.",          perks:["Phase Shift: 20% dodge per round","Soul sight: see opponent shield hint once per match","Cursed aura: enemy trait effectiveness -10%"],
     v4ability:{name:"EnMagicked",emoji:"🌀",desc:"Perfect counter + weapon bypasses 50% of shield + bonus damage scales with missing HP. Once per match.",cooldown:"match"}},
   fluxion:  {name:"Fluxion",        emoji:"🌌",  color:"#ffffff", chance:0,    lore:"A being beyond existence itself. Admin-only. Cannot be obtained through normal means.",perks:["Reality bends to your will","All abilities are enhanced","Beyond all classification"],
-    v4ability:{name:"Inversion Rift",emoji:"💥",desc:"Deals 2,000,000 damage — instantly ends the game. Once per match.",cooldown:"match"},adminOnly:true},
+    v4ability:{name:"Inversion Rift",emoji:"💥",desc:"Reality collapses — instantly ends the match. Once per match.",cooldown:"match",endGame:true},adminOnly:true},
 };
 const RACE_KEYS = ["human","oni","heavenly","supernatural"];
 
@@ -247,7 +247,232 @@ const CRAFTING_MATERIALS=[
   {id:"chaos_shard",name:"Chaos Shard",emoji:"🌪️",rarity:"Epic"},{id:"time_dust",name:"Time Dust",emoji:"⌛",rarity:"Legendary"},
   {id:"spider_silk",name:"Spider Silk",emoji:"🕸️",rarity:"Common"},{id:"ember_core",name:"Ember Core",emoji:"🪨",rarity:"Uncommon"},
   {id:"tide_pearl",name:"Tide Pearl",emoji:"🐚",rarity:"Rare"},{id:"eclipse_shard",name:"Eclipse Shard",emoji:"🌘",rarity:"Epic"},
-  // 4 new materials
+
+  // ── Extended Material Catalogue (300 total) ──
+  // Fire/Lava materials
+  {id:"lava_core",name:"Lava Core",emoji:"🌋",rarity:"Rare"},
+  {id:"magma_shard",name:"Magma Shard",emoji:"🔴",rarity:"Uncommon"},
+  {id:"inferno_gem",name:"Inferno Gem",emoji:"💎",rarity:"Epic"},
+  {id:"cinder_dust",name:"Cinder Dust",emoji:"🔥",rarity:"Common"},
+  {id:"volcanic_ash",name:"Volcanic Ash",emoji:"🌑",rarity:"Common"},
+  {id:"fire_opal",name:"Fire Opal",emoji:"🟠",rarity:"Rare"},
+  {id:"hellstone",name:"Hellstone",emoji:"⬛",rarity:"Epic"},
+  {id:"blaze_crystal",name:"Blaze Crystal",emoji:"🔶",rarity:"Rare"},
+  // Ice/Water materials
+  {id:"glacier_shard",name:"Glacier Shard",emoji:"🧊",rarity:"Common"},
+  {id:"deep_sea_pearl",name:"Deep Sea Pearl",emoji:"🫧",rarity:"Rare"},
+  {id:"cryo_gem",name:"Cryo Gem",emoji:"💠",rarity:"Epic"},
+  {id:"tidal_essence",name:"Tidal Essence",emoji:"🌊",rarity:"Uncommon"},
+  {id:"frozen_heart",name:"Frozen Heart",emoji:"❄️",rarity:"Rare"},
+  {id:"ocean_tear",name:"Ocean Tear",emoji:"💧",rarity:"Common"},
+  {id:"blizzard_core",name:"Blizzard Core",emoji:"🌨️",rarity:"Epic"},
+  {id:"permafrost",name:"Permafrost",emoji:"🟦",rarity:"Uncommon"},
+  // Lightning materials
+  {id:"storm_crystal",name:"Storm Crystal",emoji:"⚡",rarity:"Rare"},
+  {id:"thunder_scale",name:"Thunder Scale",emoji:"🐉",rarity:"Epic"},
+  {id:"static_dust",name:"Static Dust",emoji:"✨",rarity:"Common"},
+  {id:"arc_fragment",name:"Arc Fragment",emoji:"🌩️",rarity:"Uncommon"},
+  {id:"plasma_shard",name:"Plasma Shard",emoji:"🔵",rarity:"Rare"},
+  {id:"bolt_essence",name:"Bolt Essence",emoji:"💛",rarity:"Uncommon"},
+  // Nature/Earth materials
+  {id:"ancient_bark",name:"Ancient Bark",emoji:"🪵",rarity:"Common"},
+  {id:"vine_silk",name:"Vine Silk",emoji:"🌿",rarity:"Common"},
+  {id:"petal_dust",name:"Petal Dust",emoji:"🌸",rarity:"Uncommon"},
+  {id:"forest_gem",name:"Forest Gem",emoji:"💚",rarity:"Rare"},
+  {id:"earthshaker_ore",name:"Earthshaker Ore",emoji:"🪨",rarity:"Epic"},
+  {id:"root_crystal",name:"Root Crystal",emoji:"🌱",rarity:"Uncommon"},
+  {id:"mosstone",name:"Mosstone",emoji:"🍀",rarity:"Common"},
+  {id:"terra_shard",name:"Terra Shard",emoji:"🏔️",rarity:"Rare"},
+  // Dark/Shadow materials
+  {id:"nightmare_dust",name:"Nightmare Dust",emoji:"🌑",rarity:"Uncommon"},
+  {id:"shadow_gem",name:"Shadow Gem",emoji:"🖤",rarity:"Rare"},
+  {id:"void_crystal",name:"Void Crystal",emoji:"🔮",rarity:"Epic"},
+  {id:"dusk_shard",name:"Dusk Shard",emoji:"🌘",rarity:"Uncommon"},
+  {id:"phantom_ore",name:"Phantom Ore",emoji:"👻",rarity:"Rare"},
+  {id:"soul_ash",name:"Soul Ash",emoji:"💀",rarity:"Common"},
+  {id:"abyss_gem",name:"Abyss Gem",emoji:"🌀",rarity:"Epic"},
+  {id:"hex_rune",name:"Hex Rune",emoji:"🔯",rarity:"Uncommon"},
+  // Celestial/Light materials
+  {id:"starcore",name:"Starcore",emoji:"⭐",rarity:"Rare"},
+  {id:"moonstone",name:"Moonstone",emoji:"🌙",rarity:"Uncommon"},
+  {id:"sunbeam_shard",name:"Sunbeam Shard",emoji:"☀️",rarity:"Rare"},
+  {id:"nova_dust",name:"Nova Dust",emoji:"💫",rarity:"Uncommon"},
+  {id:"cosmos_gem",name:"Cosmos Gem",emoji:"🌌",rarity:"Epic"},
+  {id:"aurora_crystal",name:"Aurora Crystal",emoji:"🌈",rarity:"Rare"},
+  {id:"celestine",name:"Celestine",emoji:"✨",rarity:"Legendary"},
+  {id:"radiance_core",name:"Radiance Core",emoji:"💡",rarity:"Epic"},
+  // Metal/Ore materials
+  {id:"mithril_ore",name:"Mithril Ore",emoji:"🪩",rarity:"Rare"},
+  {id:"orichalcum",name:"Orichalcum",emoji:"🟡",rarity:"Epic"},
+  {id:"darksteel",name:"Darksteel",emoji:"⬛",rarity:"Rare"},
+  {id:"ironwood",name:"Ironwood",emoji:"🪚",rarity:"Common"},
+  {id:"cobalt_ingot",name:"Cobalt Ingot",emoji:"🔹",rarity:"Uncommon"},
+  {id:"moonsilver",name:"Moonsilver",emoji:"🌕",rarity:"Rare"},
+  {id:"adamantite",name:"Adamantite",emoji:"🔷",rarity:"Legendary"},
+  {id:"war_iron",name:"War Iron",emoji:"⚙️",rarity:"Common"},
+  // Arcane/Magic materials
+  {id:"mana_shard",name:"Mana Shard",emoji:"🔮",rarity:"Common"},
+  {id:"arcane_dust",name:"Arcane Dust",emoji:"✨",rarity:"Uncommon"},
+  {id:"spell_core",name:"Spell Core",emoji:"💜",rarity:"Rare"},
+  {id:"rift_essence",name:"Rift Essence",emoji:"🌀",rarity:"Epic"},
+  {id:"enchant_stone",name:"Enchant Stone",emoji:"🪬",rarity:"Uncommon"},
+  {id:"hex_crystal",name:"Hex Crystal",emoji:"🔯",rarity:"Rare"},
+  {id:"runic_shard",name:"Runic Shard",emoji:"🔱",rarity:"Uncommon"},
+  {id:"mystic_orb",name:"Mystic Orb",emoji:"🔮",rarity:"Epic"},
+  // Beast/Monster materials
+  {id:"wolf_fang",name:"Wolf Fang",emoji:"🐺",rarity:"Common"},
+  {id:"dragon_bone",name:"Dragon Bone",emoji:"🦴",rarity:"Epic"},
+  {id:"phoenix_feather",name:"Phoenix Feather",emoji:"🪶",rarity:"Legendary"},
+  {id:"serpent_venom",name:"Serpent Venom",emoji:"🐍",rarity:"Rare"},
+  {id:"bear_claw",name:"Bear Claw",emoji:"🐻",rarity:"Common"},
+  {id:"griffin_talon",name:"Griffin Talon",emoji:"🦅",rarity:"Rare"},
+  {id:"basilisk_eye",name:"Basilisk Eye",emoji:"👁️",rarity:"Epic"},
+  {id:"hydra_scale",name:"Hydra Scale",emoji:"🐉",rarity:"Legendary"},
+  // Plant/Herb materials
+  {id:"nightshade",name:"Nightshade",emoji:"🌿",rarity:"Uncommon"},
+  {id:"bloodvine",name:"Bloodvine",emoji:"🍀",rarity:"Rare"},
+  {id:"sunflower_core",name:"Sunflower Core",emoji:"🌻",rarity:"Common"},
+  {id:"thornwood",name:"Thornwood",emoji:"🌵",rarity:"Common"},
+  {id:"lotus_dust",name:"Lotus Dust",emoji:"🪷",rarity:"Uncommon"},
+  {id:"mandrake_root",name:"Mandrake Root",emoji:"🌱",rarity:"Rare"},
+  {id:"hex_herb",name:"Hex Herb",emoji:"🍃",rarity:"Uncommon"},
+  {id:"ghost_flower",name:"Ghost Flower",emoji:"🌸",rarity:"Epic"},
+  // Energy materials
+  {id:"ki_fragment",name:"Ki Fragment",emoji:"💠",rarity:"Uncommon"},
+  {id:"chi_crystal",name:"Chi Crystal",emoji:"🔵",rarity:"Rare"},
+  {id:"aura_shard",name:"Aura Shard",emoji:"🟣",rarity:"Uncommon"},
+  {id:"spirit_energy",name:"Spirit Energy",emoji:"👻",rarity:"Rare"},
+  {id:"life_essence",name:"Life Essence",emoji:"💚",rarity:"Common"},
+  {id:"death_energy",name:"Death Energy",emoji:"💀",rarity:"Rare"},
+  {id:"balance_stone",name:"Balance Stone",emoji:"⚖️",rarity:"Epic"},
+  {id:"primal_core",name:"Primal Core",emoji:"🌟",rarity:"Epic"},
+  // Celestial bodies
+  {id:"meteor_shard",name:"Meteor Shard",emoji:"☄️",rarity:"Rare"},
+  {id:"comet_dust",name:"Comet Dust",emoji:"💫",rarity:"Uncommon"},
+  {id:"astral_ore",name:"Astral Ore",emoji:"🌌",rarity:"Epic"},
+  {id:"nebula_dust",name:"Nebula Dust",emoji:"🌠",rarity:"Uncommon"},
+  {id:"supernova_core",name:"Supernova Core",emoji:"💥",rarity:"Legendary"},
+  {id:"black_hole_shard",name:"Black Hole Shard",emoji:"🕳️",rarity:"Mythic"},
+  {id:"quasar_gem",name:"Quasar Gem",emoji:"🔭",rarity:"Legendary"},
+  {id:"pulsar_crystal",name:"Pulsar Crystal",emoji:"📡",rarity:"Epic"},
+  // Blood/Life
+  {id:"iron_blood",name:"Iron Blood",emoji:"🩸",rarity:"Common"},
+  {id:"cursed_blood",name:"Cursed Blood",emoji:"❤️",rarity:"Rare"},
+  {id:"golden_blood",name:"Golden Blood",emoji:"💛",rarity:"Legendary"},
+  {id:"silver_blood",name:"Silver Blood",emoji:"🩶",rarity:"Uncommon"},
+  {id:"dragon_blood",name:"Dragon Blood",emoji:"🩺",rarity:"Epic"},
+  {id:"celestial_blood",name:"Celestial Blood",emoji:"✨",rarity:"Mythic"},
+  {id:"void_blood",name:"Void Blood",emoji:"🖤",rarity:"Epic"},
+  {id:"holy_water",name:"Holy Water",emoji:"💧",rarity:"Rare"},
+  // Crystals
+  {id:"amethyst_shard",name:"Amethyst Shard",emoji:"💜",rarity:"Uncommon"},
+  {id:"ruby_fragment",name:"Ruby Fragment",emoji:"❤️",rarity:"Rare"},
+  {id:"sapphire_core",name:"Sapphire Core",emoji:"💙",rarity:"Rare"},
+  {id:"emerald_dust",name:"Emerald Dust",emoji:"💚",rarity:"Uncommon"},
+  {id:"obsidian_shard",name:"Obsidian Shard",emoji:"⬛",rarity:"Common"},
+  {id:"crystal_heart",name:"Crystal Heart",emoji:"💎",rarity:"Epic"},
+  {id:"prismatic_gem",name:"Prismatic Gem",emoji:"🌈",rarity:"Legendary"},
+  {id:"onyx_core",name:"Onyx Core",emoji:"🖤",rarity:"Uncommon"},
+  // Tech/Arcane
+  {id:"nano_shard",name:"Nano Shard",emoji:"🔬",rarity:"Rare"},
+  {id:"quantum_core",name:"Quantum Core",emoji:"⚛️",rarity:"Mythic"},
+  {id:"circuit_ore",name:"Circuit Ore",emoji:"🔌",rarity:"Uncommon"},
+  {id:"energy_cell",name:"Energy Cell",emoji:"🔋",rarity:"Common"},
+  {id:"data_crystal",name:"Data Crystal",emoji:"💾",rarity:"Rare"},
+  {id:"plasma_core",name:"Plasma Core",emoji:"🌡️",rarity:"Epic"},
+  {id:"tech_dust",name:"Tech Dust",emoji:"⚙️",rarity:"Common"},
+  {id:"void_chip",name:"Void Chip",emoji:"🖥️",rarity:"Epic"},
+  // Mythic extras
+  {id:"infinity_shard",name:"Infinity Shard",emoji:"♾️",rarity:"Mythic"},
+  {id:"genesis_core",name:"Genesis Core",emoji:"🌍",rarity:"Mythic"},
+  {id:"omega_crystal",name:"Omega Crystal",emoji:"🔱",rarity:"Mythic"},
+  {id:"alpha_ore",name:"Alpha Ore",emoji:"🅰️",rarity:"Mythic"},
+  {id:"eternity_gem",name:"Eternity Gem",emoji:"⏳",rarity:"Mythic"},
+  // Seasonal/Event
+  {id:"harvest_grain",name:"Harvest Grain",emoji:"🌾",rarity:"Common"},
+  {id:"snow_crystal",name:"Snow Crystal",emoji:"❄️",rarity:"Uncommon"},
+  {id:"storm_seed",name:"Storm Seed",emoji:"🌩️",rarity:"Rare"},
+  {id:"sun_petal",name:"Sun Petal",emoji:"🌸",rarity:"Common"},
+  {id:"moon_flower",name:"Moon Flower",emoji:"🌙",rarity:"Uncommon"},
+  {id:"void_seed",name:"Void Seed",emoji:"🌑",rarity:"Epic"},
+  // War/Weapon byproducts
+  {id:"shattered_blade",name:"Shattered Blade",emoji:"⚔️",rarity:"Common"},
+  {id:"war_trophy",name:"War Trophy",emoji:"🏆",rarity:"Uncommon"},
+  {id:"cursed_medal",name:"Cursed Medal",emoji:"🏅",rarity:"Rare"},
+  {id:"battle_scar",name:"Battle Scar",emoji:"🩹",rarity:"Common"},
+  {id:"champion_crest",name:"Champion Crest",emoji:"👑",rarity:"Epic"},
+  {id:"warlord_seal",name:"Warlord Seal",emoji:"🔰",rarity:"Legendary"},
+  {id:"eternal_trophy",name:"Eternal Trophy",emoji:"🥇",rarity:"Mythic"},
+  {id:"glory_fragment",name:"Glory Fragment",emoji:"🌟",rarity:"Rare"},
+  // Misc rare
+  {id:"time_crystal",name:"Time Crystal",emoji:"⌚",rarity:"Legendary"},
+  {id:"fate_thread",name:"Fate Thread",emoji:"🧵",rarity:"Epic"},
+  {id:"destiny_shard",name:"Destiny Shard",emoji:"🎯",rarity:"Legendary"},
+  {id:"prophecy_stone",name:"Prophecy Stone",emoji:"🔮",rarity:"Epic"},
+  {id:"chaos_gem",name:"Chaos Gem",emoji:"🌀",rarity:"Rare"},
+  {id:"order_crystal",name:"Order Crystal",emoji:"📐",rarity:"Rare"},
+  {id:"harmony_bead",name:"Harmony Bead",emoji:"📿",rarity:"Uncommon"},
+  {id:"discord_shard",name:"Discord Shard",emoji:"💢",rarity:"Uncommon"},
+  // Poison/Toxic
+  {id:"toxic_slime",name:"Toxic Slime",emoji:"🟢",rarity:"Common"},
+  {id:"acid_core",name:"Acid Core",emoji:"🧪",rarity:"Uncommon"},
+  {id:"plague_dust",name:"Plague Dust",emoji:"☣️",rarity:"Rare"},
+  {id:"venom_crystal",name:"Venom Crystal",emoji:"🐍",rarity:"Epic"},
+  {id:"blight_shard",name:"Blight Shard",emoji:"🦠",rarity:"Uncommon"},
+  {id:"poison_gem",name:"Poison Gem",emoji:"💚",rarity:"Rare"},
+  // Divine/Holy
+  {id:"divine_light",name:"Divine Light",emoji:"🌟",rarity:"Legendary"},
+  {id:"angel_feather",name:"Angel Feather",emoji:"🪶",rarity:"Epic"},
+  {id:"holy_rune",name:"Holy Rune",emoji:"✝️",rarity:"Rare"},
+  {id:"blessing_stone",name:"Blessing Stone",emoji:"🙏",rarity:"Uncommon"},
+  {id:"sacred_ash",name:"Sacred Ash",emoji:"⚱️",rarity:"Rare"},
+  {id:"miracle_shard",name:"Miracle Shard",emoji:"💫",rarity:"Epic"},
+  {id:"seraph_core",name:"Seraph Core",emoji:"😇",rarity:"Legendary"},
+  {id:"purity_crystal",name:"Purity Crystal",emoji:"🤍",rarity:"Rare"},
+  // Demonic
+  {id:"demon_horn",name:"Demon Horn",emoji:"😈",rarity:"Epic"},
+  {id:"hellfire_core",name:"Hellfire Core",emoji:"🔥",rarity:"Rare"},
+  {id:"sin_shard",name:"Sin Shard",emoji:"😡",rarity:"Uncommon"},
+  {id:"corruption_gem",name:"Corruption Gem",emoji:"🖤",rarity:"Epic"},
+  {id:"brimstone",name:"Brimstone",emoji:"🪨",rarity:"Uncommon"},
+  {id:"devil_dust",name:"Devil Dust",emoji:"👿",rarity:"Rare"},
+  // Weather
+  {id:"rain_crystal",name:"Rain Crystal",emoji:"🌧️",rarity:"Common"},
+  {id:"wind_shard",name:"Wind Shard",emoji:"💨",rarity:"Common"},
+  {id:"fog_essence",name:"Fog Essence",emoji:"🌫️",rarity:"Uncommon"},
+  {id:"hail_stone",name:"Hail Stone",emoji:"🌨️",rarity:"Uncommon"},
+  {id:"rainbow_shard",name:"Rainbow Shard",emoji:"🌈",rarity:"Rare"},
+  {id:"tornado_core",name:"Tornado Core",emoji:"🌪️",rarity:"Epic"},
+  {id:"aurora_shard",name:"Aurora Shard",emoji:"🌅",rarity:"Rare"},
+  {id:"cyclone_gem",name:"Cyclone Gem",emoji:"🌀",rarity:"Uncommon"},
+  // Ocean/Sea
+  {id:"coral_shard",name:"Coral Shard",emoji:"🪸",rarity:"Common"},
+  {id:"sea_glass",name:"Sea Glass",emoji:"🫧",rarity:"Common"},
+  {id:"abyssal_pearl",name:"Abyssal Pearl",emoji:"🔵",rarity:"Rare"},
+  {id:"kraken_ink",name:"Kraken Ink",emoji:"🐙",rarity:"Epic"},
+  {id:"mermaid_scale",name:"Mermaid Scale",emoji:"🧜",rarity:"Rare"},
+  {id:"leviathan_core",name:"Leviathan Core",emoji:"🌊",rarity:"Legendary"},
+  {id:"sea_crystal",name:"Sea Crystal",emoji:"💎",rarity:"Uncommon"},
+  {id:"ocean_shard",name:"Ocean Shard",emoji:"🌊",rarity:"Common"},
+  // Space
+  {id:"void_matter",name:"Void Matter",emoji:"🌌",rarity:"Legendary"},
+  {id:"dark_matter",name:"Dark Matter",emoji:"⬛",rarity:"Mythic"},
+  {id:"antimatter",name:"Antimatter",emoji:"💥",rarity:"Mythic"},
+  {id:"cosmic_dust",name:"Cosmic Dust",emoji:"🌠",rarity:"Uncommon"},
+  {id:"stellar_core",name:"Stellar Core",emoji:"⭐",rarity:"Epic"},
+  {id:"galactic_shard",name:"Galactic Shard",emoji:"🌌",rarity:"Rare"},
+  {id:"neutron_ore",name:"Neutron Ore",emoji:"⚛️",rarity:"Legendary"},
+  {id:"space_crystal",name:"Space Crystal",emoji:"🔭",rarity:"Rare"},
+  // Undead
+  {id:"grave_dust",name:"Grave Dust",emoji:"⚰️",rarity:"Common"},
+  {id:"bone_shard",name:"Bone Shard",emoji:"🦷",rarity:"Common"},
+  {id:"lich_core",name:"Lich Core",emoji:"💀",rarity:"Legendary"},
+  {id:"wraith_essence",name:"Wraith Essence",emoji:"👻",rarity:"Epic"},
+  {id:"undead_ore",name:"Undead Ore",emoji:"☠️",rarity:"Rare"},
+  {id:"necro_dust",name:"Necro Dust",emoji:"🕯️",rarity:"Uncommon"},
+  {id:"spirit_shard",name:"Spirit Shard",emoji:"🌫️",rarity:"Rare"},
+  {id:"death_crystal",name:"Death Crystal",emoji:"💀",rarity:"Epic"},
+  // Special materials
   {id:"spirit_fragment",name:"Spirit Fragment",emoji:"👻",rarity:"Mythic",shopCost:10000,shopChance:0.005},
   {id:"antimatter_shard",name:"Anti-Matter Shard",emoji:"🌌",rarity:"Mythic",shopCost:35000,shopChance:0.001},
   {id:"fusion_element_x",name:"Fusion Element X",emoji:"🔷",rarity:"Epic",shopCost:1300,shopChance:0.25,shopCostType:"tokens"},
@@ -435,7 +660,7 @@ const ACHIEVEMENTS=[
   {id:"buy_10",name:"Arsenal Owner",emoji:"⚔️",desc:"Buy 10 weapons",check:s=>s.weaponsBought>=10},
   {id:"buy_25",name:"Armory",emoji:"🏰",desc:"Buy 25 weapons",check:s=>s.weaponsBought>=25},
   {id:"all_t1",name:"T1 Complete",emoji:"🥉",desc:"Own all Tier 1 starter weapons",check:(s,l,c,owned)=>ALL_WEAPONS.filter(w=>w.tier===1).every(w=>owned.includes(w.name))},
-  {id:"divine_weapon",name:"Divine Arsenal",emoji:"🌠",desc:"Own the Gentuga Tensho",check:(s,l,c,owned)=>owned.includes("Gentuga Tensho")},
+  {id:"divine_weapon",name:"Divine Arsenal",emoji:"🌠",desc:"Own the Getsuga Tensho",check:(s,l,c,owned)=>owned.includes("Getsuga Tensho")},
   {id:"own_t6",name:"Atomic Forge",emoji:"⚛️",desc:"Own the Atom Scythe",check:(s,l,c,owned)=>owned.includes("Atom Scythe")},
   {id:"fused_first",name:"Alchemist",emoji:"⚗️",desc:"Perform your first weapon fusion",check:s=>(s.fusionsPerformed||0)>=1},
   {id:"fused_5",name:"Master Alchemist",emoji:"🔮",desc:"Perform 5 weapon fusions",check:s=>(s.fusionsPerformed||0)>=5},
@@ -555,6 +780,8 @@ function defaultStats(){return{wins:0,losses:0,perfectBlocks:0,bossKills:0,weapo
 function loadInventoryFromData(data){
   localTokens=data?.tokens??0; localPotions=data?.potions??0; localXP=data?.xp??0;
   try{const ow=data?.owned_weapons;ownedWeapons=ow?JSON.parse(ow):[...STARTER_WEAPON_NAMES];STARTER_WEAPON_NAMES.forEach(n=>{if(!ownedWeapons.includes(n))ownedWeapons.push(n);});}catch(e){ownedWeapons=[...STARTER_WEAPON_NAMES];}
+  // Restore fused weapons back into ALL_WEAPONS so they work after reload
+  try{const fw=data?.fused_weapons;if(fw){const fusedArr=JSON.parse(fw);fusedArr.forEach(w=>{if(w&&w.name&&!ALL_WEAPONS.find(x=>x.name===w.name)){ALL_WEAPONS.push(w);}});}}catch(e){}
   try{const ml=data?.loadout;if(ml){myLoadout=JSON.parse(ml).filter(n=>ownedWeapons.includes(n));if(myLoadout.length>LOADOUT_SIZE)myLoadout=myLoadout.slice(0,LOADOUT_SIZE);}else{myLoadout=ownedWeapons.slice(0,LOADOUT_SIZE);}}catch(e){myLoadout=ownedWeapons.slice(0,LOADOUT_SIZE);}
   try{weaponTraits=data?.weapon_traits?JSON.parse(data.weapon_traits):{};}catch(e){weaponTraits={};}
   try{playerClan=data?.clan?JSON.parse(data.clan):null;}catch(e){playerClan=null;}
@@ -615,6 +842,7 @@ function saveTokenData(){
   if(!currentUser)return Promise.resolve();
   // Chain onto existing queue so rapid calls never race
   _saveQueue=_saveQueue.then(async()=>{
+    const fusedWeaponsList = ALL_WEAPONS.filter(w=>w.fused===true);
     const payload={
       tokens:localTokens,potions:localPotions,owned_weapons:JSON.stringify(ownedWeapons),
       loadout:JSON.stringify(myLoadout),xp:localXP,weapon_traits:JSON.stringify(weaponTraits),
@@ -623,6 +851,7 @@ function saveTokenData(){
       achievements:JSON.stringify(playerAchievements),stats:JSON.stringify(playerStats),
       daily_quests:JSON.stringify({key:dailyQuestKey,quests:dailyQuests}),
       last_roll_time:getLastRollTime(),
+      fused_weapons:JSON.stringify(fusedWeaponsList),
     };
     for(let attempt=0;attempt<3;attempt++){
       try{
@@ -1055,13 +1284,17 @@ async function upgradeClan(){
 }
 
 async function rerollClan(){
+  if(!currentUser){showToast("Sign in to reroll clan!","red");return;}
   if(localTokens<CLAN_REROLL_COST){showToast(`Need ${CLAN_REROLL_COST} 🪙!`,"red");return;}
   if(!confirm(`Reroll clan for ${CLAN_REROLL_COST} 🪙? Resets to V1!`))return;
   localTokens-=CLAN_REROLL_COST;
   const newKey=getRandomRollClan();playerClan={key:newKey,version:1};
   const c=CLANS[newKey];
   showToast(`${c.emoji} You joined ${c.name}!`,"gold");
-  await saveTokenData();updateTokenDisplay();renderClanUI();
+  updateTokenDisplay();
+  const result=await saveTokenData();
+  renderClanUI();
+  updateTokenDisplay();
 }
 
 // ══════════════════════════════════════════════
@@ -1282,6 +1515,7 @@ function renderInventoryUI(){
           <div class="inv-w-dmg" style="color:${ti.color}">${w.dmg} dmg</div>
           ${trait?`<div class="inv-w-trait" style="color:${RARITY_COLORS[trait.rarity]||"#94a3b8"}">${trait.emoji} ${trait.name}</div>`:`<div class="inv-w-trait inv-no-trait">No trait</div>`}
           <div class="inv-w-status">${isEquipped?`<span style="color:var(--green)">✓ Equipped</span>`:`<span style="color:var(--text3)">In storage</span>`}</div>
+          ${!STARTER_WEAPON_NAMES.includes(w.name)?`<button class="inv-sell-btn" onclick="promptSellWeapon('${w.name.replace(/'/g,"\'")}')">Sell</button>`:""}
         </div>`;
       }
       html+=`</div>`;
@@ -1387,28 +1621,16 @@ function renderShopUI(){
     }
     html+=`</div></div>`;body.innerHTML=html;
   }else if(shopTab==="mats"){
-    // Show ALL materials — they're normal items, all rollable via item roll
     let html=bal+`<div class="craft-mat-section">
-    <p class="shop-hint" style="text-align:left;margin-bottom:12px">All crafting materials. Collect them via the <strong>🎲 Item Roll</strong> (every 2h), daily quests, and battles!</p>
-    <div class="craft-mat-full-grid">`;
-    const rarityOrder=["Mythic","Legendary","Epic","Rare","Uncommon","Common"];
-    for(const rarity of rarityOrder){
-      const matsInRarity=CRAFTING_MATERIALS.filter(m=>m.rarity===rarity);
-      if(!matsInRarity.length)continue;
-      const c=RARITY_COLORS[rarity]||"#94a3b8";
-      html+=`<div class="cmat-rarity-group"><div class="cmat-rarity-label" style="color:${c};border-color:${c}44">${rarity} (${matsInRarity.length})</div><div class="cmat-rarity-grid">`;
-      for(const mat of matsInRarity){
-        const have=playerMaterials[mat.id]||0;
-        html+=`<div class="cmat-card ${have>0?"cmat-has":"cmat-empty"}">
-          <div class="cmat-emoji">${mat.emoji}</div>
-          <div class="cmat-name" style="color:${c}">${mat.name}</div>
-          <div class="cmat-count ${have>0?"cmat-count-has":""}">×${have}</div>
-          ${mat.shopCost?`<div class="cmat-sell-btn-wrap"><button class="cmat-sell-btn" onclick="sellMaterial('${mat.id}');renderShopUI();" ${have>0&&currentUser?"":"disabled"}>Sell ${mat.shopCost}🪙</button></div>`:""}
-        </div>`;
-      }
-      html+=`</div></div>`;
-    }
-    html+=`</div></div>`;body.innerHTML=html;
+    <p class="shop-hint" style="text-align:left;margin-bottom:8px">All crafting materials (${CRAFTING_MATERIALS.length} total). Collect via 🎲 Item Roll, daily quests, and battles!</p>
+    <div class="mat-searchbar-wrap">
+      <input class="mat-searchbar" id="matSearchInput" type="text" placeholder="🔍 Search materials…" oninput="filterMatsDisplay()" autocomplete="off" spellcheck="false"/>
+      <div class="mat-search-count" id="matSearchCount">${CRAFTING_MATERIALS.length} materials</div>
+    </div>
+    <div id="matDisplayArea" class="craft-mat-full-grid"></div></div>`;
+    body.innerHTML=html;
+    filterMatsDisplay();
+    return;
   }else{
     let html=bal+`<div class="weapon-shop-list">`;
     for(let t=1;t<=7;t++){
@@ -1824,7 +2046,11 @@ async function acceptTrade(){
     }
     // Use DB offer if already sent, else use local selection
     let myOffer=data[offerKey]?JSON.parse(data[offerKey]):{...myTradeOffer,accepted:false};
-    if(!myOffer.weapons?.length&&!myOffer.mats?.length&&!myOffer.accs?.length){
+    // Null-safe normalise shape
+    if(!myOffer.weapons)myOffer.weapons=[];
+    if(!myOffer.mats)myOffer.mats=[];
+    if(!myOffer.accs)myOffer.accs=[];
+    if(!myOffer.weapons.length&&!myOffer.mats.length&&!myOffer.accs.length){
       showToast("Send your offer first before accepting!","red");
       if(btn){btn.disabled=false;btn.textContent="✓ Accept Trade";}return;
     }
@@ -1857,8 +2083,10 @@ async function acceptTrade(){
 
 function completeTrade(data){
   try{
-    const offerA=data.offer_a?JSON.parse(data.offer_a):{weapons:[],mats:[],accs:[]};
-    const offerB=data.offer_b?JSON.parse(data.offer_b):{weapons:[],mats:[],accs:[]};
+    let offerA=data.offer_a?JSON.parse(data.offer_a):{weapons:[],mats:[],accs:[]};
+    let offerB=data.offer_b?JSON.parse(data.offer_b):{weapons:[],mats:[],accs:[]};
+    if(!offerA.weapons)offerA.weapons=[];if(!offerA.mats)offerA.mats=[];if(!offerA.accs)offerA.accs=[];
+    if(!offerB.weapons)offerB.weapons=[];if(!offerB.mats)offerB.mats=[];if(!offerB.accs)offerB.accs=[];
     const myOffer=tradeRoomRole==="A"?offerA:offerB;
     const theirOffer=tradeRoomRole==="A"?offerB:offerA;
     // Remove my offered items
@@ -1944,7 +2172,7 @@ function showDiscordPrompt(){
 }
 
 const TUTORIAL_STEPS=[
-  {title:"⚔ Welcome to KlocVork Arena!",body:"A strategic weapon & shield battle game. Two players fight in 3 rounds, 6 shots each. Most HP at the end wins!"},
+  {title:"⚔ Welcome to Arena of Supremacy!",body:"A strategic weapon & shield battle game. Two players fight in 3 rounds, 6 shots each. Most HP at the end wins!"},
   {title:"🗡️ How Combat Works",body:"Each turn, secretly pick a weapon and a shield value. Your shield should match your opponent's weapon damage. Damage = |Your Shield − Enemy Weapon|. A perfect block = 0 damage!"},
   {title:"⚜️ Clans",body:"You're assigned a random clan on signup: Exorcist 🌿, Eclipse 🌑, Hydros 💧, or Vulcryn 🔥. Each clan has 4 versions (V1–V4) with increasing power. Upgrade with coins!"},
   {title:"✨ Traits & Crafting",body:"Roll traits onto weapons for special bonuses (500 🪙 each). 20 special traits are craftable only — collect materials from daily quests to craft them!"},
@@ -2373,7 +2601,7 @@ function renderPlayerBTurn(isBoss){
   // Shield hint: if A's pending weapon exists, highlight the perfect counter shield for B
   const aW=gs.pendingA&&gs.pendingA.weapon?gs.pendingA.weapon:null;
   const perfectShield=aW?aW.dmg:null;
-  // Always include a block option for opponent's weapon (critical for T7 weapons like Gentuga)
+  // Always include a block option for opponent's weapon (critical for T7 weapons like Getsuga)
   const bShieldVals=getShieldValuesForPlayer(WEAPONS,aW);
   renderShieldGrid("shieldGrid",bShieldVals,v=>{selShieldB=v;checkBReady();},perfectShield);
   renderPotionRow("potionRow","B");
@@ -2471,10 +2699,11 @@ function resolveShot(cA,cB){
   if(cA.raceAbility){
     const ab=getRaceAbility("A");const race=playerRace||"human";
     if(race==="human"||race==="fluxion"){
-      // Bullseye / Inversion Rift: ignore shield, ignore potion
-      dmgToB=race==="fluxion"?2000000:(cA.weapon?cA.weapon.dmg:0);
+      if(race==="fluxion"){ triggerInversionRift("A"); return; }
+      // Bullseye: ignore shield, ignore potion
+      dmgToB=(cA.weapon?cA.weapon.dmg:0);
       dmgToA=0;
-      showToast(race==="fluxion"?"💥 INVERSION RIFT! REALITY ENDS!":"🎯 Bullseye! Shield & potion ignored!","gold");
+      showToast("🎯 Bullseye! Shield & potion ignored!","gold");
     }else if(race==="oni"){
       // Lifesteal: drain opponent HP to fill own
       const stolen=gs.hpB;gs.hpB=0;gs.hpA=Math.min(MAX_HP,gs.hpA+stolen);
@@ -2503,8 +2732,7 @@ function resolveShot(cA,cB){
     // B used a race ability
     const race=(gameMode==="hotseat")?playerRace:"human"; // B's race in hotseat
     if(race==="fluxion"){
-      dmgToA=2000000;showToast("💥 INVERSION RIFT!","gold");
-      gs.hpA=0;finishShot(cA,cB,dmgToA,0);return;
+      triggerInversionRift("B"); return;
     }else if(race==="oni"){
       const stolen=gs.hpA;gs.hpA=0;gs.hpB=Math.min(MAX_HP,gs.hpB+stolen);
       showToast("🩸 Lifesteal!","gold");finishShot(cA,cB,0,0);return;
@@ -2651,9 +2879,10 @@ async function showGameOver(){
     const goXp=document.getElementById("goXpAward");
     if(goXp)goXp.innerHTML=`<span class="go-xp-badge">+${xpGained} XP ✨ Lv.${lvlAfter}</span>`;
     updateTokenDisplay();
-    await saveTokenData(); // single save with everything in it
-    checkAchievements();
-    if(isWin&&Math.random()<0.08)dropRandomAccessory();
+    // Show screen immediately — save in background so no lag
+    showScreen("screen-gameover");destroyEmojiChat();
+    saveTokenData().then(()=>{ checkAchievements(); if(isWin&&Math.random()<0.08)dropRandomAccessory(); });
+    return;
   }
   showScreen("screen-gameover");destroyEmojiChat();
   const flash=document.createElement("div");flash.className="go-flash "+(tie?"draw":"win");document.body.appendChild(flash);setTimeout(()=>flash.remove(),800);
@@ -3137,6 +3366,60 @@ async function performFusion(){
   renderFusionUI();
 }
 
+
+// ══════════════════════════════════════════════
+// SELL WEAPONS
+// ══════════════════════════════════════════════
+let _sellPendingWeapon = null;
+
+function promptSellWeapon(weaponName){
+  if(!currentUser){showToast("Sign in to sell weapons!","red");return;}
+  const w = ALL_WEAPONS.find(x=>x.name===weaponName);
+  if(!w){showToast("Weapon not found!","red");return;}
+  if(STARTER_WEAPON_NAMES.includes(weaponName)){showToast("Can't sell starter weapons!","red");return;}
+  const sellPrice = Math.floor(w.cost * 0.4) || 20;
+
+  // Build confirm overlay
+  let overlay = document.getElementById('sellConfirmOverlay');
+  if(overlay) overlay.remove();
+  overlay = document.createElement('div');
+  overlay.id = 'sellConfirmOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  overlay.innerHTML = `<div style="background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:28px 32px;max-width:340px;width:90%;text-align:center;">
+    <div style="font-size:2.5rem;margin-bottom:8px">${w.emoji}</div>
+    <div style="font-family:var(--font-d);font-size:1.1rem;color:var(--text);margin-bottom:4px">${w.name}</div>
+    <div style="color:#facc15;font-size:0.9rem;margin-bottom:16px">Sell for <strong>${sellPrice} 🪙</strong>?</div>
+    <div style="color:var(--text3);font-size:0.75rem;margin-bottom:20px">This is ${Math.round(w.cost*0.4) || 20}% of purchase price. Cannot be undone.</div>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button class="btn-primary" onclick="confirmSellWeapon('${weaponName.replace(/'/g,"\'")}',${sellPrice})">✓ Sell</button>
+      <button class="btn-ghost" onclick="document.getElementById('sellConfirmOverlay').remove()">Cancel</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function confirmSellWeapon(weaponName, sellPrice){
+  const overlay = document.getElementById('sellConfirmOverlay');
+  if(overlay) overlay.remove();
+  if(!currentUser){showToast("Sign in to sell!","red");return;}
+  if(!ownedWeapons.includes(weaponName)){showToast("You don't own that weapon!","red");return;}
+  if(STARTER_WEAPON_NAMES.includes(weaponName)){showToast("Can't sell starter weapons!","red");return;}
+
+  // Remove from owned and loadout
+  ownedWeapons = ownedWeapons.filter(n=>n!==weaponName);
+  myLoadout = myLoadout.filter(n=>n!==weaponName);
+  if(myLoadout.length===0) myLoadout = [...STARTER_WEAPON_NAMES.slice(0,1)];
+
+  localTokens += sellPrice;
+  playerStats.materialsSold = (playerStats.materialsSold||0) + 1;
+  updateTokenDisplay();
+  await saveTokenData();
+  showToast(`${ALL_WEAPONS.find(w=>w.name===weaponName)?.emoji||"⚔"} Sold ${weaponName} for ${sellPrice} 🪙!`,"gold");
+  // Re-render whichever UI is open
+  if(!document.getElementById('modal-shop').classList.contains('hidden')) renderShopUI();
+  if(!document.getElementById('modal-inventory').classList.contains('hidden')) renderInventoryUI();
+}
+
 async function sellMaterial(matId){
   if(!currentUser){showToast("Sign in to sell materials!","red");return;}
   const mat=CRAFTING_MATERIALS.find(m=>m.id===matId);if(!mat||!mat.shopCost)return;
@@ -3165,6 +3448,296 @@ async function buySpecialMaterial(matId){
     localTokens-=mat.shopCost;playerMaterials[matId]=(playerMaterials[matId]||0)+1;
     updateTokenDisplay();await saveTokenData();showToast(`${mat.emoji} ${mat.name} obtained!`,"gold");
   }
+}
+
+
+
+// ══════════════════════════════════════════════
+// CHEST SYSTEM — 7 Tiers
+// ══════════════════════════════════════════════
+const CHEST_TIERS = [
+  {
+    id:"common_chest", name:"Common Chest", emoji:"📦", tier:1, cost:200,
+    color:"#94a3b8", desc:"Basic chest with common drops.",
+    rewards:{coins:[20,80], mats:["Common","Common"], weaponChance:0.05, traitChance:0}
+  },
+  {
+    id:"iron_chest", name:"Iron Chest", emoji:"🔒", tier:2, cost:500,
+    color:"#a0aec0", desc:"Sturdy iron chest. Better material odds.",
+    rewards:{coins:[50,150], mats:["Common","Uncommon"], weaponChance:0.08, traitChance:0.02}
+  },
+  {
+    id:"shadow_chest", name:"Shadow Chest", emoji:"🌑", tier:3, cost:1000,
+    color:"#a855f7", desc:"Forged in darkness. Rare material chance.",
+    rewards:{coins:[100,300], mats:["Uncommon","Rare"], weaponChance:0.12, traitChance:0.05}
+  },
+  {
+    id:"void_chest", name:"Void Chest", emoji:"🌀", tier:4, cost:2000,
+    color:"#22d3ee", desc:"Contains fragments of the void.",
+    rewards:{coins:[200,600], mats:["Rare","Epic"], weaponChance:0.18, traitChance:0.10}
+  },
+  {
+    id:"dragon_chest", name:"Dragon Chest", emoji:"🐉", tier:5, cost:4000,
+    color:"#ff6b35", desc:"Scales of ancient dragons seal this chest.",
+    rewards:{coins:[400,1200], mats:["Epic","Legendary"], weaponChance:0.25, traitChance:0.20}
+  },
+  {
+    id:"celestial_chest", name:"Celestial Chest", emoji:"✨", tier:6, cost:8000,
+    color:"#facc15", desc:"Blessed by the stars themselves.",
+    rewards:{coins:[800,2500], mats:["Legendary","Epic"], weaponChance:0.35, traitChance:0.35}
+  },
+  {
+    id:"supreme_chest", name:"Supreme Chest", emoji:"💠", tier:7, cost:15000,
+    color:"#ffffff", desc:"Only the mightiest can afford this. Mythic guaranteed.",
+    rewards:{coins:[2000,6000], mats:["Mythic","Legendary"], weaponChance:0.50, traitChance:0.60}
+  },
+];
+
+function showChestShop(){renderChestUI();document.getElementById("modal-chests").classList.remove("hidden");}
+function hideChestShop(){document.getElementById("modal-chests").classList.add("hidden");}
+function closeChestIfOutside(e){if(e.target===document.getElementById("modal-chests"))hideChestShop();}
+
+function renderChestUI(){
+  const body=document.getElementById("chestsBody");if(!body)return;
+  let html=`<div class="chest-intro">
+    <p>Open chests to earn coins, materials, weapons and traits! Higher tier = better rewards.</p>
+    <div class="shop-balance"><div class="shop-bal-item"><span class="shop-bal-label">Balance</span><span class="shop-bal-value">${localTokens}</span> 🪙</div></div>
+  </div><div class="chest-grid">`;
+
+  for(const chest of CHEST_TIERS){
+    const canAfford = currentUser && localTokens >= chest.cost;
+    html+=`<div class="chest-card" style="border-color:${chest.color}44;--chest-color:${chest.color}">
+      <div class="chest-emoji" style="text-shadow:0 0 20px ${chest.color}">${chest.emoji}</div>
+      <div class="chest-name" style="color:${chest.color}">${chest.name}</div>
+      <div class="chest-tier-badge" style="background:${chest.color}22;border:1px solid ${chest.color}44;color:${chest.color}">Tier ${chest.tier}</div>
+      <div class="chest-desc">${chest.desc}</div>
+      <div class="chest-rewards">
+        <div class="cr-item">🪙 ${chest.rewards.coins[0]}–${chest.rewards.coins[1]}</div>
+        <div class="cr-item">📦 ${chest.rewards.mats[0]} + ${chest.rewards.mats[1]}</div>
+        ${chest.rewards.weaponChance>0?`<div class="cr-item">⚔️ ${Math.round(chest.rewards.weaponChance*100)}% weapon</div>`:""}
+        ${chest.rewards.traitChance>0?`<div class="cr-item">✨ ${Math.round(chest.rewards.traitChance*100)}% trait</div>`:""}
+      </div>
+      <button class="btn-primary" style="width:100%;margin-top:8px" onclick="openChest('${chest.id}')" ${canAfford?"":"disabled"}>${chest.cost} 🪙</button>
+    </div>`;
+  }
+  html+=`</div>`;
+  body.innerHTML=html;
+}
+
+async function openChest(chestId){
+  if(!currentUser){showToast("Sign in to open chests!","red");return;}
+  const chest=CHEST_TIERS.find(c=>c.id===chestId);if(!chest)return;
+  if(localTokens<chest.cost){showToast(`Need ${chest.cost} 🪙!`,"red");return;}
+
+  localTokens-=chest.cost;
+  updateTokenDisplay();
+
+  const results=[];
+
+  // Coins
+  const coins=chest.rewards.coins[0]+Math.floor(Math.random()*(chest.rewards.coins[1]-chest.rewards.coins[0]));
+  localTokens+=coins;results.push(`🪙 +${coins} coins`);
+
+  // Materials (2 drops)
+  for(const rarityTarget of chest.rewards.mats){
+    const pool=CRAFTING_MATERIALS.filter(m=>m.rarity===rarityTarget);
+    if(pool.length){
+      const mat=pool[Math.floor(Math.random()*pool.length)];
+      addMaterial(mat.id,1);
+      results.push(`${mat.emoji} ${mat.name}`);
+    }
+  }
+
+  // Bonus weapon chance
+  if(Math.random()<chest.rewards.weaponChance){
+    const tierTarget=Math.min(7,chest.tier+Math.floor(Math.random()*2));
+    const candidates=ALL_WEAPONS.filter(w=>w.tier===tierTarget&&!ownedWeapons.includes(w.name));
+    if(candidates.length){
+      const w=candidates[Math.floor(Math.random()*candidates.length)];
+      ownedWeapons.push(w.name);
+      results.push(`⚔️ ${w.emoji} ${w.name}!`);
+    }
+  }
+
+  // Trait scroll chance
+  if(Math.random()<chest.rewards.traitChance){
+    const trait=rollTrait();
+    const owned=ownedWeapons.filter(n=>!weaponTraits[n]);
+    if(owned.length){
+      const wName=owned[Math.floor(Math.random()*owned.length)];
+      weaponTraits[wName]=trait;
+      results.push(`${trait.emoji} ${trait.name} trait!`);
+    }
+  }
+
+  playerStats.totalTokensEarned=(playerStats.totalTokensEarned||0)+coins;
+  updateTokenDisplay();
+  await saveTokenData();
+
+  // Show result overlay
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;';
+  overlay.innerHTML=`<div style="font-size:4rem;animation:chestPop 0.5s ease-out">${chest.emoji}</div>
+    <div style="font-family:var(--font-d);font-size:1.4rem;color:${chest.color}">Chest Opened!</div>
+    <div style="display:flex;flex-direction:column;gap:8px;align-items:center">${results.map(r=>`<div style="font-size:1rem;color:var(--text);background:var(--surface2);padding:8px 20px;border-radius:8px;border:1px solid var(--border2)">${r}</div>`).join('')}</div>
+    <button class="btn-primary" onclick="this.parentNode.remove();renderChestUI()">✓ Claim</button>`;
+  document.head.insertAdjacentHTML('beforeend','<style>@keyframes chestPop{0%{transform:scale(0) rotate(-20deg);opacity:0}70%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0);opacity:1}}</style>');
+  document.body.appendChild(overlay);
+}
+
+// ══════════════════════════════════════════════
+// SETS SYSTEM (like Blox Fruits sets)
+// ══════════════════════════════════════════════
+const WEAPON_SETS = [
+  {
+    id:"moon_slayer", name:"Moon Slayer Set", emoji:"🌙",
+    color:"#a855f7",
+    desc:"The ancient lunar arsenal. Favored by assassins under the crescent moon.",
+    weapons:["Lunar Scimitar","Nodachi","Eclipse Blade","Abyssal Katana"],
+    bonus2:"🌙 Lunar Edge: +2 dmg on every shot when HP < 20",
+    bonus4:"🌑 Eclipse Form: 30% dodge chance + all shots deal +3 bonus dmg",
+    lore:"Forged under 1000 moons by the Eclipse Clan's ancestors.",
+  },
+  {
+    id:"storm_sovereign", name:"Storm Sovereign Set", emoji:"⚡",
+    color:"#facc15",
+    desc:"Channel the fury of storms with every strike.",
+    weapons:["Storm Halberd","Odachi","Daikyu","Kusarigama"],
+    bonus2:"⚡ Static Field: +2 dmg on odd shots",
+    bonus4:"🌩️ Thundergod's Wrath: 25% chance every shot to deal +5 bonus lightning dmg",
+    lore:"Worn by the legendary Thunder Generals who once shook the heavens.",
+  },
+  {
+    id:"void_emperor", name:"Void Emperor Set", emoji:"🌀",
+    color:"#22d3ee",
+    desc:"Weapons from beyond the veil of reality.",
+    weapons:["Void Reaper","Void Emperor Blade","Singularity Edge","Atom Scythe"],
+    bonus2:"🌀 Void Touch: 15% chance to ignore enemy shield",
+    bonus4:"💫 Singularity: First shot each round guaranteed perfect block + 3x dmg",
+    lore:"Created by the first Fluxion, these weapons warp space itself.",
+  },
+  {
+    id:"dragon_sovereign", name:"Dragon Sovereign Set", emoji:"🐉",
+    color:"#ff6b35",
+    desc:"Carry the power of ancient dragons into battle.",
+    weapons:["Draconic Lance","Phoenix Blade","Masakari","Bisento"],
+    bonus2:"🐉 Dragon's Blood: +3 HP at start of each round",
+    bonus4:"🔥 Dragonfire: Every 2nd shot burns enemy for -2 HP next turn + lifesteal 2 HP",
+    lore:"Tempered in dragon fire and cooled in their blood.",
+  },
+  {
+    id:"celestial_archer", name:"Celestial Archer Set", emoji:"🏹",
+    color:"#4ade80",
+    desc:"Precision instruments for the divine marksman.",
+    weapons:["Celestial Bow","Yumi","Daikyu","Kestros"],
+    bonus2:"🏹 Eagle Eye: Always see opponent's shield range",
+    bonus4:"☄️ Heaven's Arrow: Ranged weapons deal +4 dmg + 20% chance to pierce all shields",
+    lore:"Gifted to the greatest archers by the Heavenly Race.",
+  },
+  {
+    id:"shadow_phantom", name:"Shadow Phantom Set", emoji:"👻",
+    color:"#7c3aed",
+    desc:"Strike from the shadows before your foe can react.",
+    weapons:["Shikomizue","Metsubushi","Kyoketsu-shoge","Ninja"],
+    bonus2:"👻 Phase: 20% chance to dodge any attack",
+    bonus4:"🌑 Phantom Strike: First 2 shots each round cannot be blocked",
+    lore:"The Shadow Clan's deadliest operatives carried these weapons.",
+  },
+];
+
+function getActiveSetBonuses(){
+  const bonuses=[];
+  for(const set of WEAPON_SETS){
+    const owned=set.weapons.filter(n=>myLoadout.includes(n));
+    if(owned.length>=2)bonuses.push({set,count:owned.length,bonus:owned.length>=4?set.bonus4:set.bonus2});
+  }
+  return bonuses;
+}
+
+function showSetsPanel(){renderSetsUI();document.getElementById("modal-sets").classList.remove("hidden");}
+function hideSetsPanel(){document.getElementById("modal-sets").classList.add("hidden");}
+function closeSetsIfOutside(e){if(e.target===document.getElementById("modal-sets"))hideSetsPanel();}
+
+function renderSetsUI(){
+  const body=document.getElementById("setsBody");if(!body)return;
+  const active=getActiveSetBonuses();
+
+  let html=`<div class="sets-intro">
+    <p>Equip <strong>2 or more</strong> weapons from a set to unlock bonuses. Equip all <strong>4</strong> for the full power!</p>
+    ${active.length?`<div class="sets-active-banner">⚡ ${active.length} Active Set Bonus${active.length>1?"es":""}</div>`:""}
+  </div>`;
+
+  for(const set of WEAPON_SETS){
+    const ownedInSet=set.weapons.filter(n=>ownedWeapons.includes(n));
+    const equippedInSet=set.weapons.filter(n=>myLoadout.includes(n));
+    const isActive=equippedInSet.length>=2;
+    const isFull=equippedInSet.length>=4;
+
+    html+=`<div class="set-card ${isActive?"set-active":""} ${isFull?"set-full":""}">
+      <div class="set-header" style="color:${set.color}">
+        <span class="set-emoji">${set.emoji}</span>
+        <span class="set-name">${set.name}</span>
+        <span class="set-progress" style="background:${set.color}22;border:1px solid ${set.color}44;color:${set.color}">${equippedInSet.length}/4 equipped</span>
+      </div>
+      <div class="set-desc">${set.desc}</div>
+      <div class="set-lore">${set.lore}</div>
+      <div class="set-bonuses">
+        <div class="set-bonus ${equippedInSet.length>=2?"sb-active":"sb-locked"}">
+          <span class="sb-req" style="color:${set.color}">2 pieces:</span> ${set.bonus2}
+        </div>
+        <div class="set-bonus ${equippedInSet.length>=4?"sb-active":"sb-locked"}">
+          <span class="sb-req" style="color:${set.color}">4 pieces:</span> ${set.bonus4}
+        </div>
+      </div>
+      <div class="set-weapons-list">`;
+    for(const wName of set.weapons){
+      const w=ALL_WEAPONS.find(x=>x.name===wName);
+      const isOwned=ownedWeapons.includes(wName);
+      const isEquipped=myLoadout.includes(wName);
+      html+=`<div class="set-weapon-row ${isEquipped?"swt-equipped":isOwned?"swt-owned":"swt-missing"}">
+        <span>${w?.emoji||"⚔"} ${wName}</span>
+        <span class="swt-status">${isEquipped?"✓ Equipped":isOwned?"Owned":"🔒 Not owned"}</span>
+        ${isOwned&&!isEquipped&&myLoadout.length<LOADOUT_SIZE?`<button class="btn-ghost-sm" onclick="arsenalToggle('${wName.replace(/'/g,"\'")}');renderSetsUI()">Equip</button>`:""}
+      </div>`;
+    }
+    html+=`</div></div>`;
+  }
+  body.innerHTML=html;
+}
+
+
+// ══════════════════════════════════════════════
+// MATERIALS SEARCHBAR
+// ══════════════════════════════════════════════
+function filterMatsDisplay(){
+  const area = document.getElementById('matDisplayArea');
+  const countEl = document.getElementById('matSearchCount');
+  if(!area) return;
+  const q = (document.getElementById('matSearchInput')?.value||'').toLowerCase().trim();
+  const rarityOrder = ["Mythic","Legendary","Epic","Rare","Uncommon","Common"];
+  let totalShown = 0;
+  let html = '';
+  for(const rarity of rarityOrder){
+    let mats = CRAFTING_MATERIALS.filter(m=>m.rarity===rarity);
+    if(q) mats = mats.filter(m=>m.name.toLowerCase().includes(q)||m.rarity.toLowerCase().includes(q)||m.id.includes(q));
+    if(!mats.length) continue;
+    totalShown += mats.length;
+    const c = RARITY_COLORS[rarity]||"#94a3b8";
+    html += `<div class="cmat-rarity-group"><div class="cmat-rarity-label" style="color:${c};border-color:${c}44">${rarity} (${mats.length})</div><div class="cmat-rarity-grid">`;
+    for(const mat of mats){
+      const have = playerMaterials[mat.id]||0;
+      html += `<div class="cmat-card ${have>0?"cmat-has":"cmat-empty"}">
+        <div class="cmat-emoji">${mat.emoji}</div>
+        <div class="cmat-name" style="color:${c}">${mat.name}</div>
+        <div class="cmat-count ${have>0?"cmat-count-has":""}">×${have}</div>
+        ${mat.shopCost?`<div class="cmat-sell-btn-wrap"><button class="cmat-sell-btn" onclick="sellMaterial('${mat.id}');filterMatsDisplay();" ${have>0&&currentUser?"":"disabled"}>Sell ${mat.shopCost}🪙</button></div>`:""}
+      </div>`;
+    }
+    html += `</div></div>`;
+  }
+  if(!totalShown) html = `<div style="color:var(--text3);text-align:center;padding:24px;grid-column:1/-1">No materials found for "${q}"</div>`;
+  area.innerHTML = html;
+  if(countEl) countEl.textContent = q ? `${totalShown} results` : `${CRAFTING_MATERIALS.length} materials`;
 }
 
 // ══════════════════════════════════════════════
@@ -3574,3 +4147,45 @@ async function checkTournamentWin(){
     showScreen("screen-auth");
   }
 })();
+// ══════════════════════════════════════════════
+// SCREEN SHAKE UTILITY
+// ══════════════════════════════════════════════
+function triggerScreenShake(intensity=15, duration=600){
+  const el = document.getElementById('screen-game') || document.body;
+  let start = null;
+  const keyframes = [
+    {transform:`translate(${intensity}px,${intensity/2}px) rotate(${intensity/8}deg)`},
+    {transform:`translate(-${intensity}px,${intensity/2}px) rotate(-${intensity/8}deg)`},
+    {transform:`translate(${intensity/2}px,-${intensity}px) rotate(${intensity/12}deg)`},
+    {transform:`translate(-${intensity/2}px,${intensity}px) rotate(-${intensity/12}deg)`},
+    {transform:`translate(${intensity/3}px,-${intensity/3}px)`},
+    {transform:'translate(0,0) rotate(0)'},
+  ];
+  if(el.animate){
+    const anim = el.animate(keyframes, {duration, easing:'ease-out', iterations:1});
+    anim.onfinish = ()=>{ el.style.transform = ''; };
+  }
+}
+
+// ══════════════════════════════════════════════
+// INVERSION RIFT — end match with shake
+// ══════════════════════════════════════════════
+function triggerInversionRift(byPlayer){
+  // Screen shake
+  triggerScreenShake(20, 700);
+  // Flash overlay
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:white;z-index:99999;pointer-events:none;animation:inversionFlash 0.6s ease-out forwards;';
+  document.head.insertAdjacentHTML('beforeend',`<style>@keyframes inversionFlash{0%{opacity:1}100%{opacity:0}}</style>`);
+  document.body.appendChild(overlay);
+  setTimeout(()=>overlay.remove(), 700);
+
+  showToast('💥 INVERSION RIFT! Reality ends!','gold');
+
+  // Force HP to 0 for loser
+  if(byPlayer==='A'){ gs.hpB=0; gs.totalHpB=0; }
+  else { gs.hpA=0; gs.totalHpA=0; }
+
+  _gameOverFired=false;
+  setTimeout(()=>showGameOver(), 800);
+}
