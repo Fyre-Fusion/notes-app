@@ -188,6 +188,7 @@
       <button class="btn-mode-extra" onclick="showClanPanel()">⚜️ Clan</button>
       <button class="btn-mode-extra" onclick="showRacePanel()">🌍 Race</button>
       <button class="btn-mode-extra" onclick="showItemRoll()">🎲 Item Roll</button>
+      <button class="btn-mode-extra" onclick="showInventory()">🎒 Inventory</button>
       <button class="btn-mode-extra btn-discord" onclick="showDiscordPrompt()">💬 Discord</button>
       <button class="btn-mode-extra" onclick="showTutorial()">📖 Tutorial</button>
     </div>
@@ -574,6 +575,17 @@
   </div>
 </div>
 
+
+<!-- ═══════ INVENTORY MODAL ═══════ -->
+<div id="modal-inventory" class="modal-overlay hidden" onclick="closeInventoryIfOutside(event)">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">🎒 Inventory</h2>
+      <button class="modal-close" onclick="hideInventory()">✕</button>
+    </div>
+    <div class="modal-body" id="inventoryBody"></div>
+  </div>
+</div>
 
 <!-- ═══════ RACE MODAL ═══════ -->
 <div id="modal-race" class="modal-overlay hidden" onclick="closeRaceIfOutside(event)">

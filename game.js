@@ -79,7 +79,7 @@ const USERNAME_REGEX=/^[a-zA-Z0-9_]{3,15}$/;
 const SESSION_KEY="klocvork_session";
 const TOKENS_WIN=200,TOKENS_LOSS=50,POTION_COST=15,POTION_HEAL=10;
 const BOSS_HP_MAX=60,BOSS_TOKENS=300,SPECIAL_CHANCE=0.001,SPECIAL_WINS_NEED=3,SPECIAL_TOKENS=30;
-const TRAIT_ROLL_COST=500,CLAN_REROLL_COST=4000,CLAN_UPGRADE_COST=1000;
+const TRAIT_ROLL_COST=500,CLAN_REROLL_COST=4000,CLAN_UPGRADE_COST=1000,RACE_REROLL_COST=3000;
 
 // ══════════════════════════════════════════════
 // ACCESSORIES (random drops)
@@ -1040,10 +1040,10 @@ async function rerollClan(){
 const ITEM_ROLL_COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2 hours
 const ITEM_ROLL_KEY = "klocvork_lastroll";
 
-// Build rollable pool from CRAFTING_MATERIALS using shopChance as weight
+// Build rollable pool from ALL CRAFTING_MATERIALS using rarity-based weights
 function buildItemRollPool(){
-  // All mats with shopChance get included; others default to 5% weight
-  return CRAFTING_MATERIALS.map(m=>({mat:m, weight: m.shopChance!=null ? m.shopChance : 0.05}));
+  const rarityWeight={"Mythic":0.5,"Legendary":1,"Epic":3,"Rare":8,"Uncommon":18,"Common":35};
+  return CRAFTING_MATERIALS.map(m=>({mat:m, weight: m.shopChance!=null ? m.shopChance*100 : (rarityWeight[m.rarity]||5)}));
 }
 
 function rollRandomMaterial(){
@@ -1159,6 +1159,11 @@ function renderRaceUI(){
     <div class="race-perks">`;
   myRace.perks.forEach(p=>{html+=`<div class="race-perk">✦ ${p}</div>`;});
   html+=`</div></div>
+  <div class="race-reroll-section">
+    <div class="race-reroll-info">Want a different race? Reroll for <strong style="color:#facc15">${RACE_REROLL_COST} 🪙</strong>.<br>
+    <span style="color:#facc15;font-size:11px">Chances: Human 50% · Supernatural 20% · Oni 20% · Heavenly 10%</span></div>
+    <button class="btn-ghost race-reroll-btn" onclick="rerollRace()" ${localTokens>=RACE_REROLL_COST&&currentUser?"":"disabled"}>🎲 Reroll Race (${RACE_REROLL_COST} 🪙)</button>
+  </div>
   <div class="all-races-title">All Races</div>
   <div class="race-all-grid">`;
 
@@ -1174,8 +1179,121 @@ function renderRaceUI(){
     r.perks.forEach(p=>{html+=`<div class="rcp-item">✦ ${p}</div>`;});
     html+=`</div></div>`;
   }
-  html+=`</div>
-  <p style="font-size:11px;color:var(--text3);text-align:center;margin-top:16px">Races are assigned at account creation. Each race is permanent.</p>`;
+  html+=`</div>`;
+  body.innerHTML=html;
+}
+
+async function rerollRace(){
+  if(!currentUser){showToast("Sign in to reroll race!","red");return;}
+  if(localTokens<RACE_REROLL_COST){showToast(`Need ${RACE_REROLL_COST} 🪙!`,"red");return;}
+  if(!confirm(`Reroll your race for ${RACE_REROLL_COST} 🪙?`))return;
+  localTokens-=RACE_REROLL_COST;
+  const newKey=getRandomRace();
+  playerRace=newKey;
+  const r=RACES[newKey];
+  showToast(`${r.emoji} You are now ${r.name}!`,"gold");
+  await saveTokenData();updateTokenDisplay();renderRaceUI();
+}
+
+// ══════════════════════════════════════════════
+// INVENTORY PANEL
+// ══════════════════════════════════════════════
+function showInventory(){renderInventoryUI();document.getElementById("modal-inventory").classList.remove("hidden");}
+function hideInventory(){document.getElementById("modal-inventory").classList.add("hidden");}
+function closeInventoryIfOutside(e){if(e.target===document.getElementById("modal-inventory"))hideInventory();}
+
+let invTab="weapons";
+function setInvTab(tab){invTab=tab;renderInventoryUI();}
+
+function renderInventoryUI(){
+  const body=document.getElementById("inventoryBody");if(!body)return;
+
+  const tabs=`<div class="inv-tabs">
+    <button class="inv-tab${invTab==="weapons"?" active":""}" onclick="setInvTab('weapons')">⚔️ Weapons (${ownedWeapons.length})</button>
+    <button class="inv-tab${invTab==="mats"?" active":""}" onclick="setInvTab('mats')">📦 Materials</button>
+    <button class="inv-tab${invTab==="accs"?" active":""}" onclick="setInvTab('accs')">💍 Accessories (${playerAccessories.length})</button>
+  </div>`;
+
+  let html=tabs;
+
+  if(invTab==="weapons"){
+    if(!ownedWeapons.length){html+=`<div class="inv-empty">No weapons yet. Buy some in the 🛒 Shop!</div>`;body.innerHTML=html;return;}
+    const byTier={};
+    ownedWeapons.forEach(n=>{const w=ALL_WEAPONS.find(x=>x.name===n);if(!w)return;(byTier[w.tier]=byTier[w.tier]||[]).push(w);});
+    html+=`<div class="inv-summary">
+      <span class="inv-sum-chip">⚔️ ${ownedWeapons.length} owned</span>
+      <span class="inv-sum-chip">✓ ${myLoadout.length} equipped</span>
+      <span class="inv-sum-chip">🔱 ${Object.values(weaponTraits).length} traits</span>
+    </div><div class="inv-weapons-list">`;
+    for(let t=1;t<=6;t++){
+      if(!byTier[t])continue;
+      const ti=TIER_INFO[t];
+      html+=`<div class="inv-tier-header" style="color:${ti.color}">T${t} ${ti.name} <span style="opacity:0.6;font-size:11px">(${byTier[t].length})</span></div>
+      <div class="inv-weapon-grid">`;
+      for(const w of byTier[t]){
+        const isEquipped=myLoadout.includes(w.name),trait=weaponTraits[w.name];
+        html+=`<div class="inv-weapon-card ${isEquipped?"inv-equipped":""}">
+          <div class="inv-w-emoji">${w.emoji}</div>
+          <div class="inv-w-name">${w.name}</div>
+          <div class="inv-w-dmg" style="color:${ti.color}">${w.dmg} dmg</div>
+          ${trait?`<div class="inv-w-trait" style="color:${RARITY_COLORS[trait.rarity]||"#94a3b8"}">${trait.emoji} ${trait.name}</div>`:`<div class="inv-w-trait inv-no-trait">No trait</div>`}
+          <div class="inv-w-status">${isEquipped?`<span style="color:var(--green)">✓ Equipped</span>`:`<span style="color:var(--text3)">In storage</span>`}</div>
+        </div>`;
+      }
+      html+=`</div>`;
+    }
+    html+=`</div>`;
+  }else if(invTab==="mats"){
+    const allHave=CRAFTING_MATERIALS.filter(m=>(playerMaterials[m.id]||0)>0);
+    const totalMats=Object.values(playerMaterials).reduce((s,v)=>s+(v||0),0);
+    html+=`<div class="inv-summary">
+      <span class="inv-sum-chip">📦 ${allHave.length} types collected</span>
+      <span class="inv-sum-chip">🔢 ${totalMats} total</span>
+    </div>`;
+    if(!allHave.length){html+=`<div class="inv-empty">No materials yet. Try the 🎲 Item Roll or complete daily quests!</div>`;body.innerHTML=html;return;}
+    const rarityOrder=["Mythic","Legendary","Epic","Rare","Uncommon","Common"];
+    html+=`<div class="inv-mats-list">`;
+    for(const rarity of rarityOrder){
+      const mats=CRAFTING_MATERIALS.filter(m=>m.rarity===rarity&&(playerMaterials[m.id]||0)>0);
+      if(!mats.length)continue;
+      const c=RARITY_COLORS[rarity]||"#94a3b8";
+      html+=`<div class="inv-mat-rarity-row"><span class="inv-mat-rarity-label" style="color:${c}">${rarity}</span><div class="inv-mat-chips">`;
+      for(const m of mats){
+        const have=playerMaterials[m.id]||0;
+        html+=`<div class="inv-mat-chip" title="${m.name} — ${rarity}">
+          <span class="imc-emoji">${m.emoji}</span>
+          <span class="imc-name" style="color:${c}">${m.name}</span>
+          <span class="imc-count">×${have}</span>
+          ${m.shopCost?`<button class="imc-sell" onclick="sellMaterial('${m.id}');renderInventoryUI();" ${have>0&&currentUser?"":"disabled"}>Sell ${m.shopCost}🪙</button>`:""}
+        </div>`;
+      }
+      html+=`</div></div>`;
+    }
+    html+=`</div>`;
+    // Show empty slots too
+    const allEmpty=CRAFTING_MATERIALS.filter(m=>!(playerMaterials[m.id]||0));
+    if(allEmpty.length){
+      html+=`<details class="inv-empty-mats"><summary style="color:var(--text3);font-size:12px;cursor:pointer">▾ ${allEmpty.length} materials not yet collected</summary><div class="inv-mat-chips inv-mat-chips-empty">`;
+      for(const m of allEmpty){const c=RARITY_COLORS[m.rarity]||"#94a3b8";html+=`<div class="inv-mat-chip inv-mat-missing"><span class="imc-emoji" style="opacity:0.3">${m.emoji}</span><span class="imc-name" style="color:${c};opacity:0.4">${m.name}</span><span class="imc-count" style="opacity:0.3">×0</span></div>`;}
+      html+=`</div></details>`;
+    }
+  }else{
+    html+=`<div class="inv-summary"><span class="inv-sum-chip">💍 ${playerAccessories.length} owned</span>${equippedAccessory?`<span class="inv-sum-chip">✓ 1 equipped</span>`:""}</div>`;
+    if(!playerAccessories.length){html+=`<div class="inv-empty">No accessories yet. Win battles to get random drops!</div>`;body.innerHTML=html;return;}
+    html+=`<div class="inv-accs-grid">`;
+    for(const id of playerAccessories){
+      const acc=ALL_ACCESSORIES.find(x=>x.id===id);if(!acc)continue;
+      const isEq=equippedAccessory===id,c=RARITY_COLORS[acc.rarity]||"#94a3b8";
+      html+=`<div class="inv-acc-card ${isEq?"inv-acc-equipped":""}">
+        <div class="inv-acc-emoji">${acc.emoji}</div>
+        <div class="inv-acc-name">${acc.name}</div>
+        <div class="inv-acc-rarity" style="color:${c}">${acc.rarity}</div>
+        <div class="inv-acc-desc">${acc.desc}</div>
+        <button class="inv-acc-btn ${isEq?"inv-acc-btn-on":""}" onclick="toggleAccessory('${id}');renderInventoryUI()">${isEq?"✓ Equipped":"Equip"}</button>
+      </div>`;
+    }
+    html+=`</div>`;
+  }
   body.innerHTML=html;
 }
 
@@ -1195,7 +1313,7 @@ function renderShopUI(){
     <button class="shop-tab-btn${shopTab==="potions"?" active":""}" onclick="setShopTab('potions')">🧪 Potions</button>
     <button class="shop-tab-btn${shopTab==="weapons"?" active":""}" onclick="setShopTab('weapons')">⚔️ Weapons</button>
     <button class="shop-tab-btn${shopTab==="accessories"?" active":""}" onclick="setShopTab('accessories')">💍 Accessories</button>
-    <button class="shop-tab-btn${shopTab==="mats"?" active":""}" onclick="setShopTab('mats')">📦 Rare Mats</button>
+    <button class="shop-tab-btn${shopTab==="mats"?" active":""}" onclick="setShopTab('mats')">📦 Materials</button>
   </div>`;
 
   if(shopTab==="potions"){
@@ -1225,25 +1343,28 @@ function renderShopUI(){
     }
     html+=`</div></div>`;body.innerHTML=html;
   }else if(shopTab==="mats"){
-    // Mats are items you collect and can SELL for coins — show sellable materials
-    const sellableMats=CRAFTING_MATERIALS.filter(m=>m.shopCost);
-    let html=bal+`<div style="display:flex;flex-direction:column;gap:14px">
-    <p class="shop-hint" style="text-align:left">These are rare materials you can <strong>sell</strong> for coins. Collect them from battles, daily quests, and the item roll!</p>`;
-    for(const mat of sellableMats){
-      const have=playerMaterials[mat.id]||0;
-      const sellPrice=mat.shopCost;
-      const c=RARITY_COLORS[mat.rarity]||"#94a3b8";
-      html+=`<div class="shop-item-card">
-        <div class="shop-item-icon">${mat.emoji}</div>
-        <div class="shop-item-info">
-          <div class="shop-item-name" style="color:${c}">${mat.name} <span style="font-size:10px;opacity:0.6">${mat.rarity}</span></div>
-          <div class="shop-item-desc">You have: <strong>${have}</strong></div>
-          <div class="shop-item-cost">Sell value: ${sellPrice} 🪙 each</div>
-        </div>
-        <button class="btn-primary" onclick="sellMaterial('${mat.id}');renderShopUI();" ${have>0&&currentUser?"":"disabled"}>Sell 1 (${sellPrice} 🪙)</button>
-      </div>`;
+    // Show ALL materials — they're normal items, all rollable via item roll
+    let html=bal+`<div class="craft-mat-section">
+    <p class="shop-hint" style="text-align:left;margin-bottom:12px">All crafting materials. Collect them via the <strong>🎲 Item Roll</strong> (every 2h), daily quests, and battles!</p>
+    <div class="craft-mat-full-grid">`;
+    const rarityOrder=["Mythic","Legendary","Epic","Rare","Uncommon","Common"];
+    for(const rarity of rarityOrder){
+      const matsInRarity=CRAFTING_MATERIALS.filter(m=>m.rarity===rarity);
+      if(!matsInRarity.length)continue;
+      const c=RARITY_COLORS[rarity]||"#94a3b8";
+      html+=`<div class="cmat-rarity-group"><div class="cmat-rarity-label" style="color:${c};border-color:${c}44">${rarity} (${matsInRarity.length})</div><div class="cmat-rarity-grid">`;
+      for(const mat of matsInRarity){
+        const have=playerMaterials[mat.id]||0;
+        html+=`<div class="cmat-card ${have>0?"cmat-has":"cmat-empty"}">
+          <div class="cmat-emoji">${mat.emoji}</div>
+          <div class="cmat-name" style="color:${c}">${mat.name}</div>
+          <div class="cmat-count ${have>0?"cmat-count-has":""}">×${have}</div>
+          ${mat.shopCost?`<div class="cmat-sell-btn-wrap"><button class="cmat-sell-btn" onclick="sellMaterial('${mat.id}');renderShopUI();" ${have>0&&currentUser?"":"disabled"}>Sell ${mat.shopCost}🪙</button></div>`:""}
+        </div>`;
+      }
+      html+=`</div></div>`;
     }
-    html+=`</div>`;body.innerHTML=html;
+    html+=`</div></div>`;body.innerHTML=html;
   }else{
     let html=bal+`<div class="weapon-shop-list">`;
     for(let t=1;t<=6;t++){
@@ -1424,6 +1545,7 @@ function genTradeCode(){return Math.random().toString(36).substring(2,8).toUpper
 
 async function createTradeRoom(){
   if(!currentUser){showToast("Sign in to create trade rooms!","red");return;}
+  const errEl=document.getElementById("tradeRoomError");errEl.textContent="";
   const code=genTradeCode();
   tradeRoomCode=code;tradeRoomRole="A";
   try{
@@ -1432,18 +1554,14 @@ async function createTradeRoom(){
       status:"waiting",offer_a:null,offer_b:null
     });
     if(error){
-      // Table might not exist — show instructions
-      document.getElementById("tradeRoomError").innerHTML=`⚠️ trade_rooms table not found. Add it in Supabase: <code>CREATE TABLE trade_rooms (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, code text UNIQUE, player_a text, player_a_name text, player_b text, player_b_name text, status text DEFAULT 'waiting', offer_a text, offer_b text, created_at timestamptz DEFAULT now());</code>`;
-      return;
+      errEl.innerHTML=`⚠️ trade_rooms table not found. Add it in Supabase: <code>CREATE TABLE trade_rooms (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, code text UNIQUE, player_a text, player_a_name text, player_b text, player_b_name text, status text DEFAULT 'waiting', offer_a text, offer_b text, created_at timestamptz DEFAULT now());</code>`;
+      tradeRoomCode=null;return;
     }
-  }catch(e){
-    // Fallback: use localStorage-based local room for demo
-    localStorage.setItem("tradeRoom_"+code,JSON.stringify({code,player_a:currentUser.id,player_a_name:currentUser.username,status:"waiting",offer_a:null,offer_b:null}));
-  }
+  }catch(e){errEl.textContent="Connection error. Try again.";tradeRoomCode=null;return;}
   document.getElementById("tradeRoomCode").textContent=code;
   document.getElementById("tradeRoomLobby").classList.add("hidden");
   document.getElementById("tradeRoomWaiting").classList.remove("hidden");
-  // Poll for partner
+  // Fast poll (700ms) for partner joining
   tradeRoomPoll=setInterval(async()=>{
     try{
       const{data}=await db.from("trade_rooms").select("*").eq("code",code).maybeSingle();
@@ -1453,7 +1571,7 @@ async function createTradeRoom(){
         startTradeRoomSession(data);
       }
     }catch(e){}
-  },2000);
+  },700);
 }
 
 async function joinTradeRoom(){
@@ -1481,8 +1599,8 @@ function startTradeRoomSession(data){
   document.getElementById("tradeRoomActive").classList.remove("hidden");
   myTradeOffer={weapons:[],mats:[],accs:[]};_tradeCompleted=false;
   setTradeOfferTab("weapons");
-  // Poll for opponent offer
-  tradeRoomPoll=setInterval(pollTradeRoom,2000);
+  // Fast poll (700ms) for live offer updates
+  tradeRoomPoll=setInterval(pollTradeRoom,700);
 }
 
 async function pollTradeRoom(){
@@ -1516,19 +1634,22 @@ async function pollTradeRoom(){
 function renderOpponentOffer(offer){
   const el=document.getElementById("traOpponentOffer");if(!el)return;
   if(!offer||(!offer.weapons?.length&&!offer.mats?.length&&!offer.accs?.length)){
-    el.textContent="Waiting for opponent to select items…";return;
+    el.innerHTML=`<div class="tra-waiting-pulse"><div class="tra-pulse-dot"></div>Waiting for opponent's offer…</div>`;
+    const acceptBtn=document.getElementById("traAcceptBtn");
+    if(acceptBtn)acceptBtn.style.display="none";
+    return;
   }
-  let html="";
-  if(offer.weapons?.length)html+=offer.weapons.map(n=>{const w=ALL_WEAPONS.find(x=>x.name===n);return`<div class="tra-offer-item">${w?.emoji||"⚔"} ${n}</div>`;}).join("");
-  if(offer.mats?.length)html+=offer.mats.map(m=>{const mat=CRAFTING_MATERIALS.find(x=>x.id===m.id);return`<div class="tra-offer-item">${mat?.emoji||"📦"} ${mat?.name||m.id} ×${m.qty}</div>`;}).join("");
-  if(offer.accs?.length)html+=offer.accs.map(id=>{const acc=ALL_ACCESSORIES.find(x=>x.id===id);return`<div class="tra-offer-item">${acc?.emoji||"💍"} ${acc?.name||id}</div>`;}).join("");
-  if(offer.accepted)html+=`<div class="tra-offer-accepted">✓ Accepted!</div>`;
+  let html=`<div class="tra-offer-items">`;
+  if(offer.weapons?.length)html+=offer.weapons.map(n=>{const w=ALL_WEAPONS.find(x=>x.name===n);const ti=TIER_INFO[w?.tier||1];return`<div class="tra-offer-item"><span>${w?.emoji||"⚔"}</span><span>${n}</span><span style="color:${ti.color};font-size:10px">T${w?.tier||"?"} · ${w?.dmg||"?"}dmg</span></div>`;}).join("");
+  if(offer.mats?.length)html+=offer.mats.map(m=>{const mat=CRAFTING_MATERIALS.find(x=>x.id===m.id);const c=RARITY_COLORS[mat?.rarity]||"#94a3b8";return`<div class="tra-offer-item"><span>${mat?.emoji||"📦"}</span><span style="color:${c}">${mat?.name||m.id}</span><span>×${m.qty}</span></div>`;}).join("");
+  if(offer.accs?.length)html+=offer.accs.map(id=>{const acc=ALL_ACCESSORIES.find(x=>x.id===id);const c=RARITY_COLORS[acc?.rarity]||"#94a3b8";return`<div class="tra-offer-item"><span>${acc?.emoji||"💍"}</span><span style="color:${c}">${acc?.name||id}</span></div>`;}).join("");
+  html+=`</div>`;
+  if(offer.accepted)html+=`<div class="tra-offer-accepted">✓ Opponent accepted!</div>`;
   el.innerHTML=html;
   const acceptBtn=document.getElementById("traAcceptBtn");
-  // Show accept button as long as trade not yet completed and opponent has sent something
   if(acceptBtn){
     const hasItems=offer&&(offer.weapons?.length||offer.mats?.length||offer.accs?.length);
-    acceptBtn.style.display=(hasItems&&!_tradeCompleted)?"":"none";
+    acceptBtn.style.display=(hasItems&&!_tradeCompleted)?"inline-flex":"none";
   }
 }
 
@@ -1619,17 +1740,24 @@ async function sendTradeOffer(){
   const offerKey=tradeRoomRole==="A"?"offer_a":"offer_b";
   const offerData={...myTradeOffer,accepted:false};
   const btn=document.getElementById("traSendOfferBtn");
+  const statusEl=document.getElementById("traStatus");
   if(btn){btn.disabled=true;btn.textContent="Sending…";}
   try{
     const{error}=await db.from("trade_rooms").update({[offerKey]:JSON.stringify(offerData)}).eq("code",tradeRoomCode);
-    if(error){showToast("Failed: "+error.message,"red");if(btn){btn.disabled=false;btn.textContent="Send Offer";}return;}
-    showToast("✓ Offer sent!","green");
-    const statusEl=document.getElementById("traStatus");
-    if(statusEl)statusEl.textContent="Offer sent. Waiting for opponent to accept…";
-    if(btn){btn.textContent="✓ Offer Sent";} // keep disabled — they can re-send to update
-    // Show accept button in case opponent already sent their offer
+    if(error){showToast("Failed: "+error.message,"red");if(btn){btn.disabled=false;btn.textContent="Update Offer";}return;}
+    if(btn){btn.disabled=false;btn.textContent="✏️ Update Offer";}// allow re-sending to update offer
+    showToast("✓ Offer sent! Select theirs & accept when ready.","green");
+    if(statusEl)statusEl.innerHTML=`<span style="color:var(--green)">✓ Offer sent.</span> Waiting for opponent's offer…`;
+    // Immediately check if opponent already has an offer waiting
     const{data}=await db.from("trade_rooms").select("*").eq("code",tradeRoomCode).maybeSingle();
-    if(data){const oppKey=tradeRoomRole==="A"?"offer_b":"offer_a";const oppOffer=data[oppKey]?JSON.parse(data[oppKey]):null;renderOpponentOffer(oppOffer);}
+    if(data){
+      const oppKey=tradeRoomRole==="A"?"offer_b":"offer_a";
+      const oppOffer=data[oppKey]?JSON.parse(data[oppKey]):null;
+      renderOpponentOffer(oppOffer);
+      if(oppOffer&&(oppOffer.weapons?.length||oppOffer.mats?.length||oppOffer.accs?.length)){
+        if(statusEl)statusEl.innerHTML=`<span style="color:var(--green)">✓ Offer sent.</span> <span style="color:#facc15">Opponent offer ready — review & accept!</span>`;
+      }
+    }
   }catch(e){showToast("Failed to send offer.","red");if(btn){btn.disabled=false;btn.textContent="Send Offer";}}
 }
 
@@ -1640,20 +1768,25 @@ async function acceptTrade(){
   const offerKey=tradeRoomRole==="A"?"offer_a":"offer_b";
   const otherKey=tradeRoomRole==="A"?"offer_b":"offer_a";
   const btn=document.getElementById("traAcceptBtn");
+  const statusEl=document.getElementById("traStatus");
   if(btn){btn.disabled=true;btn.textContent="Accepting…";}
   try{
-    // Always re-fetch fresh data before accepting
+    // Re-fetch fresh data
     const{data}=await db.from("trade_rooms").select("*").eq("code",tradeRoomCode).maybeSingle();
     if(!data){showToast("Room not found.","red");return;}
     if(data.status==="completed"){
       if(!_tradeCompleted){_tradeCompleted=true;clearInterval(tradeRoomPoll);tradeRoomPoll=null;completeTrade(data);}
       return;
     }
-    // Build my offer: use what's in DB if already sent, else use local selection
+    // Use DB offer if already sent, else use local selection
     let myOffer=data[offerKey]?JSON.parse(data[offerKey]):{...myTradeOffer,accepted:false};
+    if(!myOffer.weapons?.length&&!myOffer.mats?.length&&!myOffer.accs?.length){
+      showToast("Send your offer first before accepting!","red");
+      if(btn){btn.disabled=false;btn.textContent="✓ Accept Trade";}return;
+    }
     myOffer.accepted=true;
     await db.from("trade_rooms").update({[offerKey]:JSON.stringify(myOffer)}).eq("code",tradeRoomCode);
-    // Re-fetch to check if other side already accepted
+    // Re-fetch to check if both accepted
     const{data:fresh}=await db.from("trade_rooms").select("*").eq("code",tradeRoomCode).maybeSingle();
     if(!fresh)return;
     const otherOffer=fresh[otherKey]?JSON.parse(fresh[otherKey]):null;
@@ -1668,10 +1801,9 @@ async function acceptTrade(){
         });
       }
     }else{
-      showToast("✓ Accepted! Waiting for opponent…","green");
-      const statusEl=document.getElementById("traStatus");
-      if(statusEl)statusEl.textContent="You accepted! Waiting for opponent…";
-      if(btn){btn.disabled=true;btn.textContent="✓ Accepted";}
+      showToast("✓ Accepted! Waiting for opponent to accept…","green");
+      if(statusEl)statusEl.innerHTML=`<span style="color:var(--green)">✓ You accepted!</span> Waiting for opponent to accept…`;
+      if(btn){btn.disabled=true;btn.textContent="✓ Accepted — waiting…";}
     }
   }catch(e){
     showToast("Failed to accept: "+e.message,"red");
