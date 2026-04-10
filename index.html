@@ -223,7 +223,8 @@
           <div class="wt-row"><span style="color:#22d3ee">T3 Steel</span><span class="wt-dmg">11–12 dmg · 200 🪙</span></div>
           <div class="wt-row"><span style="color:#a855f7">T4 Shadow</span><span class="wt-dmg">13 dmg · 400 🪙</span></div>
           <div class="wt-row"><span style="color:#facc15">T5 Legendary</span><span class="wt-dmg">14 dmg · 800 🪙</span></div>
-          <div class="wt-row wt-divine"><span style="color:#ff6b35">T6 Divine ✦</span><span class="wt-dmg" style="color:#ff6b35">15 dmg · 1000 🪙</span></div>
+          <div class="wt-row wt-divine"><span style="color:#ff6b35">T6 Divine ✦</span><span class="wt-dmg" style="color:#ff6b35">15 dmg · 1200 🪙</span></div>
+          <div class="wt-row" style="border-color:rgba(255,255,255,0.3)"><span style="color:#fff;text-shadow:0 0 8px #fff">T7 Transcendent ✦✦</span><span class="wt-dmg" style="color:#fff">17-18 dmg · 2500 🪙</span></div>
         </div>
       </div>
       <div class="rule-section"><h3>💥 Damage Formula</h3><div class="formula-box">Damage = |Your Shield − Opponent's Weapon|</div><p>Match shield exactly = <span class="neon-text">0 damage (Perfect Block!)</span></p></div>
@@ -314,68 +315,81 @@
 <div id="screen-trading" class="screen">
   <div class="screen-header">
     <button class="btn-back" onclick="showScreen('screen-mode')">← Back</button>
-    <div class="logo-small">🤝 Trade Rooms</div>
+    <div class="logo-small">🤝 Trading Hub</div>
     <div style="width:80px"></div>
   </div>
-  <div class="traderoom-content">
+  <div class="traderoom-wrap">
+
+    <!-- LOBBY -->
     <div id="tradeRoomLobby" class="traderoom-lobby">
-      <div class="traderoom-intro">
-        <div class="tri-icon">🤝</div>
-        <div class="tri-title">Trade Rooms</div>
-        <div class="tri-sub">Create a private room and share the code with a friend, or join an existing room to trade weapons, materials and accessories.</div>
+      <div class="tri-icon">🤝</div>
+      <div class="tri-title">Trade Rooms</div>
+      <div class="tri-sub">Create a private room and share the code, or enter a friend's code to trade weapons, materials &amp; accessories.</div>
+      <button class="btn-primary" style="width:100%;margin-top:16px" onclick="createTradeRoom()">+ Create Trade Room</button>
+      <div class="traderoom-divider">— or join existing —</div>
+      <div class="traderoom-join-row">
+        <input type="text" id="tradeJoinCode" placeholder="XXXXXX" maxlength="6" style="text-transform:uppercase;letter-spacing:6px;text-align:center;font-size:18px;font-family:var(--font-d);flex:1"/>
+        <button class="btn-secondary" onclick="joinTradeRoom()">Join →</button>
       </div>
-      <div class="traderoom-actions">
-        <button class="btn-primary" onclick="createTradeRoom()">+ Create Trade Room</button>
-        <div class="traderoom-divider">or join</div>
-        <div class="traderoom-join-row">
-          <input type="text" id="tradeJoinCode" placeholder="Enter 6-char code" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;text-align:center"/>
-          <button class="btn-secondary" onclick="joinTradeRoom()">Join</button>
-        </div>
-        <p id="tradeRoomError" class="form-error"></p>
-      </div>
+      <p id="tradeRoomError" class="form-error" style="margin-top:8px"></p>
     </div>
 
+    <!-- WAITING FOR PARTNER -->
     <div id="tradeRoomWaiting" class="traderoom-waiting hidden">
-      <div class="trw-title">Trade Room Created!</div>
-      <p class="trw-sub">Share this code with the player you want to trade with</p>
+      <div class="trw-icon">🤝</div>
+      <div class="trw-title">Room Created!</div>
+      <p class="trw-sub">Share this code with your trade partner</p>
       <div class="trw-code-box">
         <span class="trw-code" id="tradeRoomCode">------</span>
-        <button class="btn-copy" onclick="copyTradeCode()">Copy</button>
+        <button class="btn-copy" onclick="copyTradeCode()">📋 Copy</button>
       </div>
-      <div class="waiting-pulse"><div class="pulse-ring"></div><span>Waiting for trader to join…</span></div>
-      <button class="btn-ghost" onclick="cancelTradeRoom()">Cancel Room</button>
+      <div class="trw-pulse"><div class="pulse-ring"></div><span>Waiting for partner to join…</span></div>
+      <button class="btn-ghost" style="margin-top:16px;width:100%" onclick="cancelTradeRoom()">✕ Cancel Room</button>
     </div>
 
+    <!-- ACTIVE TRADE -->
     <div id="tradeRoomActive" class="traderoom-active hidden">
-      <div class="tra-header">
-        <div class="tra-title">Trade Room · <span id="traRoomCode"></span></div>
-        <div class="tra-players"><span id="traPlayerA">You</span> ⇄ <span id="traPlayerB">Trader</span></div>
+      <!-- Header bar -->
+      <div class="tra-topbar">
+        <div class="tra-topbar-info">
+          <span class="tra-room-label">Room <strong id="traRoomCode"></strong></span>
+          <span class="tra-vs"><span id="traPlayerA">You</span> ⇄ <span id="traPlayerB">Trader</span></span>
+        </div>
+        <button class="tra-leave-btn" onclick="leaveTradeRoom()">✕ Leave</button>
       </div>
-      <div class="tra-body">
-        <div class="tra-section">
-          <div class="tra-section-title">What you offer</div>
+
+      <!-- Status bar -->
+      <div id="traStatus" class="tra-statusbar">Select items below and send your offer.</div>
+
+      <!-- Two-column trade area -->
+      <div class="tra-columns">
+
+        <!-- LEFT: My offer -->
+        <div class="tra-col">
+          <div class="tra-col-title">⚔ Your Offer</div>
           <div class="tra-offer-tabs">
-            <button class="tra-tab active" id="traTabWeapons" onclick="setTradeOfferTab('weapons')">⚔ Weapons</button>
-            <button class="tra-tab" id="traTabMats" onclick="setTradeOfferTab('mats')">📦 Materials</button>
-            <button class="tra-tab" id="traTabAccs" onclick="setTradeOfferTab('accs')">💍 Accessories</button>
+            <button class="tra-tab active" id="traTabWeapons" onclick="setTradeOfferTab('weapons')">Weapons</button>
+            <button class="tra-tab" id="traTabMats" onclick="setTradeOfferTab('mats')">Mats</button>
+            <button class="tra-tab" id="traTabAccs" onclick="setTradeOfferTab('accs')">Accs</button>
           </div>
           <div id="traOfferGrid" class="tra-offer-grid"></div>
-          <div class="tra-selected-label">Selected to offer:</div>
-          <div id="traSelectedOffer" class="tra-selected-list">— Nothing selected —</div>
+          <div class="tra-selected-label">Selected:</div>
+          <div id="traSelectedOffer" class="tra-selected-list">— Nothing —</div>
+          <button class="btn-primary tra-send-btn" id="traSendOfferBtn" onclick="sendTradeOffer()">📤 Send Offer</button>
         </div>
-        <div class="tra-divider">⇄</div>
-        <div class="tra-section">
-          <div class="tra-section-title">Opponent's offer</div>
-          <div id="traOpponentOffer" class="tra-opponent-offer">Waiting for opponent to select items…</div>
+
+        <!-- RIGHT: Opponent's offer -->
+        <div class="tra-col">
+          <div class="tra-col-title">👁 Their Offer</div>
+          <div id="traOpponentOffer" class="tra-opponent-offer">
+            <div class="tra-waiting-pulse"><div class="tra-pulse-dot"></div>Waiting…</div>
+          </div>
+          <button class="btn-primary tra-accept-btn" id="traAcceptBtn" onclick="acceptTrade()" style="display:none">✅ Accept Trade</button>
         </div>
+
       </div>
-      <div class="tra-actions">
-        <button class="btn-primary" id="traSendOfferBtn" onclick="sendTradeOffer()">Send Offer</button>
-        <button class="btn-ghost" id="traAcceptBtn" onclick="acceptTrade()" style="display:none">✓ Accept Trade</button>
-        <button class="btn-ghost" onclick="leaveTradeRoom()">Leave Room</button>
-      </div>
-      <div id="traStatus" class="tra-status"></div>
     </div>
+
   </div>
 </div>
 
@@ -513,6 +527,8 @@
       <div class="shield-grid" id="shieldGrid"></div>
     </div>
     <div class="choice-section" id="potionRow"></div>
+    <div class="choice-section" id="raceAbilityRowA"></div>
+    <div class="choice-section" id="raceAbilityRowB"></div>
     <button class="btn-confirm" id="confirmBtn" onclick="confirmChoice()" disabled>Confirm →</button>
     <p id="gameError" class="form-error"></p>
   </div>
@@ -625,9 +641,14 @@
     </div>
     <div class="ranked-queue-box">
       <div class="waiting-pulse"><div class="pulse-ring large"></div><span id="rankedQueueStatus">Searching…</span></div>
-      <p class="shop-hint" style="margin-top:12px">Win to gain rating · Lose to drop · Rating affects matchmaking</p>
+      <p class="shop-hint" style="margin-top:12px">Matching with nearest rated opponent · Win = +rating · Loss = −rating</p>
     </div>
-    <button class="btn-ghost" onclick="leaveRankedLobby()">Cancel Search</button>
+    <div class="ranked-queue-tips">
+      <div class="rqt-item">🏅 Rating starts at <strong>1000</strong></div>
+      <div class="rqt-item">📈 Win streaks boost gains</div>
+      <div class="rqt-item">⚡ Matches found in seconds</div>
+    </div>
+    <button class="btn-ghost" style="margin-top:8px" onclick="leaveRankedLobby()">✕ Cancel Search</button>
   </div>
 </div>
 

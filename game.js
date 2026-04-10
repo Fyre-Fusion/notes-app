@@ -54,9 +54,23 @@ const ALL_WEAPONS = [
   {name:"Kiseru",emoji:"🪬",dmg:14,tier:5,cost:800},{name:"Naginata-kamayari",emoji:"🌀",dmg:14,tier:5,cost:800},
   {name:"Jutte",emoji:"⚜️",dmg:14,tier:5,cost:800},{name:"Kaginawa",emoji:"🪝",dmg:14,tier:5,cost:800},
   {name:"Teporenki",emoji:"🔱",dmg:14,tier:5,cost:800},{name:"Shinobi-zue",emoji:"🌿",dmg:14,tier:5,cost:800},
-  // T6
-  {name:"Gentuga Tensho",emoji:"🌠",dmg:16,tier:6,cost:1000},
-  {name:"Atom Scythe",emoji:"⚛️",dmg:15,tier:6,cost:1000},
+  // T6 — Divine weapons (dmg 15, cost 1200)
+  {name:"Atom Scythe",emoji:"⚛️",dmg:15,tier:6,cost:1200},
+  {name:"Void Reaper",emoji:"🌀",dmg:15,tier:6,cost:1200},
+  {name:"Eclipse Blade",emoji:"🌑",dmg:15,tier:6,cost:1200},
+  {name:"Celestial Bow",emoji:"🏹",dmg:15,tier:6,cost:1200},
+  {name:"Solar Spear",emoji:"☀️",dmg:15,tier:6,cost:1200},
+  {name:"Lunar Scimitar",emoji:"🌙",dmg:15,tier:6,cost:1200},
+  {name:"Draconic Lance",emoji:"🐉",dmg:15,tier:6,cost:1200},
+  {name:"Storm Halberd",emoji:"⛈️",dmg:15,tier:6,cost:1200},
+  {name:"Phoenix Blade",emoji:"🔥",dmg:15,tier:6,cost:1200},
+  {name:"Abyssal Katana",emoji:"🕳️",dmg:15,tier:6,cost:1200},
+  {name:"Titan Crusher",emoji:"⚙️",dmg:15,tier:6,cost:1200},
+  {name:"Astral Dagger",emoji:"✨",dmg:15,tier:6,cost:1200},
+  // T7 — Transcendent (dmg 17+, ultra rare)
+  {name:"Gentuga Tensho",emoji:"🌠",dmg:18,tier:7,cost:2500},
+  {name:"Void Emperor Blade",emoji:"🫥",dmg:17,tier:7,cost:2500},
+  {name:"Singularity Edge",emoji:"💫",dmg:17,tier:7,cost:2500},
 ];
 
 const STARTER_WEAPON_NAMES = ["Shuriken","Kunai","Kama","Tekko","Sai","Fukiya","Tessen","Jitte","Hanbo","Rokushakubo","Kanabo","Tetsubo"];
@@ -68,9 +82,17 @@ const TIER_INFO = {
   4:{name:"Shadow",color:"#a855f7",glow:"rgba(168,85,247,0.3)"},
   5:{name:"Legendary",color:"#facc15",glow:"rgba(250,204,21,0.35)"},
   6:{name:"Divine",color:"#ff6b35",glow:"rgba(255,107,53,0.4)"},
+  7:{name:"Transcendent",color:"#ffffff",glow:"rgba(255,255,255,0.45)"},
 };
 
 function getShieldValues(weaponList){const s=new Set(weaponList.map(w=>w.dmg));return[...s].sort((a,b)=>a-b);}
+// Returns shield values for player X, ALWAYS including a shield to block opponent's weapon if known
+function getShieldValuesForPlayer(myWeapons, opponentWeapon){
+  const vals=new Set(myWeapons.map(w=>w.dmg));
+  // Always ensure a shield value that perfectly blocks the opponent's weapon exists
+  if(opponentWeapon)vals.add(opponentWeapon.dmg);
+  return[...vals].sort((a,b)=>a-b);
+}
 let WEAPONS=ALL_WEAPONS.filter(w=>STARTER_WEAPON_NAMES.includes(w.name));
 let SHIELD_VALUES=getShieldValues(WEAPONS);
 
@@ -102,10 +124,11 @@ const ALL_ACCESSORIES=[
 // ══════════════════════════════════════════════
 const MAX_LEVEL=1000;
 // Pre-compute cumulative XP thresholds for all 1000 levels
+// Formula: each level costs floor(9000 * 1.02^(level-2)) XP; cumulative sum = threshold
 const LEVEL_XP_THRESHOLDS=(()=>{
   const arr=[0];
   let cum=0;
-  for(let i=2;i<=MAX_LEVEL;i++){cum+=Math.floor(100*Math.pow(1.06,i-2));arr.push(cum);}
+  for(let i=2;i<=MAX_LEVEL;i++){cum+=Math.floor(9000*Math.pow(1.02,i-2));arr.push(cum);}
   return arr;
 })();
 
@@ -122,12 +145,11 @@ function getLevelBadge(l){
   if(l>=900)return"💠";if(l>=700)return"👑";if(l>=500)return"🔱";
   if(l>=300)return"🏆";if(l>=100)return"🛡️";if(l>=50)return"⚔️";return"🥉";
 }
-const XP_BASE_RATE=1.18;
+const XP_BASE_RATE=1.04;
 function getXpForAction(action,lvl){
-  const base={win:50,loss:15,boss:80,special:30,shot:2};
-  // Shot XP caps at level 10 scaling to prevent runaway per-shot gains
-  const capLvl=action==="shot"?Math.min((lvl||1)-1,10):Math.min((lvl||1)-1,50);
-  return Math.round((base[action]||5)*Math.pow(XP_BASE_RATE,capLvl));
+  const base={win:120,loss:30,boss:200,special:60,shot:4};
+  const capLvl=action==="shot"?Math.min((lvl||1)-1,8):Math.min((lvl||1)-1,30);
+  return Math.round((base[action]||10)*Math.pow(XP_BASE_RATE,capLvl));
 }
 
 // ══════════════════════════════════════════════
@@ -187,10 +209,16 @@ function getRandomRollClan(){return ALL_CLAN_KEYS[Math.floor(Math.random()*ALL_C
 // RACES SYSTEM
 // ══════════════════════════════════════════════
 const RACES = {
-  human:        {name:"Human Race",        emoji:"🧑",  color:"#94a3b8", chance:0.50, lore:"Resilient and adaptable warriors forged by will alone.",        perks:["+10% coin bonus from all sources","Faster clan upgrade (5% off)","Balanced stats in all areas"]},
-  oni:          {name:"Oni Race",           emoji:"👹",  color:"#f43f5e", chance:0.20, lore:"Demonic warriors of raw power and unstoppable fury.",           perks:["+2 base damage on all attacks","Opponent starts with 1 less HP per round","+1 dmg for every 3 HP lost (Berserker Blood)"]},
-  heavenly:     {name:"Heavenly Race",      emoji:"✨",  color:"#facc15", chance:0.10, lore:"Chosen by the divine — rare, radiant, and untouchable.",        perks:["Divine Shield: 15% chance to negate all damage","+25% XP from all actions","Perfect blocks restore 2 HP (Blessed)"]},
-  supernatural: {name:"Supernatural Race", emoji:"👻",  color:"#a855f7", chance:0.20, lore:"Beings beyond the mortal realm, bending fate itself.",          perks:["Phase Shift: 20% dodge per round","Soul sight: see opponent shield hint once per match","Cursed aura: enemy trait effectiveness -10%"]},
+  human:        {name:"Human Race",        emoji:"🧑",  color:"#94a3b8", chance:0.50, lore:"Resilient and adaptable warriors forged by will alone.",        perks:["+10% coin bonus from all sources","Faster clan upgrade (5% off)","Balanced stats in all areas"],
+    v4ability:{name:"Bullseye",emoji:"🎯",desc:"Ignores opponent's shield AND potion this shot. Once per round.",cooldown:"round"}},
+  oni:          {name:"Oni Race",           emoji:"👹",  color:"#f43f5e", chance:0.20, lore:"Demonic warriors of raw power and unstoppable fury.",           perks:["+2 base damage on all attacks","Opponent starts with 1 less HP per round","+1 dmg for every 3 HP lost (Berserker Blood)"],
+    v4ability:{name:"Lifesteal",emoji:"🩸",desc:"Drains opponent HP to completely fill your own HP. Once per round.",cooldown:"round"}},
+  heavenly:     {name:"Heavenly Race",      emoji:"✨",  color:"#facc15", chance:0.10, lore:"Chosen by the divine — rare, radiant, and untouchable.",        perks:["Divine Shield: 15% chance to negate all damage","+25% XP from all actions","Perfect blocks restore 2 HP (Blessed)"],
+    v4ability:{name:"God's Grace",emoji:"🌟",desc:"Perfect counter this shot AND regain ALL your HP. Once per round.",cooldown:"round"}},
+  supernatural: {name:"Supernatural Race", emoji:"👻",  color:"#a855f7", chance:0.20, lore:"Beings beyond the mortal realm, bending fate itself.",          perks:["Phase Shift: 20% dodge per round","Soul sight: see opponent shield hint once per match","Cursed aura: enemy trait effectiveness -10%"],
+    v4ability:{name:"EnMagicked",emoji:"🌀",desc:"Perfect counter + weapon bypasses 50% of shield + bonus damage scales with missing HP. Once per match.",cooldown:"match"}},
+  fluxion:  {name:"Fluxion",        emoji:"🌌",  color:"#ffffff", chance:0,    lore:"A being beyond existence itself. Admin-only. Cannot be obtained through normal means.",perks:["Reality bends to your will","All abilities are enhanced","Beyond all classification"],
+    v4ability:{name:"Inversion Rift",emoji:"💥",desc:"Deals 2,000,000 damage — instantly ends the game. Once per match.",cooldown:"match"},adminOnly:true},
 };
 const RACE_KEYS = ["human","oni","heavenly","supernatural"];
 
@@ -531,6 +559,11 @@ function loadInventoryFromData(data){
   try{weaponTraits=data?.weapon_traits?JSON.parse(data.weapon_traits):{};}catch(e){weaponTraits={};}
   try{playerClan=data?.clan?JSON.parse(data.clan):null;}catch(e){playerClan=null;}
   try{playerRace=data?.race||null;}catch(e){playerRace=null;}
+  // Restore item roll time from DB (so cooldown persists across devices/sessions)
+  try{
+    const dbRoll=data?.last_roll_time;
+    if(dbRoll&&parseInt(dbRoll)>getLastRollTime()){setLastRollTime(parseInt(dbRoll));}
+  }catch(e){}
   try{playerMaterials=data?.materials?JSON.parse(data.materials):{};}catch(e){playerMaterials={};}
   try{playerAccessories=data?.accessories?JSON.parse(data.accessories):[];}catch(e){playerAccessories=[];}
   try{equippedAccessory=data?.equipped_accessory||null;}catch(e){equippedAccessory=null;}
@@ -589,6 +622,7 @@ function saveTokenData(){
       accessories:JSON.stringify(playerAccessories),equipped_accessory:equippedAccessory,
       achievements:JSON.stringify(playerAchievements),stats:JSON.stringify(playerStats),
       daily_quests:JSON.stringify({key:dailyQuestKey,quests:dailyQuests}),
+      last_roll_time:getLastRollTime(),
     };
     for(let attempt=0;attempt<3;attempt++){
       try{
@@ -1169,14 +1203,24 @@ function renderRaceUI(){
 
   for(const[key,r] of Object.entries(RACES)){
     const isMine=key===myRaceKey;
-    html+=`<div class="race-card ${isMine?"race-mine":""}" style="border-color:${r.color}44">
+    const borderColor=r.adminOnly?"rgba(255,255,255,0.3)":r.color+"44";
+    const glowStyle=r.adminOnly?"box-shadow:0 0 20px rgba(255,255,255,0.2),0 0 40px rgba(255,255,255,0.1)":"";
+    html+=`<div class="race-card ${isMine?"race-mine":""} ${r.adminOnly?"race-admin":""}" style="border-color:${borderColor};${glowStyle}">
       <div class="race-card-header" style="color:${r.color}">${r.emoji} ${r.name}
         ${isMine?`<span class="race-mine-tag" style="background:${r.color}22;border-color:${r.color}44;color:${r.color}">Your Race</span>`:""}
-        <span class="race-chance-tag">${(r.chance*100).toFixed(0)}% chance</span>
+        ${r.adminOnly?`<span class="race-admin-tag">👑 Admin Only</span>`:`<span class="race-chance-tag">${(r.chance*100).toFixed(0)}% chance</span>`}
       </div>
       <div class="race-card-lore">${r.lore}</div>
       <div class="race-card-perks">`;
     r.perks.forEach(p=>{html+=`<div class="rcp-item">✦ ${p}</div>`;});
+    if(r.v4ability){
+      const abColor=r.adminOnly?"#ffffff":r.color;
+      html+=`<div class="rcp-v4ability" style="border-color:${abColor}44;background:${abColor}0a">
+        <span class="rcp-v4label" style="color:${abColor}">${r.v4ability.emoji} ${r.v4ability.name}</span>
+        <span class="rcp-v4cd">${r.v4ability.cooldown==="match"?"Once/match":"Once/round"}</span>
+        <div class="rcp-v4desc">${r.v4ability.desc}</div>
+      </div>`;
+    }
     html+=`</div></div>`;
   }
   html+=`</div>`;
@@ -1367,8 +1411,8 @@ function renderShopUI(){
     html+=`</div></div>`;body.innerHTML=html;
   }else{
     let html=bal+`<div class="weapon-shop-list">`;
-    for(let t=1;t<=6;t++){
-      const ti=TIER_INFO[t],tier_weapons=ALL_WEAPONS.filter(w=>w.tier===t);
+    for(let t=1;t<=7;t++){
+      const ti=TIER_INFO[t]||TIER_INFO[6],tier_weapons=ALL_WEAPONS.filter(w=>w.tier===t);
       html+=`<div class="ws-tier-header" style="color:${ti.color};border-color:${ti.color}20">
         <span class="ws-tier-badge" style="background:${ti.color}22;border-color:${ti.color}44;color:${ti.color}">T${t}</span>
         ${ti.name}${t===1?" — Free Starter":""}
@@ -1459,7 +1503,7 @@ function renderArsenalPanel(){
   const fb=document.getElementById("arsenalFilterBar");
   if(fb){
     fb.innerHTML=`<button class="af-tab${arsenalFilter===0?" active":""}" onclick="setArsenalFilter(0)">All</button>`+
-      [1,2,3,4,5,6].map(t=>{
+      [1,2,3,4,5,6,7].map(t=>{
         const ti=TIER_INFO[t],oc=ALL_WEAPONS.filter(w=>w.tier===t&&ownedWeapons.includes(w.name)).length;
         if(!oc)return"";
         return`<button class="af-tab${arsenalFilter===t?" active":""}" onclick="setArsenalFilter(${t})" style="${arsenalFilter===t?`background:${ti.color}22;color:${ti.color};border-color:${ti.color}`:""}">T${t} ${ti.name}</button>`;
@@ -2028,15 +2072,39 @@ let gs={};
 function freshGameState(names){
   return{hpA:MAX_HP,hpB:MAX_HP,round:1,shot:1,phase:"A",usedWeapons:[],pendingA:null,
     isSuddenDeath:false,names:names||{A:"Player A",B:"Player B"},totalHpA:0,totalHpB:0,
-    potionsA:localPotions,potionsB:localPotions,specialScoreA:0,specialScoreB:0};
+    potionsA:localPotions,potionsB:localPotions,specialScoreA:0,specialScoreB:0,
+    raceAbilityAUsedRound:false,raceAbilityBUsedRound:false,
+    raceAbilityAUsedMatch:false,raceAbilityBUsedMatch:false};
 }
 let SHIELD_VALUES_A=[],SHIELD_VALUES_B=[];
+let AI_WEAPONS=[]; // AI's own weapon pool — never shares with Player A
+
+// Build AI weapon pool: randomly sampled from T1-T3, does NOT use player's loadout
+function buildAIWeapons(){
+  const tier1=ALL_WEAPONS.filter(w=>w.tier===1);
+  const tier2=ALL_WEAPONS.filter(w=>w.tier===2);
+  const tier3=ALL_WEAPONS.filter(w=>w.tier===3);
+  // Pick 4 random T1, 4 T2, 4 T3 for a fair 12-weapon AI loadout
+  function pick(arr,n){const s=[...arr].sort(()=>Math.random()-0.5);return s.slice(0,Math.min(n,s.length));}
+  return[...pick(tier1,4),...pick(tier2,4),...pick(tier3,4)];
+}
 
 function initGame(mode,names){
   _gameOverFired=false;
+  // Player A: use their actual loadout
   WEAPONS=myLoadout.map(n=>ALL_WEAPONS.find(w=>w.name===n)).filter(Boolean);
   if(!WEAPONS.length)WEAPONS=ALL_WEAPONS.filter(w=>STARTER_WEAPON_NAMES.includes(w.name));
-  SHIELD_VALUES=getShieldValues(WEAPONS);SHIELD_VALUES_A=SHIELD_VALUES;SHIELD_VALUES_B=SHIELD_VALUES;
+  SHIELD_VALUES_A=getShieldValues(WEAPONS);
+  // AI / Player B: separate weapon pool
+  if(mode==="ai"){
+    AI_WEAPONS=buildAIWeapons();
+    // B's shield values derived from AI's weapons, but also must be able to block player A's weapons
+    SHIELD_VALUES_B=getShieldValuesForPlayer(AI_WEAPONS,null);
+  }else{
+    AI_WEAPONS=[];
+    SHIELD_VALUES_B=SHIELD_VALUES_A; // hotseat: same set
+  }
+  SHIELD_VALUES=SHIELD_VALUES_A;
   const n=names||{A:currentUser?currentUser.username:"Player A",B:mode==="ai"?"🤖 The Machine":"Player B"};
   gs=freshGameState(n);specialActive=false;specialGuesserNow="A";
   renderGame();initEmojiChat();
@@ -2044,17 +2112,25 @@ function initGame(mode,names){
 
 // AI auto-pick weapon and shield for "vs AI" mode
 function aiMakeChoice(){
-  // Pick a weapon (prefer higher tier/damage)
-  const avail=WEAPONS.filter(w=>!gs.usedWeapons.includes(w.name));
-  const pool=avail.length>0?avail:WEAPONS;
+  // AI uses its OWN weapon pool — never picks from player A's loadout
+  const aiPool=AI_WEAPONS.length?AI_WEAPONS:ALL_WEAPONS.filter(w=>w.tier<=2);
+  const avail=aiPool.filter(w=>!gs.usedWeapons.includes(w.name));
+  const pool=avail.length>0?avail:aiPool;
   // Weighted random — higher dmg = more likely
   const totalDmg=pool.reduce((s,w)=>s+w.dmg,0);
   let r=Math.random()*totalDmg,aiWeapon=pool[pool.length-1];
   for(const w of pool){r-=w.dmg;if(r<=0){aiWeapon=w;break;}}
-  // Pick shield — try to counter playerA's last weapon if known, else random
-  const shields=SHIELD_VALUES_B.length?SHIELD_VALUES_B:getShieldValues(WEAPONS);
-  const aiShield=shields[Math.floor(Math.random()*shields.length)];
-  return{weapon:aiWeapon,shield:aiShield,potion:false};
+  // Shield: try to perfectly block player A's pending weapon if visible
+  const aW=gs.pendingA&&gs.pendingA.weapon?gs.pendingA.weapon:null;
+  const aiShieldVals=getShieldValuesForPlayer(aiPool,aW);
+  // 40% chance AI tries to perfectly block, 60% random
+  let aiShield;
+  if(aW&&Math.random()<0.40){
+    aiShield=aW.dmg; // perfect block attempt
+  }else{
+    aiShield=aiShieldVals[Math.floor(Math.random()*aiShieldVals.length)];
+  }
+  return{weapon:aiWeapon,shield:aiShield,potion:false,raceAbility:false};
 }
 
 // ══════════════════════════════════════════════
@@ -2222,38 +2298,88 @@ function restoreTurnPanel(){
   <div class="choice-section"><label class="choice-label">Your Weapon</label><div class="weapon-grid" id="weaponGrid"></div></div>
   <div class="choice-section"><label class="choice-label">Shield Points <span class="shield-hint">(5–15)</span></label><div class="shield-grid" id="shieldGrid"></div></div>
   <div class="choice-section" id="potionRow"></div>
+  <div class="choice-section" id="raceAbilityRowA"></div>
+  <div class="choice-section" id="raceAbilityRowB" style="display:none"></div>
   <button class="btn-confirm" id="confirmBtn" onclick="confirmChoice()" disabled>Confirm →</button><p id="gameError" class="form-error"></p>`;
 }
 
-let selWeaponA=null,selShieldA=null,usingPotionA=false;
+let selWeaponA=null,selShieldA=null,usingPotionA=false,usingRaceAbilityA=false;
+let selWeaponB=null,selShieldB=null,usingPotionB=false,usingRaceAbilityB=false;
+
+function getRaceAbility(player){
+  const race=player==="A"?playerRace:(gameMode==="hotseat"?playerRace:null);
+  if(!race)return null;
+  const r=RACES[race];if(!r||!r.v4ability)return null;
+  const clanV4=(playerClan&&playerClan.version>=4)||race==="fluxion";
+  if(!clanV4)return null;
+  const usedRound=player==="A"?gs.raceAbilityAUsedRound:gs.raceAbilityBUsedRound;
+  const usedMatch=player==="A"?gs.raceAbilityAUsedMatch:gs.raceAbilityBUsedMatch;
+  const cd=r.v4ability.cooldown;
+  const used=(cd==="round"&&usedRound)||(cd==="match"&&usedMatch);
+  return{...r.v4ability,available:!used,race};
+}
+
+function renderRaceAbilityRow(rowId,player){
+  const row=document.getElementById(rowId);if(!row)return;
+  const ab=getRaceAbility(player);
+  if(!ab){row.innerHTML="";return;}
+  const using=player==="A"?usingRaceAbilityA:usingRaceAbilityB;
+  const r=RACES[ab.race];
+  row.innerHTML=`<label class="choice-label" style="color:${r.color}">⚡ Race Ability${ab.cooldown==="match"?" (Once per match)":" (Once per round)"}</label>
+  <button class="btn-race-ability${using?" race-ability-active":""}" id="raceAbilityBtn${player}"
+    onclick="toggleRaceAbility('${player}')" ${ab.available?"":"disabled"} style="border-color:${r.color};color:${ab.available?(using?"#fff":r.color):"var(--text3)"}">
+    ${ab.emoji} ${ab.name} ${ab.available?"":"(Used)"}
+    <div class="rab-desc">${ab.desc}</div>
+  </button>`;
+}
+
+function toggleRaceAbility(player){
+  if(player==="A"){
+    usingRaceAbilityA=!usingRaceAbilityA;
+    if(usingRaceAbilityA){usingPotionA=false;selWeaponA=null;selShieldA=null;}
+    renderRaceAbilityRow("raceAbilityRowA","A");checkAReady();
+  }else{
+    usingRaceAbilityB=!usingRaceAbilityB;
+    if(usingRaceAbilityB){usingPotionB=false;selWeaponB=null;selShieldB=null;}
+    renderRaceAbilityRow("raceAbilityRowB","B");checkBReady();
+  }
+}
+
 function renderPlayerATurn(isBoss){
-  selWeaponA=null;selShieldA=null;usingPotionA=false;
+  selWeaponA=null;selShieldA=null;usingPotionA=false;usingRaceAbilityA=false;
   const badge=document.getElementById("turnBadge"),phase=document.getElementById("turnPhase");
   if(badge)badge.textContent=gs.names.A+"'s Turn";
   if(phase)phase.textContent=isBoss?"Choose your weapon & shield to attack the Boss!":"Choose your weapon & shield — hidden from your opponent.";
   const cb=document.getElementById("confirmBtn");if(cb)cb.disabled=true;
-  renderWeaponGrid("weaponGrid",WEAPONS,w=>{selWeaponA=w;usingPotionA=false;checkAReady();});
+  renderWeaponGrid("weaponGrid",WEAPONS,w=>{selWeaponA=w;usingPotionA=false;usingRaceAbilityA=false;checkAReady();});
   renderShieldGrid("shieldGrid",SHIELD_VALUES_A.length?SHIELD_VALUES_A:getShieldValues(WEAPONS),v=>{selShieldA=v;checkAReady();},null);
   renderPotionRow("potionRow","A");
+  renderRaceAbilityRow("raceAbilityRowA","A");
 }
-function checkAReady(){const cb=document.getElementById("confirmBtn");if(cb)cb.disabled=!(usingPotionA||(selWeaponA&&selShieldA!==null));}
+function checkAReady(){const cb=document.getElementById("confirmBtn");if(cb)cb.disabled=!(usingPotionA||usingRaceAbilityA||(selWeaponA&&selShieldA!==null));}
 
-let selWeaponB=null,selShieldB=null,usingPotionB=false;
+
 function renderPlayerBTurn(isBoss){
-  selWeaponB=null;selShieldB=null;usingPotionB=false;
+  selWeaponB=null;selShieldB=null;usingPotionB=false;usingRaceAbilityB=false;
   const badge=document.getElementById("turnBadge"),phase=document.getElementById("turnPhase");
   if(badge)badge.textContent=gs.names.B+"'s Turn";
-  const aWeapon=gs.pendingA&&gs.pendingA.weapon?gs.pendingA.weapon:null;
-  // No hints about perfect blocks — just "pick your weapon & shield"
   if(phase)phase.textContent=isBoss?"Choose weapon & shield to attack the Boss!":"Pick your weapon & shield.";
   const cb=document.getElementById("confirmBtn");if(cb)cb.disabled=true;
-  const bAvail=isBoss?WEAPONS:WEAPONS.filter(w=>w.name!==(gs.pendingA&&gs.pendingA.weapon?gs.pendingA.weapon.name:null));
-  renderWeaponGrid("weaponGrid",bAvail,w=>{selWeaponB=w;usingPotionB=false;checkBReady();});
-  // No perfect-counter highlight hint shown
-  renderShieldGrid("shieldGrid",SHIELD_VALUES_B.length?SHIELD_VALUES_B:getShieldValues(WEAPONS),v=>{selShieldB=v;checkBReady();},null);
+  // In hotseat: B picks from same loadout (WEAPONS) minus A's chosen weapon (secret)
+  // In online: B has their own loadout (handled separately)
+  const bPool=WEAPONS; // always use the shared loadout for local modes
+  const bAvail=isBoss?bPool:bPool.filter(w=>w.name!==(gs.pendingA&&gs.pendingA.weapon?gs.pendingA.weapon.name:null));
+  renderWeaponGrid("weaponGrid",bAvail,w=>{selWeaponB=w;usingPotionB=false;usingRaceAbilityB=false;checkBReady();});
+  // Shield hint: if A's pending weapon exists, highlight the perfect counter shield for B
+  const aW=gs.pendingA&&gs.pendingA.weapon?gs.pendingA.weapon:null;
+  const perfectShield=aW?aW.dmg:null;
+  // Always include a block option for opponent's weapon (critical for T7 weapons like Gentuga)
+  const bShieldVals=getShieldValuesForPlayer(WEAPONS,aW);
+  renderShieldGrid("shieldGrid",bShieldVals,v=>{selShieldB=v;checkBReady();},perfectShield);
   renderPotionRow("potionRow","B");
+  renderRaceAbilityRow("raceAbilityRowB","B");
 }
-function checkBReady(){const cb=document.getElementById("confirmBtn");if(cb)cb.disabled=!(usingPotionB||(selWeaponB&&selShieldB!==null));}
+function checkBReady(){const cb=document.getElementById("confirmBtn");if(cb)cb.disabled=!(usingPotionB||usingRaceAbilityB||(selWeaponB&&selShieldB!==null));}
 
 function renderPotionRow(rowId,player){
   const row=document.getElementById(rowId);if(!row)return;
@@ -2306,8 +2432,9 @@ function renderShieldGrid(gridId,values,onSelect,perfectValue){
 function confirmChoice(){
   if(gameMode==="online"){confirmOnlineChoice();return;}
   if(gs.phase==="A"){
-    if(!usingPotionA&&(!selWeaponA||selShieldA===null))return;
-    gs.pendingA={weapon:selWeaponA,shield:selShieldA,potion:usingPotionA};
+    if(!usingPotionA&&!usingRaceAbilityA&&(!selWeaponA||selShieldA===null))return;
+    gs.pendingA={weapon:selWeaponA,shield:selShieldA,potion:usingPotionA,raceAbility:usingRaceAbilityA};
+    if(usingRaceAbilityA){const ab=getRaceAbility("A");if(ab&&ab.cooldown==="round")gs.raceAbilityAUsedRound=true;if(ab&&ab.cooldown==="match")gs.raceAbilityAUsedMatch=true;}
     const cb=document.getElementById("confirmBtn");
     if(cb){cb.classList.add("locked-in");cb.textContent="✓ Locked In";cb.disabled=true;}
     if(gameMode==="hotseat"){
@@ -2315,17 +2442,17 @@ function confirmChoice(){
       document.getElementById("passSubtitle").textContent=gs.names.A+" has locked their choice. Hand the device over.";
       showScreen("screen-pass");
     }else if(gameMode==="ai"){
-      // AI auto-makes its choice immediately
       gs.phase="B";
       if(usingPotionA){gs.potionsA=Math.max(0,gs.potionsA-1);if(currentUser){localPotions=Math.max(0,localPotions-1);saveTokenData();}}
       const aiChoice=aiMakeChoice();
       resolveShot(gs.pendingA,aiChoice);
     }else{gs.phase="B";renderGame();}
   }else{
-    if(!usingPotionB&&(!selWeaponB||selShieldB===null))return;
+    if(!usingPotionB&&!usingRaceAbilityB&&(!selWeaponB||selShieldB===null))return;
+    if(usingRaceAbilityB){const ab=getRaceAbility("B");if(ab&&ab.cooldown==="round")gs.raceAbilityBUsedRound=true;if(ab&&ab.cooldown==="match")gs.raceAbilityBUsedMatch=true;}
     if(usingPotionB){gs.potionsB=Math.max(0,gs.potionsB-1);if(currentUser){localPotions=Math.max(0,localPotions-1);saveTokenData();updateDailyQuest("potion");}}
     if(gs.pendingA?.potion){gs.potionsA=Math.max(0,gs.potionsA-1);if(currentUser){localPotions=Math.max(0,localPotions-1);}}
-    resolveShot(gs.pendingA,{weapon:selWeaponB,shield:selShieldB,potion:usingPotionB});
+    resolveShot(gs.pendingA,{weapon:selWeaponB,shield:selShieldB,potion:usingPotionB,raceAbility:usingRaceAbilityB});
   }
 }
 function continueAfterPass(){
@@ -2339,6 +2466,62 @@ function continueAfterPass(){
 // ══════════════════════════════════════════════
 function resolveShot(cA,cB){
   let dmgToA=0,dmgToB=0;
+
+  // ── Race ability resolution ──
+  if(cA.raceAbility){
+    const ab=getRaceAbility("A");const race=playerRace||"human";
+    if(race==="human"||race==="fluxion"){
+      // Bullseye / Inversion Rift: ignore shield, ignore potion
+      dmgToB=race==="fluxion"?2000000:(cA.weapon?cA.weapon.dmg:0);
+      dmgToA=0;
+      showToast(race==="fluxion"?"💥 INVERSION RIFT! REALITY ENDS!":"🎯 Bullseye! Shield & potion ignored!","gold");
+    }else if(race==="oni"){
+      // Lifesteal: drain opponent HP to fill own
+      const stolen=gs.hpB;gs.hpB=0;gs.hpA=Math.min(MAX_HP,gs.hpA+stolen);
+      showToast("🩸 Lifesteal! Drained "+stolen+" HP!","gold");
+      finishShot(cA,cB,0,0);return;
+    }else if(race==="heavenly"){
+      // God's Grace: perfect counter + full HP restore
+      dmgToA=0;dmgToB=0;gs.hpA=MAX_HP;
+      showToast("🌟 God's Grace! Full HP restored!","gold");
+      finishShot(cA,cB,0,0);return;
+    }else if(race==="supernatural"){
+      // EnMagicked: perfect counter + 50% shield bypass + missing HP bonus
+      const missingHp=MAX_HP-gs.hpA;const bonusDmg=Math.floor(missingHp*0.5);
+      dmgToA=0;
+      if(cB.potion){dmgToB=0;}else{
+        const shieldEffect=Math.floor(Math.abs(cB.shield-cA.weapon.dmg)*0.5);
+        dmgToB=Math.max(1,(cA.weapon?cA.weapon.dmg:0)-shieldEffect+bonusDmg);
+      }
+      showToast("🌀 EnMagicked! +"+bonusDmg+" bonus dmg from missing HP!","gold");
+    }
+    if(!cB.potion&&cA.weapon)gs.hpB=Math.max(0,gs.hpB-dmgToB);
+    gs.hpA=Math.max(0,gs.hpA-dmgToA);
+    finishShot(cA,cB,dmgToA,dmgToB);return;
+  }
+  if(cB.raceAbility){
+    // B used a race ability
+    const race=(gameMode==="hotseat")?playerRace:"human"; // B's race in hotseat
+    if(race==="fluxion"){
+      dmgToA=2000000;showToast("💥 INVERSION RIFT!","gold");
+      gs.hpA=0;finishShot(cA,cB,dmgToA,0);return;
+    }else if(race==="oni"){
+      const stolen=gs.hpA;gs.hpA=0;gs.hpB=Math.min(MAX_HP,gs.hpB+stolen);
+      showToast("🩸 Lifesteal!","gold");finishShot(cA,cB,0,0);return;
+    }else if(race==="heavenly"){
+      dmgToB=0;dmgToA=0;gs.hpB=MAX_HP;showToast("🌟 God's Grace!","gold");finishShot(cA,cB,0,0);return;
+    }else if(race==="human"){
+      dmgToA=cB.weapon?cB.weapon.dmg:0;dmgToB=0;showToast("🎯 Bullseye!","gold");
+    }else if(race==="supernatural"){
+      const missingHp=MAX_HP-gs.hpB;const bonusDmg=Math.floor(missingHp*0.5);
+      dmgToB=0;dmgToA=cA.potion?0:Math.max(1,(cB.weapon?cB.weapon.dmg:0)+bonusDmg);
+      showToast("🌀 EnMagicked!","gold");
+    }
+    if(!cA.potion)gs.hpA=Math.max(0,gs.hpA-dmgToA);
+    finishShot(cA,cB,dmgToA,dmgToB);return;
+  }
+
+  // ── Normal shot resolution ──
   if(!cA.potion&&!cB.potion){
     dmgToB=Math.abs(cB.shield-cA.weapon.dmg);
     dmgToA=Math.abs(cA.shield-cB.weapon.dmg);
@@ -2352,6 +2535,12 @@ function resolveShot(cA,cB){
   if(cA.weapon&&!gs.usedWeapons.includes(cA.weapon.name))gs.usedWeapons.push(cA.weapon.name);
   if(cB.weapon&&!gs.usedWeapons.includes(cB.weapon.name))gs.usedWeapons.push(cB.weapon.name);
   if(currentUser){awardXP("shot");updateDailyQuest("shot");playerStats.totalShots=(playerStats.totalShots||0)+1;}
+  finishShot(cA,cB,dmgToA,dmgToB);
+}
+function finishShot(cA,cB,dmgToA,dmgToB){
+  if(cA.weapon&&!gs.usedWeapons.includes(cA.weapon.name))gs.usedWeapons.push(cA.weapon.name);
+  if(cB.weapon&&!gs.usedWeapons.includes(cB.weapon.name))gs.usedWeapons.push(cB.weapon.name);
+  if(currentUser){awardXP("shot");updateDailyQuest("shot");playerStats.totalShots=(playerStats.totalShots||0)+1;}
   // Track T4 use for daily quest
   if((cA.weapon&&cA.weapon.tier>=4)||(cB.weapon&&cB.weapon.tier>=4))updateDailyQuest("useT4");
   showShotResult(cA,cB,dmgToA,dmgToB);
@@ -2359,10 +2548,10 @@ function resolveShot(cA,cB){
 
 function showShotResult(cA,cB,dmgA,dmgB){
   document.getElementById("rdNameA").textContent=gs.names.A;document.getElementById("rdNameB").textContent=gs.names.B;
-  document.getElementById("rdWeaponA").textContent=cA.potion?"🧪 Healed":((cA.weapon?.emoji||"")+" "+(cA.weapon?.name||"—"));
-  document.getElementById("rdWeaponB").textContent=cB.potion?"🧪 Healed":((cB.weapon?.emoji||"")+" "+(cB.weapon?.name||"—"));
-  document.getElementById("rdShieldA").textContent=cA.potion?"+"+POTION_HEAL+" HP":"🛡 "+cA.shield;
-  document.getElementById("rdShieldB").textContent=cB.potion?"+"+POTION_HEAL+" HP":"🛡 "+cB.shield;
+  document.getElementById("rdWeaponA").textContent=cA.raceAbility?(getRaceAbility("A")?.emoji||"⚡")+" "+(getRaceAbility("A")?.name||"Race Ability"):cA.potion?"🧪 Healed":((cA.weapon?.emoji||"")+" "+(cA.weapon?.name||"—"));
+  document.getElementById("rdWeaponB").textContent=cB.raceAbility?"⚡ Race Ability":cB.potion?"🧪 Healed":((cB.weapon?.emoji||"")+" "+(cB.weapon?.name||"—"));
+  document.getElementById("rdShieldA").textContent=cA.raceAbility?"—":cA.potion?"+"+POTION_HEAL+" HP":"🛡 "+cA.shield;
+  document.getElementById("rdShieldB").textContent=cB.raceAbility?"—":cB.potion?"+"+POTION_HEAL+" HP":"🛡 "+cB.shield;
   const eA=document.getElementById("rdDmgA"),eB=document.getElementById("rdDmgB");
   eA.className=(dmgA===0||cA.potion)?"rd-dmg no-dmg":"rd-dmg";
   eA.textContent=cA.potion?"+"+POTION_HEAL+" HP 🧪":(dmgA===0?"✦ Perfect Block!":"−"+dmgA+" HP");
@@ -2407,6 +2596,8 @@ function endRound(){
 function startNextRound(){
   if(gs.totalHpA===gs.totalHpB&&gs.round>=TOTAL_ROUNDS)gs.isSuddenDeath=true;else gs.round++;
   gs.hpA=MAX_HP;gs.hpB=MAX_HP;gs.shot=1;gs.phase="A";gs.usedWeapons=[];gs.pendingA=null;
+  // Reset round-based race abilities
+  gs.raceAbilityAUsedRound=false;gs.raceAbilityBUsedRound=false;
   if(gameMode==="online"){
     if(onlineRole==="A"){showScreen("screen-game");renderGame();db.from("game_rooms").update({turn_status:"a_choosing",move_a:null,move_b:null,state:JSON.stringify(gs)}).eq("code",onlineRoom);}
     else{showScreen("screen-game");document.getElementById("gsRound").textContent=gs.isSuddenDeath?"⚡ Sudden Death":"Round "+gs.round+" / "+TOTAL_ROUNDS;document.getElementById("gsShot").textContent="Shot 1 / "+SHOTS_PER_ROUND;updateHPBars();renderAvailableWeapons();showOnlineWaiting("Waiting for "+gs.names.A+" to choose…");}
@@ -3079,9 +3270,11 @@ async function renderLeaderboardUI(){
 }
 
 // ══════════════════════════════════════════════
-// RANKED MODE
+// ══════════════════════════════════════════════
+// RANKED MODE — robust matchmaking
 // ══════════════════════════════════════════════
 let rankedRoom=null,rankedRole=null,rankedPoll=null;
+let _rankedJoinedAt=null; // track when we joined to detect stale queue
 
 function showRankedLobby(){
   if(!currentUser){showToast("Sign in to play ranked!","red");showScreen("screen-mode");return;}
@@ -3099,69 +3292,138 @@ function leaveRankedLobby(){
 async function joinRankedQueue(){
   const userId=currentUser.id,userName=currentUser.username;
   const rating=playerStats.rankedRating||1000;
+  _rankedJoinedAt=new Date().toISOString();
   try{
-    // Remove any stale entry first
+    // Clean up stale entries for this player (including old match_ sentinel rows)
     await db.from("ranked_queue").delete().eq("player_id",userId);
-    // Add to queue
-    await db.from("ranked_queue").insert({player_id:userId,player_name:userName,rating,joined_at:new Date().toISOString()});
-    // Poll for a match
-    rankedPoll=setInterval(checkRankedQueue,2000);
+    await db.from("ranked_queue").delete().eq("player_id","match_"+userId);
+    // Insert fresh queue entry
+    const{error}=await db.from("ranked_queue").insert({
+      player_id:userId,player_name:userName,rating,
+      joined_at:_rankedJoinedAt,match_code:null
+    });
+    if(error){
+      document.getElementById("rankedQueueStatus").textContent="⚠️ Queue unavailable — check Supabase migration.";
+      return;
+    }
+    document.getElementById("rankedQueueStatus").textContent="Searching for opponent…";
+    rankedPoll=setInterval(checkRankedQueue,1000);
   }catch(e){
-    document.getElementById("rankedQueueStatus").textContent="Queue unavailable. Run migration.sql.";
+    document.getElementById("rankedQueueStatus").textContent="Connection error. Try again.";
   }
 }
 
 async function checkRankedQueue(){
-  if(!currentUser)return;
+  if(!currentUser){clearInterval(rankedPoll);rankedPoll=null;return;}
   try{
-    const{data}=await db.from("ranked_queue").select("*").order("joined_at",{ascending:true}).limit(10);
-    if(!data||data.length<2)return;
-    const me=data.find(p=>p.player_id===currentUser.id);
-    if(!me)return;
-    // Find closest rating opponent
-    const others=data.filter(p=>p.player_id!==currentUser.id);
+    // 1. Check if we've already been matched (opponent wrote our match_code)
+    const{data:myRow}=await db.from("ranked_queue").select("*").eq("player_id",currentUser.id).maybeSingle();
+    if(!myRow){
+      // We got deleted — probably matched by opponent; scan for a match row
+      clearInterval(rankedPoll);rankedPoll=null;
+      await _rankedLookupMatchCode();
+      return;
+    }
+    if(myRow.match_code){
+      // Opponent already wrote our match code — join as B
+      clearInterval(rankedPoll);rankedPoll=null;
+      await db.from("ranked_queue").delete().eq("player_id",currentUser.id);
+      await _rankedJoinRoom(myRow.match_code,"B");
+      return;
+    }
+
+    // 2. Look for eligible opponents
+    const{data:queue}=await db.from("ranked_queue")
+      .select("*").is("match_code",null)
+      .order("joined_at",{ascending:true}).limit(20);
+    if(!queue||queue.length<2)return;
+
+    const others=queue.filter(p=>p.player_id!==currentUser.id&&!p.player_id.startsWith("match_"));
     if(!others.length)return;
+
+    // Pick closest-rating opponent
     others.sort((a,b)=>Math.abs(a.rating-(playerStats.rankedRating||1000))-Math.abs(b.rating-(playerStats.rankedRating||1000)));
     const opponent=others[0];
-    // Only the player who joined FIRST creates the room (avoid race)
-    if(me.joined_at<=opponent.joined_at){
-      clearInterval(rankedPoll);rankedPoll=null;
-      // Remove both from queue
-      await db.from("ranked_queue").delete().in("player_id",[currentUser.id,opponent.player_id]);
-      // Create game room
-      const code=genCode();
-      const initState=freshGameState({A:currentUser.username,B:opponent.player_name});
-      await db.from("game_rooms").insert({code,player_a:currentUser.id,player_a_name:currentUser.username,state:JSON.stringify(initState),status:"active",turn_status:"a_choosing",move_a:null,move_b:null,last_result:null});
-      // Write match code for opponent to find
-      await db.from("ranked_queue").insert({player_id:"match_"+opponent.player_id,player_name:code,rating:0,joined_at:new Date().toISOString()}).catch(()=>{});
-      gameMode="ranked";rankedRoom=code;rankedRole="A";
-      onlineRoom=code;onlineRole="A";
-      startOnlineGame({state:JSON.stringify(initState)},"A");
-      subscribeToRoom(code);startGamePoll();
-    }else{
-      // Wait for match code written by the other player
-      const matchEntry=data.find(p=>p.player_id==="match_"+currentUser.id);
-      if(matchEntry){
-        clearInterval(rankedPoll);rankedPoll=null;
-        await db.from("ranked_queue").delete().eq("player_id","match_"+currentUser.id);
-        const code=matchEntry.player_name;
-        const{data:roomData}=await db.from("game_rooms").select("*").eq("code",code).maybeSingle();
-        if(roomData){
-          gameMode="ranked";rankedRoom=code;rankedRole="B";
-          onlineRoom=code;onlineRole="B";
-          const roomState=JSON.parse(roomData.state);roomState.names.B=currentUser.username;
-          await db.from("game_rooms").update({player_b:currentUser.id,player_b_name:currentUser.username,state:JSON.stringify(roomState)}).eq("code",code);
-          startOnlineGame({state:JSON.stringify(roomState)},"B");
-          subscribeToRoom(code);startGamePoll();
-        }
-      }
+    const me=queue.find(p=>p.player_id===currentUser.id);
+    if(!me)return;
+
+    // Earliest joiner becomes host (avoid race conditions)
+    if(me.joined_at>opponent.joined_at)return; // wait for opponent to create
+
+    clearInterval(rankedPoll);rankedPoll=null;
+
+    // Create the game room
+    const code=genCode();
+    const initState=freshGameState({A:currentUser.username,B:opponent.player_name});
+    const{error:roomErr}=await db.from("game_rooms").insert({
+      code,player_a:currentUser.id,player_a_name:currentUser.username,
+      state:JSON.stringify(initState),status:"active",
+      turn_status:"a_choosing",move_a:null,move_b:null,last_result:null
+    });
+    if(roomErr){
+      // Room insert failed (race condition) — restart search
+      document.getElementById("rankedQueueStatus").textContent="Retrying matchmaking…";
+      rankedPoll=setInterval(checkRankedQueue,1500);
+      return;
     }
+
+    // Write match code onto opponent's queue row so they can find the room
+    await db.from("ranked_queue").update({match_code:code}).eq("player_id",opponent.player_id);
+    // Remove self from queue
+    await db.from("ranked_queue").delete().eq("player_id",currentUser.id);
+
+    // Start game as A
+    gameMode="ranked";rankedRoom=code;rankedRole="A";
+    onlineRoom=code;onlineRole="A";
+    showToast("🏅 Ranked match found!","gold");
+    startOnlineGame({state:JSON.stringify(initState)},"A");
+    subscribeToRoom(code);startGamePoll();
+
   }catch(e){console.warn("ranked queue check error",e);}
+}
+
+async function _rankedLookupMatchCode(){
+  // Fallback: poll for match_code written on our row before it was deleted
+  // Try up to 10 times at 500ms intervals
+  let attempts=0;
+  const poll=setInterval(async()=>{
+    attempts++;
+    if(attempts>10){clearInterval(poll);showToast("Ranked match timed out. Try again.","red");showScreen("screen-mode");return;}
+    try{
+      // Look for our row re-added or any row with our player_id
+      const{data}=await db.from("ranked_queue").select("*").eq("player_id",currentUser.id).maybeSingle();
+      if(data&&data.match_code){
+        clearInterval(poll);
+        await db.from("ranked_queue").delete().eq("player_id",currentUser.id);
+        await _rankedJoinRoom(data.match_code,"B");
+      }
+    }catch(e){}
+  },500);
+}
+
+async function _rankedJoinRoom(code,role){
+  try{
+    const{data:roomData}=await db.from("game_rooms").select("*").eq("code",code).maybeSingle();
+    if(!roomData){showToast("Ranked room not found.","red");showScreen("screen-mode");return;}
+    gameMode="ranked";rankedRoom=code;rankedRole=role;
+    onlineRoom=code;onlineRole=role;
+    const roomState=JSON.parse(roomData.state);
+    if(role==="B"){
+      roomState.names.B=currentUser.username;
+      await db.from("game_rooms").update({player_b:currentUser.id,player_b_name:currentUser.username,state:JSON.stringify(roomState)}).eq("code",code);
+    }
+    showToast("🏅 Ranked match found!","gold");
+    startOnlineGame({state:JSON.stringify(roomState)},role);
+    subscribeToRoom(code);startGamePoll();
+  }catch(e){showToast("Failed to join ranked room.","red");showScreen("screen-mode");}
 }
 
 async function leaveRankedQueue(){
   if(rankedPoll){clearInterval(rankedPoll);rankedPoll=null;}
-  if(currentUser){try{await db.from("ranked_queue").delete().eq("player_id",currentUser.id);}catch(e){}}
+  if(currentUser){
+    try{await db.from("ranked_queue").delete().eq("player_id",currentUser.id);}catch(e){}
+    try{await db.from("ranked_queue").delete().eq("player_id","match_"+currentUser.id);}catch(e){}
+  }
 }
 
 // ══════════════════════════════════════════════
