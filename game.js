@@ -16,17 +16,6 @@ const ALL_WEAPONS = [
   {name:"Tessen",emoji:"🪭",dmg:8,tier:1,cost:0},{name:"Jitte",emoji:"🔀",dmg:8,tier:1,cost:0},
   {name:"Hanbo",emoji:"🪄",dmg:9,tier:1,cost:0},{name:"Rokushakubo",emoji:"🎴",dmg:9,tier:1,cost:0},
   {name:"Kanabo",emoji:"🏏",dmg:10,tier:1,cost:0},{name:"Tetsubo",emoji:"🪵",dmg:10,tier:1,cost:0},
-  {name:"Hira-shuriken",emoji:"💠",dmg:5,tier:1,cost:0},{name:"Senban-shuriken",emoji:"🌟",dmg:5,tier:1,cost:0},
-  {name:"Makibishi",emoji:"🔘",dmg:6,tier:1,cost:0},{name:"Tekagi",emoji:"🤚",dmg:6,tier:1,cost:0},
-  {name:"Bo-shuriken",emoji:"📍",dmg:7,tier:1,cost:0},{name:"Kaiken",emoji:"🔺",dmg:7,tier:1,cost:0},
-  {name:"Manriki-gusari",emoji:"⛓️",dmg:8,tier:1,cost:0},{name:"Chigiriki",emoji:"🔩",dmg:8,tier:1,cost:0},
-  {name:"Kusarigama",emoji:"🔗",dmg:9,tier:1,cost:0},{name:"Nunchaku",emoji:"🔄",dmg:9,tier:1,cost:0},
-  {name:"Xiphos",emoji:"🗡️",dmg:6,tier:1,cost:0},{name:"Kopis",emoji:"⚔️",dmg:7,tier:1,cost:0},
-  {name:"Makaira",emoji:"🌙",dmg:8,tier:1,cost:0},{name:"Falcata",emoji:"🔱",dmg:8,tier:1,cost:0},
-  {name:"Dory",emoji:"📌",dmg:7,tier:1,cost:0},{name:"Akontion",emoji:"🎯",dmg:6,tier:1,cost:0},
-  {name:"Labrys",emoji:"🪓",dmg:9,tier:1,cost:0},{name:"Cestus",emoji:"🥊",dmg:6,tier:1,cost:0},
-  {name:"Sling",emoji:"🪃",dmg:5,tier:1,cost:0},{name:"Sica",emoji:"🔪",dmg:7,tier:1,cost:0},
-  {name:"Krypteia Dagger",emoji:"🌑",dmg:6,tier:1,cost:0},
   // T2
   {name:"Katana",emoji:"🥷",dmg:10,tier:2,cost:80},{name:"Kodachi",emoji:"🗡️",dmg:10,tier:2,cost:80},
   {name:"Yari",emoji:"📌",dmg:10,tier:2,cost:80},{name:"Naginata",emoji:"🌀",dmg:10,tier:2,cost:80},
@@ -100,7 +89,7 @@ const MAX_HP=30,SHOTS_PER_ROUND=6,TOTAL_ROUNDS=3;
 const USERNAME_REGEX=/^[a-zA-Z0-9_]{3,15}$/;
 const SESSION_KEY="klocvork_session";
 const TOKENS_WIN=200,TOKENS_LOSS=50,POTION_COST=15,POTION_HEAL=10;
-const BOSS_HP_MAX=60,BOSS_TOKENS=300,SPECIAL_CHANCE=0.001,SPECIAL_WINS_NEED=3,SPECIAL_TOKENS=30;
+const BOSS_HP_MAX=150,BOSS_TOKENS=300,SPECIAL_CHANCE=0.001,SPECIAL_WINS_NEED=3,SPECIAL_TOKENS=30;
 const TRAIT_ROLL_COST=500,CLAN_REROLL_COST=4000,CLAN_UPGRADE_COST=1000,RACE_REROLL_COST=3000;
 
 // ══════════════════════════════════════════════
@@ -483,9 +472,9 @@ const CRAFTING_MATERIALS=[
 // TRAITS — 100 total (80 rollable + 20 craftable)
 // ══════════════════════════════════════════════
 const ALL_TRAITS=[
-  // Mythic rollable (0% — these need crafting)
-  {name:"Phantom Strike",emoji:"👻",rarity:"Mythic",chance:0,desc:"Attack ignores shields entirely."},
-  {name:"Soul Rend",emoji:"💀",rarity:"Mythic",chance:0,desc:"Deals double damage on perfect matches."},
+  // Mythic rollable (0.01% — near-impossible roll, intended via crafting)
+  {name:"Phantom Strike",emoji:"👻",rarity:"Mythic",chance:0.01,desc:"Attack ignores shields entirely."},
+  {name:"Soul Rend",emoji:"💀",rarity:"Mythic",chance:0.01,desc:"Deals double damage on perfect matches."},
   // Legendary
   {name:"Eternal Flame",emoji:"🔥",rarity:"Legendary",chance:0.10,desc:"+2 bonus damage on every attack."},
   {name:"Frostbite",emoji:"❄️",rarity:"Legendary",chance:0.10,desc:"Enemy loses 1 HP per shot passively."},
@@ -569,6 +558,32 @@ const ALL_TRAITS=[
   {name:"Berserker's Howl",emoji:"🐺",rarity:"Common",chance:6.80,desc:"+1 dmg if you lost the previous shot."},
   {name:"Arcane Ward",emoji:"🔵",rarity:"Common",chance:7.50,desc:"5% chance to block all damage."},
   {name:"Path of Steel",emoji:"⚙️",rarity:"Common",chance:5.70,desc:"+3 XP when you deal a perfect block."},
+  // ══ 20 NEW ROLLABLE TRAITS ══
+  // Legendary
+  {name:"Void Emperor",emoji:"🌌",rarity:"Legendary",chance:0.09,desc:"Every 3rd hit deals +4 bonus void damage."},
+  {name:"Sunburst",emoji:"☀️",rarity:"Legendary",chance:0.08,desc:"When HP falls below 10, deal double damage on next hit."},
+  // Epic
+  {name:"Shadow Clone",emoji:"👥",rarity:"Epic",chance:0.60,desc:"15% chance to attack twice in one shot."},
+  {name:"Titan's Resolve",emoji:"🗿",rarity:"Epic",chance:0.55,desc:"After taking 10+ dmg in a round, gain +2 dmg for remainder."},
+  {name:"Rune Cascade",emoji:"🔮",rarity:"Epic",chance:0.50,desc:"Gain +1 shield range every 2 perfect blocks."},
+  // Rare
+  {name:"Assassin's Focus",emoji:"🕵️",rarity:"Rare",chance:1.00,desc:"First shot each round ignores 1 shield point."},
+  {name:"Battle Hunger",emoji:"🐗",rarity:"Rare",chance:1.30,desc:"Gain +1 HP for every 3 dmg dealt."},
+  {name:"Echo Strike",emoji:"🔁",rarity:"Rare",chance:1.50,desc:"20% chance to repeat last weapon's bonus dmg."},
+  {name:"Thunderclap",emoji:"⛈️",rarity:"Rare",chance:1.20,desc:"+2 dmg on shots 2 and 5 each round."},
+  {name:"Spectral Armor",emoji:"🌫️",rarity:"Rare",chance:1.70,desc:"10% chance to completely negate incoming damage."},
+  // Uncommon
+  {name:"Windwalker",emoji:"🌬️",rarity:"Uncommon",chance:3.00,desc:"Incoming damage reduced by 1 on even-numbered shots."},
+  {name:"Mark of Fury",emoji:"😡",rarity:"Uncommon",chance:3.50,desc:"+0.5 dmg per shot lost this round, resets on round win."},
+  {name:"Silver Edge",emoji:"🥈",rarity:"Uncommon",chance:3.20,desc:"+1 dmg when opponent has more HP than you."},
+  {name:"Tenacity",emoji:"🏋️",rarity:"Uncommon",chance:4.00,desc:"After losing a round, start next with +5 bonus HP."},
+  {name:"Ghost Shroud",emoji:"🕶️",rarity:"Uncommon",chance:3.80,desc:"First 2 hits each match deal 1 less damage to you."},
+  // Common
+  {name:"Forge Master",emoji:"🔨",rarity:"Common",chance:5.50,desc:"+5 XP per shot regardless of outcome."},
+  {name:"Iron Nerves",emoji:"🧠",rarity:"Common",chance:6.00,desc:"+15 coins for each round survived at under 10 HP."},
+  {name:"Blade Ward",emoji:"🛡️",rarity:"Common",chance:7.00,desc:"10% chance to reduce incoming damage by 2."},
+  {name:"Combat Focus",emoji:"🎯",rarity:"Common",chance:5.80,desc:"+1 dmg if this weapon wasn't used in the last 2 shots."},
+  {name:"Lucky Edge",emoji:"🍀",rarity:"Common",chance:7.50,desc:"8% chance to add +2 bonus dmg on any hit."},
   // ══ CRAFTABLE TRAITS (20) ══
   {name:"Hellfire Surge",emoji:"🌋",rarity:"Mythic",chance:0,craftable:true,
    recipe:{flame_crystal:5,dragon_scale:3,chaos_shard:2},desc:"Every 2nd shot deals +4 bonus fire damage."},
@@ -659,7 +674,7 @@ const ACHIEVEMENTS=[
   {id:"buy_5",name:"Collector",emoji:"🗡️",desc:"Buy 5 weapons",check:s=>s.weaponsBought>=5},
   {id:"buy_10",name:"Arsenal Owner",emoji:"⚔️",desc:"Buy 10 weapons",check:s=>s.weaponsBought>=10},
   {id:"buy_25",name:"Armory",emoji:"🏰",desc:"Buy 25 weapons",check:s=>s.weaponsBought>=25},
-  {id:"all_t1",name:"T1 Complete",emoji:"🥉",desc:"Own all Tier 1 starter weapons",check:(s,l,c,owned)=>ALL_WEAPONS.filter(w=>w.tier===1).every(w=>owned.includes(w.name))},
+  {id:"all_t1",name:"Iron Arsenal",emoji:"🥉",desc:"Own all Tier 2 weapons",check:(s,l,c,owned)=>ALL_WEAPONS.filter(w=>w.tier===2).every(w=>owned.includes(w.name))},
   {id:"divine_weapon",name:"Divine Arsenal",emoji:"🌠",desc:"Own the Getsuga Tensho",check:(s,l,c,owned)=>owned.includes("Getsuga Tensho")},
   {id:"own_t6",name:"Atomic Forge",emoji:"⚛️",desc:"Own the Atom Scythe",check:(s,l,c,owned)=>owned.includes("Atom Scythe")},
   {id:"fused_first",name:"Alchemist",emoji:"⚗️",desc:"Perform your first weapon fusion",check:s=>(s.fusionsPerformed||0)>=1},
@@ -765,6 +780,7 @@ let localTokens=0,localPotions=0,localXP=0;
 let ownedWeapons=[...STARTER_WEAPON_NAMES];
 let myLoadout=[...STARTER_WEAPON_NAMES.slice(0,LOADOUT_SIZE)];
 let weaponTraits={};
+let weaponResonance={};        // {weaponName: resonanceLevel 0-700}
 let playerClan=null;       // {key, version}
 let playerRace=null;       // race key string
 let playerMaterials={};    // {mat_id: count}
@@ -775,7 +791,7 @@ let playerStats=defaultStats();
 let dailyQuests=null;
 let dailyQuestKey="";
 
-function defaultStats(){return{wins:0,losses:0,perfectBlocks:0,bossKills:0,weaponsBought:0,traitsCrafted:0,tradesCompleted:0,dailyCompleted:0,totalTokensEarned:0,onlineWins:0,rankedWins:0,rankedLosses:0,rankedRating:1000,tournamentsWon:0,tournamentsPlayed:0,itemsRolled:0,materialsSold:0,fusionsPerformed:0,traitsRolled:0,clanUpgrades:0,accessoriesOwned:0,totalShots:0,totalDamageDealt:0,totalRoundsPlayed:0,consecutiveWins:0,maxConsecutiveWins:0};}
+function defaultStats(){return{wins:0,losses:0,perfectBlocks:0,bossKills:0,weaponsBought:0,traitsCrafted:0,tradesCompleted:0,dailyCompleted:0,totalTokensEarned:0,onlineWins:0,rankedWins:0,rankedLosses:0,rankedRating:1000,tournamentsWon:0,tournamentsPlayed:0,itemsRolled:0,materialsSold:0,fusionsPerformed:0,traitsRolled:0,clanUpgrades:0,accessoriesOwned:0,totalShots:0,totalDamageDealt:0,totalRoundsPlayed:0,consecutiveWins:0,maxConsecutiveWins:0,dailyStreak:0,lastStreakDate:''};}
 
 function loadInventoryFromData(data){
   localTokens=data?.tokens??0; localPotions=data?.potions??0; localXP=data?.xp??0;
@@ -784,6 +800,7 @@ function loadInventoryFromData(data){
   try{const fw=data?.fused_weapons;if(fw){const fusedArr=JSON.parse(fw);fusedArr.forEach(w=>{if(w&&w.name&&!ALL_WEAPONS.find(x=>x.name===w.name)){ALL_WEAPONS.push(w);}});}}catch(e){}
   try{const ml=data?.loadout;if(ml){myLoadout=JSON.parse(ml).filter(n=>ownedWeapons.includes(n));if(myLoadout.length>LOADOUT_SIZE)myLoadout=myLoadout.slice(0,LOADOUT_SIZE);}else{myLoadout=ownedWeapons.slice(0,LOADOUT_SIZE);}}catch(e){myLoadout=ownedWeapons.slice(0,LOADOUT_SIZE);}
   try{weaponTraits=data?.weapon_traits?JSON.parse(data.weapon_traits):{};}catch(e){weaponTraits={};}
+  try{weaponResonance=data?.weapon_resonance?JSON.parse(data.weapon_resonance):{};}catch(e){weaponResonance={};}
   try{playerClan=data?.clan?JSON.parse(data.clan):null;}catch(e){playerClan=null;}
   try{playerRace=data?.race||null;}catch(e){playerRace=null;}
   // Restore item roll time from DB (so cooldown persists across devices/sessions)
@@ -831,7 +848,7 @@ async function loadTokenData(){
     }catch(e){console.warn("[load] attempt",attempt+1,e);}
     if(attempt<2)await new Promise(r=>setTimeout(r,700*(attempt+1)));
   }
-  if(data){loadInventoryFromData(data);_dbLoadedOnce=true;}
+  if(data){loadInventoryFromData(data);_dbLoadedOnce=true;checkDailyStreak();}
   else if(!_dbLoadedOnce){showToast("⚠️ Could not reach server. Progress may not load.","red");}
   // If _dbLoadedOnce already true and fetch failed: silently keep in-memory state (NO WIPE)
   updateTokenDisplay();
@@ -846,6 +863,7 @@ function saveTokenData(){
     const payload={
       tokens:localTokens,potions:localPotions,owned_weapons:JSON.stringify(ownedWeapons),
       loadout:JSON.stringify(myLoadout),xp:localXP,weapon_traits:JSON.stringify(weaponTraits),
+      weapon_resonance:JSON.stringify(weaponResonance),
       clan:JSON.stringify(playerClan),race:playerRace,materials:JSON.stringify(playerMaterials),
       accessories:JSON.stringify(playerAccessories),equipped_accessory:equippedAccessory,
       achievements:JSON.stringify(playerAchievements),stats:JSON.stringify(playerStats),
@@ -926,6 +944,167 @@ async function awardXP(action){
 function addMaterial(matId,count){playerMaterials[matId]=(playerMaterials[matId]||0)+count;}
 
 // ══════════════════════════════════════════════
+// WEAPON RESONANCE (mastery system — max 700)
+// ══════════════════════════════════════════════
+const RESONANCE_MAX=700;
+const RESONANCE_MILESTONES=[50,150,300,500,700];
+function getResonanceBonus(weaponName){
+  const r=weaponResonance[weaponName]||0;
+  if(r>=700)return 5; if(r>=500)return 4;
+  if(r>=300)return 3; if(r>=150)return 2;
+  if(r>=50) return 1; return 0;
+}
+function gainResonance(weaponName){
+  if(!currentUser||!weaponName)return;
+  const prev=weaponResonance[weaponName]||0;
+  if(prev>=RESONANCE_MAX)return;
+  const next=Math.min(RESONANCE_MAX,prev+1);
+  weaponResonance[weaponName]=next;
+  // Notify on milestones
+  if(RESONANCE_MILESTONES.includes(next)){
+    const bonus=getResonanceBonus(weaponName);
+    showToast(`🔮 ${weaponName} Resonance ${next}! Bonus: +${bonus} dmg`,"gold");
+  }
+  if(next%100===0&&next>0&&!RESONANCE_MILESTONES.includes(next)){
+    showToast(`🔮 ${weaponName} Resonance: ${next}/700`,"info");
+  }
+}
+
+// ══════════════════════════════════════════════
+// DAILY LOGIN STREAK
+// ══════════════════════════════════════════════
+function checkDailyStreak(){
+  if(!currentUser)return;
+  const today=new Date().toISOString().slice(0,10);
+  const last=playerStats.lastStreakDate||'';
+  if(last===today)return; // already claimed today
+  const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if(last===yesterday){
+    playerStats.dailyStreak=(playerStats.dailyStreak||0)+1;
+  }else{
+    playerStats.dailyStreak=1; // streak broken or first login
+  }
+  playerStats.lastStreakDate=today;
+  const streak=playerStats.dailyStreak;
+  let coins=0,xp=0,mats=[];
+  if(streak>=30){coins=2000;xp=1000;mats=['void_essence','chaos_shard','titan_ore'];}
+  else if(streak>=21){coins=1000;xp=500;mats=['eclipse_shard','dragon_scale'];}
+  else if(streak>=14){coins=600;xp=250;mats=['flame_crystal','void_essence'];}
+  else if(streak>=7) {coins=300;xp=100;mats=['flame_crystal','blood_crystal'];}
+  else if(streak>=3) {coins=150;xp=50; mats=['iron_shard','mana_crystal'];}
+  else               {coins=75;        mats=['iron_shard'];}
+  localTokens+=coins;
+  if(coins>0)playerStats.totalTokensEarned=(playerStats.totalTokensEarned||0)+coins;
+  if(xp>0)localXP+=xp;
+  mats.forEach(m=>addMaterial(m,1));
+  showToast(`🔥 Day ${streak} Streak! +${coins}🪙${xp?` +${xp}XP`:''}${mats.length?' +mats':''}${streak>=7?' 🌟':''}${streak>=30?' 🏆':''}`, 'gold');
+  updateTokenDisplay();
+  saveTokenData();
+}
+
+// ══════════════════════════════════════════════
+// ACHIEVEMENT REWARDS (coins + xp + mats on unlock)
+// ══════════════════════════════════════════════
+const ACHIEVEMENT_REWARDS={
+  // Easy
+  first_win:{coins:100,xp:50,mats:['iron_shard']},
+  perfect_1:{coins:100,xp:50,mats:['iron_shard']},
+  first_loss:{coins:50,xp:25},
+  use_potion:{coins:50,xp:25},
+  buy_weapon:{coins:100,xp:50},
+  craft_first:{coins:100,xp:50,mats:['iron_shard']},
+  daily_3:{coins:100,xp:50,mats:['iron_shard']},
+  shots_100:{coins:100,xp:50,mats:['iron_shard']},
+  rounds_50:{coins:100,xp:50,mats:['iron_shard']},
+  item_roll_1:{coins:50,xp:25},
+  ranked_first:{coins:100,xp:50,mats:['iron_shard']},
+  acc_first:{coins:100,xp:50},
+  online_win:{coins:100,xp:50},
+  boss_kill:{coins:150,xp:75,mats:['ember_core']},
+  tourney_first:{coins:100,xp:50},
+  fused_first:{coins:100,xp:50},
+  traits_rolled_10:{coins:100,xp:50},
+  legendary_trait:{coins:150,xp:75,mats:['starlight']},
+  tokens_1000:{coins:100,xp:50},
+  trade_first:{coins:100,xp:50},
+  sold_mats_5:{coins:100,xp:50},
+  level_10:{coins:150,xp:75,mats:['iron_shard','blood_crystal']},
+  thunder_clan:{coins:100,xp:50,mats:['lightning_core']},
+  shadow_clan:{coins:100,xp:50,mats:['shadow_dust']},
+  loss_10:{coins:75,xp:30},
+  // Medium
+  wins_5:{coins:300,xp:150,mats:['blood_crystal']},
+  wins_10:{coins:300,xp:150,mats:['blood_crystal','iron_shard']},
+  perfect_10:{coins:300,xp:150,mats:['wind_feather']},
+  boss_kill_5:{coins:300,xp:150,mats:['dragon_scale']},
+  level_25:{coins:300,xp:150,mats:['flame_crystal']},
+  level_50:{coins:300,xp:150,mats:['flame_crystal','mana_crystal']},
+  buy_5:{coins:250,xp:125,mats:['iron_shard']},
+  buy_10:{coins:300,xp:150,mats:['blood_crystal']},
+  clan_v2:{coins:300,xp:150,mats:['spirit_ink']},
+  craft_5:{coins:300,xp:150,mats:['iron_shard','ember_core']},
+  traits_rolled_50:{coins:300,xp:150,mats:['mana_crystal']},
+  tokens_10000:{coins:300,xp:150,mats:['blood_crystal']},
+  trade_10:{coins:300,xp:150,mats:['iron_shard']},
+  online_wins_10:{coins:300,xp:150,mats:['lightning_core']},
+  ranked_win_1:{coins:300,xp:150,mats:['war_medal']},
+  rated_1100:{coins:300,xp:150,mats:['war_medal']},
+  daily_7:{coins:300,xp:150,mats:['blood_crystal']},
+  shots_500:{coins:300,xp:150,mats:['iron_shard']},
+  streak_3:{coins:300,xp:150,mats:['flame_crystal']},
+  item_roll_10:{coins:250,xp:100},
+  acc_5:{coins:300,xp:150,mats:['moonbeam']},
+  fused_5:{coins:300,xp:150,mats:['ember_core']},
+  tourney_win:{coins:400,xp:200,mats:['war_medal','starlight']},
+  clan_upgrades_3:{coins:300,xp:150,mats:['spirit_ink']},
+  heavenly_race:{coins:200,xp:100,mats:['starlight']},
+  supernatural_race:{coins:200,xp:100,mats:['shadow_dust']},
+  sold_mats_25:{coins:250,xp:125,mats:['iron_shard']},
+  // Hard
+  wins_25:{coins:600,xp:300,mats:['flame_crystal','void_essence']},
+  wins_50:{coins:600,xp:300,mats:['dragon_scale','mana_crystal']},
+  perfect_50:{coins:600,xp:300,mats:['wind_feather','moonbeam']},
+  boss_kill_10:{coins:600,xp:300,mats:['dragon_scale','ember_core']},
+  level_100:{coins:600,xp:300,mats:['void_essence','chaos_shard']},
+  buy_25:{coins:600,xp:300,mats:['blood_crystal','iron_shard']},
+  clan_v3:{coins:600,xp:300,mats:['spirit_ink','shadow_dust']},
+  craft_10:{coins:600,xp:300,mats:['ember_core','mana_crystal']},
+  mythic_trait:{coins:1000,xp:500,mats:['chaos_shard','void_essence']},
+  tokens_50000:{coins:600,xp:300,mats:['titan_ore']},
+  online_wins_50:{coins:600,xp:300,mats:['lightning_core','wind_feather']},
+  ranked_win_10:{coins:600,xp:300,mats:['war_medal','blood_crystal']},
+  rated_1250:{coins:600,xp:300,mats:['eclipse_shard','war_medal']},
+  daily_30:{coins:600,xp:300,mats:['blood_crystal','mana_crystal']},
+  rounds_200:{coins:600,xp:300,mats:['iron_shard','ember_core']},
+  shots_1000:{coins:600,xp:300,mats:['iron_shard','war_medal']},
+  streak_5:{coins:600,xp:300,mats:['flame_crystal','lightning_core']},
+  acc_all:{coins:800,xp:400,mats:['moonbeam','void_essence']},
+  tourney_wins_3:{coins:800,xp:400,mats:['war_medal','eclipse_shard']},
+  all_t1:{coins:800,xp:400,mats:['iron_shard','blood_crystal','ember_core']},
+  // Epic
+  wins_100:{coins:1500,xp:750,mats:['void_essence','chaos_shard','dragon_scale']},
+  wins_250:{coins:1500,xp:750,mats:['eclipse_shard','void_essence','titan_ore']},
+  perfect_100:{coins:1500,xp:750,mats:['moonbeam','wind_feather','spirit_ink']},
+  boss_kill_25:{coins:1500,xp:750,mats:['dragon_scale','chaos_shard','titan_ore']},
+  level_200:{coins:1500,xp:750,mats:['void_essence','eclipse_shard','starlight']},
+  own_t6:{coins:1500,xp:750,mats:['ember_core','titan_ore','chaos_shard']},
+  clan_v4:{coins:1500,xp:750,mats:['spirit_ink','shadow_dust','void_essence']},
+  tokens_100000:{coins:1500,xp:750,mats:['titan_ore','eclipse_shard']},
+  ranked_win_50:{coins:1500,xp:750,mats:['war_medal','eclipse_shard','chaos_shard']},
+  rated_1500:{coins:2000,xp:1000,mats:['void_essence','eclipse_shard','titan_ore']},
+  daily_100:{coins:1500,xp:750,mats:['blood_crystal','flame_crystal','mana_crystal']},
+  streak_10:{coins:2000,xp:1000,mats:['lightning_core','flame_crystal','chaos_shard']},
+  divine_weapon:{coins:2000,xp:1000,mats:['void_essence','chaos_shard','eclipse_shard']},
+  // Legendary
+  wins_500:{coins:3000,xp:1500,mats:['void_essence','chaos_shard','eclipse_shard','titan_ore']},
+  wins_1000:{coins:5000,xp:2500,mats:['void_essence','chaos_shard','eclipse_shard','titan_ore','dragon_scale']},
+  perfect_250:{coins:3000,xp:1500,mats:['moonbeam','wind_feather','void_essence']},
+  perfect_500:{coins:5000,xp:2500,mats:['moonbeam','eclipse_shard','void_essence']},
+  level_500:{coins:3000,xp:1500,mats:['eclipse_shard','void_essence','chaos_shard']},
+  level_1000:{coins:5000,xp:2500,mats:['titan_ore','eclipse_shard','void_essence','chaos_shard','dragon_scale']},
+};
+
+// ══════════════════════════════════════════════
 // ACHIEVEMENTS
 // ══════════════════════════════════════════════
 function checkAchievements(){
@@ -938,6 +1117,14 @@ function checkAchievements(){
       if(a.check(playerStats,lvl,playerClan,ownedWeapons,weaponTraits,playerRace)){
         playerAchievements[a.id]=true;newUnlocked=true;
         showToast(`🏅 Achievement: ${a.name}!`,"gold");
+        // Award coins/xp/mats based on difficulty
+        const rew=ACHIEVEMENT_REWARDS[a.id];
+        if(rew){
+          if(rew.coins){localTokens+=rew.coins;playerStats.totalTokensEarned=(playerStats.totalTokensEarned||0)+rew.coins;showToast(`+${rew.coins}🪙 ${a.name} reward`,"gold");}
+          if(rew.xp){localXP+=rew.xp;}
+          if(rew.mats){rew.mats.forEach(m=>addMaterial(m,1));}
+          updateTokenDisplay();
+        }
       }
     }catch(e){}
   }
@@ -2382,8 +2569,23 @@ function renderBossGame(){
   if(gs.phase==="A")renderPlayerATurn(true);else renderPlayerBTurn(true);
 }
 function resolveBossShot(cA,cB){
-  const bW=WEAPONS[Math.floor(Math.random()*WEAPONS.length)];
-  const bS=SHIELD_VALUES[Math.floor(Math.random()*SHIELD_VALUES.length)];
+  // Boss picks from heavy weapons (T3+) — weighted by damage
+  const bossPool=ALL_WEAPONS.filter(w=>w.tier>=3&&!w.fused);
+  const pool=bossPool.length?bossPool:ALL_WEAPONS;
+  const totalDmg=pool.reduce((s,w)=>s+w.dmg,0);
+  let r=Math.random()*totalDmg,bW=pool[pool.length-1];
+  for(const w of pool){r-=w.dmg;if(r<=0){bW=w;break;}}
+  // Boss shield: 55% chance to perfectly counter one player's weapon
+  let bS;
+  const targets=[cA.weapon,cB.weapon].filter(Boolean);
+  if(targets.length&&Math.random()<0.55){
+    // Pick the higher-dmg player weapon to block
+    const tgt=targets.reduce((a,b)=>a.dmg>=b.dmg?a:b);
+    bS=tgt.dmg;
+  }else{
+    const allShieldVals=[...new Set(ALL_WEAPONS.filter(w=>!w.fused).map(w=>w.dmg))].sort((a,b)=>a-b);
+    bS=allShieldVals[Math.floor(Math.random()*allShieldVals.length)];
+  }
   const dmgBossFromA=cA.weapon?Math.abs(bS-cA.weapon.dmg):0;
   const dmgBossFromB=cB.weapon?Math.abs(bS-cB.weapon.dmg):0;
   const dmgToA=cA.shield!=null?Math.abs(cA.shield-bW.dmg):bW.dmg;
@@ -2636,8 +2838,13 @@ function renderWeaponGrid(gridId,weapons,onSelect){
   grid.innerHTML="";
   weapons.forEach(w=>{
     const ti=TIER_INFO[w.tier]||TIER_INFO[1],trait=weaponTraits[w.name];
+    const res=weaponResonance[w.name]||0;
+    const resBonus=getResonanceBonus(w.name);
+    const resColor=res>=700?"#ff6b35":res>=500?"#a855f7":res>=300?"#facc15":res>=150?"#22d3ee":res>=50?"#4ade80":"#5fffc0";
+    const resHtml=res>0?` <span class='weapon-res' style='color:${resColor};font-size:10px;font-weight:700' title='Resonance: ${res}/700${resBonus?` (+${resBonus} dmg)`:""}'>🔮${res}</span>`:"";
     const btn=document.createElement("button");btn.className="weapon-btn";btn.style.position="relative";
-    btn.innerHTML=`<span>${w.emoji} ${w.name}${trait?` <span class='weapon-trait-dot' title='${trait.name}: ${trait.desc}'>${trait.emoji}</span>`:""}</span><span class='weapon-dmg'>${w.dmg} dmg</span><span class='weapon-tier' style='background:${ti.color}22;color:${ti.color};border:1px solid ${ti.color}44'>T${w.tier}</span>`;
+    if(res>=700)btn.style.boxShadow=`0 0 8px ${resColor}88`;
+    btn.innerHTML=`<span>${w.emoji} ${w.name}${resHtml}${trait?` <span class='weapon-trait-dot' title='${trait.name}: ${trait.desc}'>${trait.emoji}</span>`:""}</span><span class='weapon-dmg'>${w.dmg+resBonus} dmg</span><span class='weapon-tier' style='background:${ti.color}22;color:${ti.color};border:1px solid ${ti.color}44'>T${w.tier}</span>`;
     btn.onclick=function(){grid.querySelectorAll(".weapon-btn").forEach(b=>b.classList.remove("selected"));btn.classList.add("selected");onSelect(w);};
     grid.appendChild(btn);
   });
@@ -2753,6 +2960,8 @@ function resolveShot(cA,cB){
   if(!cA.potion&&!cB.potion){
     dmgToB=Math.abs(cB.shield-cA.weapon.dmg);
     dmgToA=Math.abs(cA.shield-cB.weapon.dmg);
+    // Resonance bonus — pierces through (even a perfect block gets +res bonus)
+    if(cA.weapon&&currentUser){const rb=getResonanceBonus(cA.weapon.name);dmgToB+=rb;}
   }else if(cA.potion&&!cB.potion){dmgToA=0;dmgToB=Math.round(cB.weapon.dmg/2);}
   else if(!cA.potion&&cB.potion){dmgToB=0;dmgToA=Math.round(cA.weapon.dmg/2);}
 
@@ -2762,7 +2971,10 @@ function resolveShot(cA,cB){
   if(!cB.potion)gs.hpB=Math.max(0,gs.hpB-dmgToB);else gs.hpB=Math.min(MAX_HP,gs.hpB+POTION_HEAL);
   if(cA.weapon&&!gs.usedWeapons.includes(cA.weapon.name))gs.usedWeapons.push(cA.weapon.name);
   if(cB.weapon&&!gs.usedWeapons.includes(cB.weapon.name))gs.usedWeapons.push(cB.weapon.name);
-  if(currentUser){awardXP("shot");updateDailyQuest("shot");playerStats.totalShots=(playerStats.totalShots||0)+1;}
+  if(currentUser){
+    if(cA.weapon)gainResonance(cA.weapon.name);
+    awardXP("shot");updateDailyQuest("shot");playerStats.totalShots=(playerStats.totalShots||0)+1;
+  }
   finishShot(cA,cB,dmgToA,dmgToB);
 }
 function finishShot(cA,cB,dmgToA,dmgToB){
@@ -3750,21 +3962,8 @@ function spawnAuthParticles(){
 }
 
 // ══════════════════════════════════════════════
-// DB MIGRATION HELPER — paste this in Supabase SQL Editor
+// DB MIGRATION HELPER — see migration.sql in project root
 // ══════════════════════════════════════════════
-// ALTER TABLE players ADD COLUMN IF NOT EXISTS clan text;
-// ALTER TABLE players ADD COLUMN IF NOT EXISTS materials text;
-// ALTER TABLE players ADD COLUMN IF NOT EXISTS accessories text;
-// ALTER TABLE players ADD COLUMN IF NOT EXISTS equipped_accessory text;
-// ALTER TABLE players ADD COLUMN IF NOT EXISTS achievements text;
-// ALTER TABLE players ADD COLUMN IF NOT EXISTS stats text;
-// ALTER TABLE players ADD COLUMN IF NOT EXISTS daily_quests text;
-// CREATE TABLE IF NOT EXISTS trade_listings (
-//   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-//   seller_id text, seller_name text, weapon_name text, ask_price integer,
-//   status text DEFAULT 'active', buyer_id text, buyer_name text,
-//   created_at timestamptz DEFAULT now()
-// );
 
 
 // ══════════════════════════════════════════════

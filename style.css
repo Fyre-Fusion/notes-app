@@ -225,10 +225,11 @@ input::placeholder { color: var(--text3); }
 
 .auth-tabs { display: flex; gap: 4px; background: var(--surface); padding: 4px; border-radius: var(--r); border: 1px solid var(--border); }
 .auth-tab { flex: 1; padding: 10px; background: transparent; border: none; color: var(--text2); font-family: var(--font-d); font-size: 12px; letter-spacing: 0.5px; cursor: pointer; border-radius: 5px; transition: background .2s, color .2s; }
-.auth-tab.active { background: var(--accent); color: #fff; box-shadow: 0 0 16px var(--accent-glow); }
+.auth-tab.active { background: var(--accent); color: #001a0e; box-shadow: 0 0 16px var(--accent-glow); font-weight: 700; }
 .auth-tab:hover:not(.active) { color: var(--text); }
 .guest-tab { color: var(--accent2) !important; }
-.guest-tab:hover { background: var(--accent-glow) !important; }
+.guest-tab:hover { background: rgba(57,255,142,0.2) !important; color: #001a0e !important; }
+.weapon-res { vertical-align: middle; }
 
 .auth-form { display: flex; flex-direction: column; gap: 18px; }
 
