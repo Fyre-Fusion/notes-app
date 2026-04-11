@@ -89,7 +89,7 @@ const MAX_HP=30,SHOTS_PER_ROUND=6,TOTAL_ROUNDS=3;
 const USERNAME_REGEX=/^[a-zA-Z0-9_]{3,15}$/;
 const SESSION_KEY="klocvork_session";
 const TOKENS_WIN=200,TOKENS_LOSS=50,POTION_COST=15,POTION_HEAL=10;
-const BOSS_HP_MAX=150,BOSS_TOKENS=300,SPECIAL_CHANCE=0.001,SPECIAL_WINS_NEED=3,SPECIAL_TOKENS=30;
+const BOSS_HP_MAX=300,BOSS_TOKENS=300,SPECIAL_CHANCE=0.001,SPECIAL_WINS_NEED=3,SPECIAL_TOKENS=30;
 const TRAIT_ROLL_COST=500,CLAN_REROLL_COST=4000,CLAN_UPGRADE_COST=1000,RACE_REROLL_COST=3000;
 
 // ══════════════════════════════════════════════
@@ -187,10 +187,17 @@ const CLANS={
       3:{name:"Wraith",buff:"25% double dmg chance + opponent cannot see your weapon choice"},
       4:{name:"Shadow Sovereign",buff:"VOID EXECUTION: 35% double dmg + first shot each round auto-crits",special:true},
     }},
+  spirit:{name:"Spirit Clan",emoji:"👻",color:"#b8aaff",lore:"Transcendent warriors who channel the power of pure spirit energy beyond mortal limits. The rarest clan of all — only the chosen few may wield spirit energy.",rollOnly:true,
+    versions:{
+      1:{name:"Wisp",buff:"+1 dmg on every shot + 10% chance to negate damage taken"},
+      2:{name:"Specter",buff:"+2 dmg on every shot + 20% chance to negate damage taken"},
+      3:{name:"Phantom Lord",buff:"+2 dmg + 25% negate + weapon ignores 2 shield points"},
+      4:{name:"Spirit Sovereign",buff:"SPIRIT SURGE: +3 dmg all shots + 35% negate + every 3rd shot deals DOUBLE damage",special:true},
+    }},
 };
 const CLAN_KEYS=["exorcist","eclipse","hydros","vulcryn"];
-const ALL_CLAN_KEYS=["exorcist","eclipse","hydros","vulcryn","thunder","shadow"];
-const ROLL_ONLY_CLANS=["thunder","shadow"];
+const ALL_CLAN_KEYS=["exorcist","eclipse","hydros","vulcryn","thunder","shadow","spirit"];
+const ROLL_ONLY_CLANS=["thunder","shadow","spirit"];
 function getRandomClan(){return CLAN_KEYS[Math.floor(Math.random()*CLAN_KEYS.length)];}
 function getRandomRollClan(){return ALL_CLAN_KEYS[Math.floor(Math.random()*ALL_CLAN_KEYS.length)];}
 
@@ -2359,13 +2366,19 @@ function showDiscordPrompt(){
 }
 
 const TUTORIAL_STEPS=[
-  {title:"⚔ Welcome to Arena of Supremacy!",body:"A strategic weapon & shield battle game. Two players fight in 3 rounds, 6 shots each. Most HP at the end wins!"},
-  {title:"🗡️ How Combat Works",body:"Each turn, secretly pick a weapon and a shield value. Your shield should match your opponent's weapon damage. Damage = |Your Shield − Enemy Weapon|. A perfect block = 0 damage!"},
-  {title:"⚜️ Clans",body:"You're assigned a random clan on signup: Exorcist 🌿, Eclipse 🌑, Hydros 💧, or Vulcryn 🔥. Each clan has 4 versions (V1–V4) with increasing power. Upgrade with coins!"},
-  {title:"✨ Traits & Crafting",body:"Roll traits onto weapons for special bonuses (500 🪙 each). 20 special traits are craftable only — collect materials from daily quests to craft them!"},
-  {title:"📅 Daily Quests",body:"Check your 3 daily quests every day for coins and crafting materials. Tap the 📅 Daily button on your profile card. Quests reset at midnight!"},
-  {title:"🤝 Trading Hub",body:"List weapons you don't need. Other players browse the Market and buy them — you earn coins from every sale!"},
-  {title:"🏅 Achievements & Levels",body:"Earn XP from every match and level up all the way to Lv.1000! Complete 25 achievements for glory. Check your profile card to track progress. Good luck, warrior!"},
+  {title:"⚔ Welcome to Arena of Supremacy!",body:`<p>Arena of Supremacy is a <strong>deep strategic battle game</strong> where every decision matters. Two fighters duel across 3 rounds, 6 shots each. The player with more HP when the rounds end wins!</p><p>You choose a <strong>weapon</strong> (to attack) and a <strong>shield value</strong> (to defend) — secretly, simultaneously. No luck, pure strategy.</p><div class="tut-tip">💡 <strong>Tip:</strong> This is NOT random. Study your opponent's patterns and outthink them every shot.</div>`},
+  {title:"🗡️ Core Combat Formula",body:`<p>Every shot resolves with simple math:</p><div class="tut-formula">Damage you deal = |Your Weapon Dmg − Enemy Shield|</div><div class="tut-formula">Damage you take = |Your Shield − Enemy Weapon Dmg|</div><p><strong>Perfect Block</strong> = pick a shield value that exactly matches the enemy's weapon damage. They deal 0 damage to you!</p><p><strong>Example:</strong> Enemy has a 12-dmg sword. You pick Shield 12 → 0 damage taken. You pick Shield 8 → 4 damage taken. You pick Shield 15 → 3 damage taken.</p><div class="tut-tip">💡 Shield hints: When it's your turn after the opponent locks in, a <span style="color:#5fffc0">highlighted shield</span> shows the perfect counter.</div>`},
+  {title:"🧱 HP, Rounds & Victory",body:`<p>Each player starts with <strong>30 HP</strong> per round. There are 3 rounds, 6 shots each. You do NOT recover HP between rounds.</p><p><strong>Round wins</strong> go to the player with more HP after 6 shots. <strong>Match wins</strong> go to whoever wins 2 of 3 rounds (or most total HP in a draw).</p><p><strong>Sudden Death:</strong> If rounds are tied 1–1 and HP is equal after round 3, an extra sudden death round begins — first to take any damage loses!</p><div class="tut-tip">💡 Don't go all-out early. Managing HP across all 3 rounds is key to winning the match.</div>`},
+  {title:"🧪 Potions — Use Them Wisely",body:`<p>Instead of attacking, you can use a <strong>Health Potion</strong> to restore +10 HP. This skips your weapon & shield selection entirely.</p><p>Potions cost <strong>15 🪙</strong> in the shop and you can hold up to 9. They're shared across all rounds.</p><p><strong>When to use:</strong> If your HP drops dangerously low and you believe the opponent will attack big next shot — a potion can swing the round.</p><div class="tut-tip">💡 <strong>Mind games:</strong> Opponents expect you to attack. Healing when they shield-bluff can turn the tide.</div>`},
+  {title:"⚜️ Clans — Your Power Identity",body:`<p>On signup, you're assigned a clan: <strong>🌿 Exorcist</strong>, <strong>🌑 Eclipse</strong>, <strong>💧 Hydros</strong>, or <strong>🔥 Vulcryn</strong>. Each has 4 upgrade versions (V1–V4).</p><ul class="tut-list"><li><strong>Exorcist:</strong> First shot each round ignores enemy shield (V4)</li><li><strong>Eclipse:</strong> 35% dodge + first shot crits (V4)</li><li><strong>Hydros:</strong> Potions heal +8 HP and deal damage (V4)</li><li><strong>Vulcryn:</strong> +3 dmg all shots + burn every 3rd (V4)</li></ul><p>Rare roll-only clans: <strong>⚡ Thunder</strong>, <strong>🌑 Shadow</strong>, and the ultra-rare <strong>👻 Spirit Clan</strong> (best in game!).</p><div class="tut-tip">💡 Upgrade your clan with 1,000 🪙 per version. Reroll for 4,000 🪙 — chance at Thunder, Shadow, or Spirit!</div>`},
+  {title:"👻 Spirit Clan — The Rarest Clan",body:`<p><strong>Spirit Clan</strong> is the best and rarest clan in the game. You can only get it by rerolling clans — it has no guaranteed path.</p><div class="tut-clan-card" style="border:1px solid #b8aaff44;padding:12px;border-radius:8px;background:#b8aaff0a"><p style="color:#b8aaff">👻 Spirit Clan Versions:</p><ul class="tut-list"><li><strong>V1 Wisp:</strong> +1 dmg every shot + 10% negate damage</li><li><strong>V2 Specter:</strong> +2 dmg every shot + 20% negate</li><li><strong>V3 Phantom Lord:</strong> +2 dmg + 25% negate + ignore 2 shield pts</li><li><strong>V4 Spirit Sovereign:</strong> SPIRIT SURGE — +3 dmg + 35% negate + every 3rd shot DOUBLES</li></ul></div><div class="tut-tip">💡 Spirit Clan is especially powerful in Boss Battle where the damage negate makes you nearly unkillable at V4.</div>`},
+  {title:"🌍 Races — Passive Bonuses & Ultimate Abilities",body:`<p>Alongside your clan, you're assigned a <strong>Race</strong> on signup. Races give passive perks AND a powerful ability usable in combat.</p><ul class="tut-list"><li><strong>🧑 Human (50%):</strong> +10% coins, balanced stats. Ultimate: Bullseye — ignore shield AND potion this shot</li><li><strong>👹 Oni (20%):</strong> +2 base damage, enemy starts with -1 HP. Ultimate: Lifesteal — drain enemy HP to fill yours</li><li><strong>✨ Heavenly (10%):</strong> 15% divine shield, +25% XP. Ultimate: God's Grace — perfect counter + regain ALL HP</li><li><strong>👻 Supernatural (20%):</strong> 20% phase dodge, soul sight. Ultimate: EnMagicked — perfect counter + bypass 50% shield</li></ul><p>Use race abilities strategically — they have round or match cooldowns!</p>`},
+  {title:"✨ Weapon Traits & Resonance",body:`<p><strong>Traits</strong> are passive bonuses attached to weapons. Roll them for 500 🪙, or craft them using materials.</p><p>Traits range from <span style="color:#94a3b8">Common</span> to <span style="color:#ff6b35">Mythic</span>. Examples: <em>"Every 3rd hit deals +4 void damage"</em>, <em>"15% chance to attack twice"</em>.</p><p><strong>Weapon Resonance</strong> is a mastery system — the more you use a weapon, the higher its resonance (max 700). At milestones (50, 150, 300, 500, 700) you gain permanent +1 to +5 bonus damage with that weapon!</p><div class="tut-tip">💡 Specialize! Pick 3–4 favourite weapons and grind their resonance to max for devastating bonuses.</div>`},
+  {title:"🔨 Crafting, Fusion & Sets",body:`<p><strong>Crafting:</strong> Collect materials from daily quests and item rolls, then craft exclusive Mythic traits unavailable via rolling.</p><p><strong>Fusion:</strong> Combine two weapons into a super-weapon — takes the higher tier +1 and higher damage +2. Consumes both source weapons!</p><p><strong>Weapon Sets:</strong> Equip 2+ weapons from a set to unlock bonuses. Equip all 4 for the full power. Example: Moon Slayer Set gives 30% dodge + +3 dmg to all shots at 4 pieces!</p><div class="tut-tip">💡 Plan your loadout around a set bonus for a major edge in every battle.</div>`},
+  {title:"💀 Boss Battle — Solo Mode",body:`<p>Boss Battle pits <strong>you alone</strong> against the mighty <strong>Warlord</strong> — a hyper-intelligent AI with <strong>300 HP</strong>.</p><p>The Boss uses adaptive AI: it <strong>learns your weapon patterns</strong> after a few shots and begins predicting your choices. It has an 80% chance to perfectly counter your predicted weapon!</p><p>To win, you must vary your weapons, bait the boss into wrong shields, and use potions strategically. A perfect block against the boss deals ZERO damage to you.</p><div class="tut-tip">💡 Never use the same weapon 3 shots in a row — the boss will predict it. Alternate between high-damage and deceptive weapons.</div>`},
+  {title:"🏅 Ranked, Tournament & Online",body:`<p><strong>Online:</strong> Share a 6-character room code with a friend and battle in real-time.</p><p><strong>Ranked:</strong> Matchmake with players near your rating (starts at 1000). Win = +rating, Loss = −rating. Climb to 1500+ for Grandmaster!</p><p><strong>Tournament:</strong> 4 or 8 player brackets. Single elimination — beat everyone to claim the 500 🪙 prize. Quitting = instant disqualification.</p><div class="tut-tip">💡 Ranked and Tournament rewards are the best way to farm coins fast. A tournament win gives 500 🪙 in one run!</div>`},
+  {title:"🪙 Economy & Daily Quests",body:`<p><strong>Earning coins:</strong> Win = +200 🪙, Loss = +50 🪙, Boss kill = +300 🪙. Complete daily quests for bonus coins and crafting materials.</p><p><strong>Daily Streak:</strong> Log in every day to build your streak. At Day 7: +300 🪙 bonus. Day 14: +600. Day 30: +2000 🪙 + rare materials!</p><p><strong>Item Roll:</strong> Every 2 hours, roll a random crafting material for free. Don't miss it!</p><div class="tut-tip">💡 Priority spending: buy T4–T5 weapons first (big damage jumps), then upgrade your clan, then roll traits on your best weapons.</div>`},
+  {title:"🏆 Achievements & Levels",body:`<p>Earn <strong>XP</strong> from every match, shot, and win. Level up from 1 all the way to <strong>Lv.1000</strong>! Higher levels mean more XP per action.</p><p>There are <strong>60+ achievements</strong> across combat, trading, ranked, and progression. Each rewards coins, XP, and rare materials.</p><p>Special achievements like <em>"Grandmaster"</em> (1500 rating) or <em>"Spirit Sovereign"</em> (own Spirit V4) are the hardest — and most rewarding.</p><div class="tut-tip">💡 You are now ready, Warrior. Good luck in the Arena. May the strongest fighter prevail! ⚔</div>`},
 ];
 let tutStep=0;
 function showTutorial(){tutStep=0;renderTutStep();showScreen("screen-tutorial");}
@@ -2452,7 +2465,61 @@ function playAsGuest(){
   dailyQuests=null;updateUserPill();updateTokenDisplay();showScreen("screen-mode");
 }
 function logout(){clearSession();localTokens=0;localPotions=0;localXP=0;weaponTraits={};playerClan=null;playerRace=null;updateUserPill();updateTokenDisplay();showScreen("screen-auth");}
-function updateUserPill(){const btn=document.getElementById("logoutBtn");if(btn)btn.style.display=currentUser?"":"none";}
+
+// ── Profile Picture System ──
+const PROFILE_PICS=[
+  "⚔️","🗡️","🛡️","👑","🔥","💧","🌿","🌑","⚡","👻",
+  "🐉","🌀","💎","🌙","☀️","🦅","🐺","🦁","🐍","🦊",
+  "🔮","⚜️","🏹","🌸","💀","🌊","🌪️","🌟","🪬","🧿"
+];
+let profilePic = null; // stored per session, loaded from localStorage
+function loadProfilePic(){try{const s=localStorage.getItem("klocvork_pic");profilePic=s||null;}catch(e){profilePic=null;}}
+function saveProfilePic(pic){profilePic=pic;try{localStorage.setItem("klocvork_pic",pic);}catch(e){}}
+loadProfilePic();
+
+let _catalogOpen=false;
+function toggleUserCatalog(){
+  _catalogOpen=!_catalogOpen;
+  const cat=document.getElementById("userCatalog");
+  if(cat)cat.classList.toggle("uc-open",_catalogOpen);
+  if(_catalogOpen)renderUserCatalog();
+}
+function closeUserCatalog(){_catalogOpen=false;const cat=document.getElementById("userCatalog");if(cat)cat.classList.remove("uc-open");}
+
+function renderUserCatalog(){
+  const grid=document.getElementById("ucPicsGrid");
+  const dispEl=document.getElementById("ucAvatarDisplay");
+  const unEl=document.getElementById("ucUsername");
+  if(dispEl)dispEl.textContent=profilePic||"⚔️";
+  if(unEl)unEl.textContent=currentUser?currentUser.username:"Player";
+  if(!grid)return;
+  grid.innerHTML=PROFILE_PICS.map((p,i)=>`<button class="uc-pic-btn ${(profilePic||"⚔️")===p?"uc-pic-selected":""}" onclick="setProfilePic('${p}')">${p}</button>`).join("");
+}
+
+function setProfilePic(pic){
+  saveProfilePic(pic);
+  renderUserCatalog();
+  updateUserPill();
+  const dispEl=document.getElementById("ucAvatarDisplay");
+  if(dispEl)dispEl.textContent=pic;
+}
+
+// Close catalog on outside click
+document.addEventListener("click",function(e){
+  if(_catalogOpen&&!e.target.closest(".user-info-wrap"))closeUserCatalog();
+});
+
+function updateUserPill(){
+  // Legacy logoutBtn hidden (replaced by user info)
+  const btn=document.getElementById("logoutBtn");if(btn)btn.style.display="none";
+  // New user info wrap
+  const wrap=document.getElementById("userInfoWrap");
+  const nameEl=document.getElementById("userInfoName");
+  const avatarEl=document.getElementById("userInfoAvatar");
+  if(wrap){wrap.style.display=currentUser?"":"none";}
+  if(nameEl)nameEl.textContent=currentUser?currentUser.username:"";
+  if(avatarEl)avatarEl.textContent=profilePic||"⚔️";
+}
 
 // ══════════════════════════════════════════════
 // SCREEN / TOAST
@@ -2549,79 +2616,142 @@ function aiMakeChoice(){
 }
 
 // ══════════════════════════════════════════════
-// BOSS BATTLE
+// BOSS BATTLE — SOLO MODE
 // ══════════════════════════════════════════════
 let bossHp=BOSS_HP_MAX;
+// Boss AI memory — tracks player patterns for adaptive strategy
+let bossMemory={weaponHistory:[],shieldHistory:[],damageDealt:0,shotsTotal:0,consecutivePerfectBlocks:0};
+
 function initBossGame(){
   _gameOverFired=false;
   bossHp=BOSS_HP_MAX;
+  bossMemory={weaponHistory:[],shieldHistory:[],damageDealt:0,shotsTotal:0,consecutivePerfectBlocks:0};
   WEAPONS=myLoadout.map(n=>ALL_WEAPONS.find(w=>w.name===n)).filter(Boolean);
   if(!WEAPONS.length)WEAPONS=ALL_WEAPONS.filter(w=>STARTER_WEAPON_NAMES.includes(w.name));
-  SHIELD_VALUES=getShieldValues(WEAPONS);
-  gs=freshGameState({A:currentUser?currentUser.username:"Player A",B:"Player B"});
+  SHIELD_VALUES_A=getShieldValues(WEAPONS);
+  gs=freshGameState({A:currentUser?currentUser.username:"Player",B:"The Warlord"});
+  gs.hpB=MAX_HP; // solo: player has normal HP, boss has separate bossHp tracker
   renderBossGame();initEmojiChat();
 }
-function renderBossGame(){
-  document.getElementById("gsRound").textContent="⚔ Boss Battle";
-  document.getElementById("gsShot").textContent="Boss HP: "+bossHp+"/"+BOSS_HP_MAX;
-  document.getElementById("hpNameA").textContent=gs.names.A;document.getElementById("hpNameB").textContent=gs.names.B;
-  updateHPBars();renderAvailableWeapons();hideOnlineWaiting();
-  if(gs.phase==="A")renderPlayerATurn(true);else renderPlayerBTurn(true);
-}
-function resolveBossShot(cA,cB){
-  // Boss picks from heavy weapons (T3+) — weighted by damage
+
+// Smart boss AI — uses player history, picks optimal counter
+function bossAIMakeChoice(playerWeapon){
+  bossMemory.shotsTotal++;
   const bossPool=ALL_WEAPONS.filter(w=>w.tier>=3&&!w.fused);
   const pool=bossPool.length?bossPool:ALL_WEAPONS;
-  const totalDmg=pool.reduce((s,w)=>s+w.dmg,0);
-  let r=Math.random()*totalDmg,bW=pool[pool.length-1];
-  for(const w of pool){r-=w.dmg;if(r<=0){bW=w;break;}}
-  // Boss shield: 55% chance to perfectly counter one player's weapon
+
+  // SMART: predict player's likely weapon based on history
+  // If player has a pattern, boss counters it
+  let predictedPlayerWeapon=playerWeapon;
+  if(!predictedPlayerWeapon&&bossMemory.weaponHistory.length>=3){
+    // Find most frequently used weapon in recent 5 shots
+    const recent=bossMemory.weaponHistory.slice(-5);
+    const freq={};recent.forEach(w=>{freq[w]=(freq[w]||0)+1;});
+    const topWeaponName=Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0];
+    predictedPlayerWeapon=WEAPONS.find(w=>w.name===topWeaponName)||null;
+  }
+
+  // Boss weapon selection: weighted by damage, but avoids weapons that got perfect-blocked recently
+  const recentlyBlocked=bossMemory.weaponHistory.slice(-3);
+  const preferredPool=pool.filter(w=>!recentlyBlocked.includes(w.name))||pool;
+  const totalDmg=preferredPool.reduce((s,w)=>s+w.dmg,0);
+  let r=Math.random()*totalDmg,bW=preferredPool[preferredPool.length-1];
+  for(const w of preferredPool){r-=w.dmg;if(r<=0){bW=w;break;}}
+
+  // SMART SHIELD: Boss has 80% chance to perfectly counter predicted player weapon
+  // Also 15% chance to pick a random high-value shield to be unpredictable
   let bS;
-  const targets=[cA.weapon,cB.weapon].filter(Boolean);
-  if(targets.length&&Math.random()<0.55){
-    // Pick the higher-dmg player weapon to block
-    const tgt=targets.reduce((a,b)=>a.dmg>=b.dmg?a:b);
-    bS=tgt.dmg;
+  const allShieldVals=[...new Set(ALL_WEAPONS.filter(w=>!w.fused).map(w=>w.dmg))].sort((a,b)=>a-b);
+  if(predictedPlayerWeapon&&Math.random()<0.80){
+    bS=predictedPlayerWeapon.dmg; // boss perfectly counters player's predicted weapon
+  }else if(Math.random()<0.15){
+    // Unpredictable: pick a high-value shield
+    bS=allShieldVals[allShieldVals.length-1-Math.floor(Math.random()*3)];
   }else{
-    const allShieldVals=[...new Set(ALL_WEAPONS.filter(w=>!w.fused).map(w=>w.dmg))].sort((a,b)=>a-b);
     bS=allShieldVals[Math.floor(Math.random()*allShieldVals.length)];
   }
-  const dmgBossFromA=cA.weapon?Math.abs(bS-cA.weapon.dmg):0;
-  const dmgBossFromB=cB.weapon?Math.abs(bS-cB.weapon.dmg):0;
-  const dmgToA=cA.shield!=null?Math.abs(cA.shield-bW.dmg):bW.dmg;
-  const dmgToB=cB.shield!=null?Math.abs(cB.shield-bW.dmg):bW.dmg;
-  const prevHp=bossHp;bossHp=Math.max(0,bossHp-dmgBossFromA-dmgBossFromB);
-  if(!cA.potion)gs.hpA=Math.max(0,gs.hpA-dmgToA);else gs.hpA=Math.min(MAX_HP,gs.hpA+POTION_HEAL);
-  if(!cB.potion)gs.hpB=Math.max(0,gs.hpB-dmgToB);else gs.hpB=Math.min(MAX_HP,gs.hpB+POTION_HEAL);
-  let killingBlow=null;
-  if(bossHp===0&&prevHp>0){killingBlow=(prevHp-dmgBossFromA)<=0?"A":"B";}
-  showBossResult(cA,cB,bW,bS,dmgToA,dmgToB,dmgBossFromA,dmgBossFromB,killingBlow);
+
+  return{weapon:bW,shield:bS};
 }
-function showBossResult(cA,cB,bW,bS,dmgA,dmgB,dmgBA,dmgBB,killingBlow){
-  document.getElementById("rdNameA").textContent=gs.names.A;document.getElementById("rdNameB").textContent=gs.names.B;
-  document.getElementById("rdWeaponA").textContent=cA.potion?"🧪 Healed":(cA.weapon.emoji+" "+cA.weapon.name+" → "+dmgBA+" dmg to Boss");
-  document.getElementById("rdWeaponB").textContent=cB.potion?"🧪 Healed":(cB.weapon.emoji+" "+cB.weapon.name+" → "+dmgBB+" dmg to Boss");
+
+function renderBossGame(){
+  document.getElementById("gsRound").textContent="💀 Boss Battle";
+  document.getElementById("gsShot").textContent="Boss HP: "+bossHp+"/"+BOSS_HP_MAX;
+  document.getElementById("hpNameA").textContent=gs.names.A;
+  document.getElementById("hpNameB").textContent="💀 Warlord";
+  updateHPBars();renderAvailableWeapons();hideOnlineWaiting();
+  renderPlayerATurn(true);
+}
+
+function resolveBossShot(cA){
+  const bossChoice=bossAIMakeChoice(cA.weapon);
+  const bW=bossChoice.weapon, bS=bossChoice.shield;
+
+  // Update boss memory with player's choice
+  if(cA.weapon){bossMemory.weaponHistory.push(cA.weapon.name);}
+  if(cA.shield!=null){bossMemory.shieldHistory.push(cA.shield);}
+
+  // Damage calc: player vs boss
+  const dmgBossFromPlayer=cA.weapon?Math.abs(bS-cA.weapon.dmg):0;
+  const dmgToPlayer=cA.shield!=null?Math.abs(cA.shield-bW.dmg):bW.dmg;
+
+  // Spirit clan bonus for boss
+  let spiritBonus=0;
+  if(playerClan&&playerClan.key==="spirit"){
+    const v=playerClan.version;
+    spiritBonus=v>=4?3:v>=2?2:1;
+    // Negate chance
+    const negateChance=v>=4?0.35:v>=3?0.25:v>=2?0.20:0.10;
+    if(Math.random()<negateChance&&dmgToPlayer>0){
+      showToast("👻 Spirit Clan negated damage!","gold");
+      // dmgToPlayer = 0 handled below with flag
+      const prevHp=bossHp;bossHp=Math.max(0,bossHp-dmgBossFromPlayer-spiritBonus);
+      if(!cA.potion)gs.hpA=gs.hpA; // damage negated
+      else gs.hpA=Math.min(MAX_HP,gs.hpA+POTION_HEAL);
+      showBossSoloResult(cA,bW,bS,0,dmgBossFromPlayer+spiritBonus,prevHp);
+      return;
+    }
+  }
+
+  const prevHp=bossHp;
+  bossHp=Math.max(0,bossHp-dmgBossFromPlayer-spiritBonus);
+  if(!cA.potion)gs.hpA=Math.max(0,gs.hpA-dmgToPlayer);
+  else gs.hpA=Math.min(MAX_HP,gs.hpA+POTION_HEAL);
+
+  if(dmgToPlayer===0)bossMemory.consecutivePerfectBlocks++;
+  else bossMemory.consecutivePerfectBlocks=0;
+  bossMemory.damageDealt+=dmgToPlayer;
+
+  showBossSoloResult(cA,bW,bS,dmgToPlayer,dmgBossFromPlayer+spiritBonus,prevHp);
+}
+
+function showBossSoloResult(cA,bW,bS,dmgToPlayer,dmgTowardsBoss,prevBossHp){
+  document.getElementById("rdNameA").textContent=gs.names.A;
+  document.getElementById("rdNameB").textContent="💀 Warlord";
+  document.getElementById("rdWeaponA").textContent=cA.potion?"🧪 Healed":(cA.weapon.emoji+" "+cA.weapon.name+" → "+dmgTowardsBoss+" dmg to Boss");
+  document.getElementById("rdWeaponB").textContent=bW.emoji+" "+bW.name+" (Boss Attack)";
   document.getElementById("rdShieldA").textContent=cA.potion?"+"+POTION_HEAL+" HP":"🛡 "+cA.shield;
-  document.getElementById("rdShieldB").textContent=cB.potion?"+"+POTION_HEAL+" HP":"🛡 "+cB.shield;
+  document.getElementById("rdShieldB").textContent="🛡 Boss Shield: "+bS;
   const eA=document.getElementById("rdDmgA"),eB=document.getElementById("rdDmgB");
-  eA.className=(dmgA===0||cA.potion)?"rd-dmg no-dmg":"rd-dmg";
-  eA.textContent=cA.potion?"+"+POTION_HEAL+" HP 🧪":(dmgA===0?"✦ Perfect Block!":"−"+dmgA+" HP");
-  eB.className=(dmgB===0||cB.potion)?"rd-dmg no-dmg":"rd-dmg";
-  eB.textContent=cB.potion?"+"+POTION_HEAL+" HP 🧪":(dmgB===0?"✦ Perfect Block!":"−"+dmgB+" HP");
+  eA.className=(dmgToPlayer===0||cA.potion)?"rd-dmg no-dmg":"rd-dmg";
+  eA.textContent=cA.potion?"+"+POTION_HEAL+" HP 🧪":(dmgToPlayer===0?"✦ Perfect Block!":"−"+dmgToPlayer+" HP");
+  eB.className=dmgTowardsBoss>0?"rd-dmg no-dmg":"rd-dmg";
+  eB.textContent=dmgTowardsBoss>0?"💥 −"+dmgTowardsBoss+" Boss HP":"🛡 Boss blocked!";
+
   const hpEl=document.getElementById("resultHpSummary"),nBtn=document.getElementById("resultNextBtn");
   if(bossHp<=0){
-    const winner=killingBlow==="A"?gs.names.A:gs.names.B;
-    hpEl.innerHTML="🏆 "+winner+" landed the killing blow! Boss defeated!";
-    nBtn.textContent="Claim Reward →";nBtn.onclick=()=>claimBossReward(killingBlow);
-  }else if(gs.hpA<=0&&gs.hpB<=0){
-    hpEl.innerHTML="💀 Both players fell. Boss survives with "+bossHp+" HP.";
+    hpEl.innerHTML="🏆 "+gs.names.A+" SLEW THE WARLORD!";
+    nBtn.textContent="Claim Reward →";nBtn.onclick=()=>claimBossReward("A");
+  }else if(gs.hpA<=0){
+    hpEl.innerHTML="💀 You fell. The Warlord survives with "+bossHp+" HP.";
     nBtn.textContent="Retreat →";nBtn.onclick=()=>showScreen("screen-mode");
   }else{
-    hpEl.innerHTML=bW.emoji+" Boss: "+bW.name+" (Shield "+bS+") | Boss HP: <strong>"+bossHp+"</strong>/"+BOSS_HP_MAX+" | "+gs.names.A+": "+gs.hpA+" HP | "+gs.names.B+": "+gs.hpB+" HP";
+    hpEl.innerHTML=bW.emoji+" Warlord used "+bW.name+` (Shield ${bS}) | Boss HP: <strong>`+bossHp+"</strong>/"+BOSS_HP_MAX+" | Your HP: "+gs.hpA;
     nBtn.textContent="Next Shot →";nBtn.onclick=nextBossShot;
   }
   showScreen("screen-result");
 }
+
 async function claimBossReward(winner){
   if(currentUser){
     await awardTokens(BOSS_TOKENS,"Boss Kill!");await awardXP("boss");
@@ -2631,7 +2761,8 @@ async function claimBossReward(winner){
   }
   showScreen("screen-mode");
 }
-function nextBossShot(){gs.shot++;gs.phase="A";showScreen("screen-game");renderBossGame();}
+function nextBossShot(){gs.shot++;renderBossGame();showScreen("screen-game");}
+
 
 function dropRandomAccessory(){
   const unowned=ALL_ACCESSORIES.filter(a=>!playerAccessories.includes(a.id));if(!unowned.length)return;
@@ -2881,6 +3012,10 @@ function confirmChoice(){
       if(usingPotionA){gs.potionsA=Math.max(0,gs.potionsA-1);if(currentUser){localPotions=Math.max(0,localPotions-1);saveTokenData();}}
       const aiChoice=aiMakeChoice();
       resolveShot(gs.pendingA,aiChoice);
+    }else if(gameMode==="boss"){
+      // SOLO boss mode: player A only, boss AI responds
+      if(usingPotionA){gs.potionsA=Math.max(0,gs.potionsA-1);if(currentUser){localPotions=Math.max(0,localPotions-1);saveTokenData();updateDailyQuest("potion");}}
+      resolveBossShot(gs.pendingA);
     }else{gs.phase="B";renderGame();}
   }else{
     if(!usingPotionB&&!usingRaceAbilityB&&(!selWeaponB||selShieldB===null))return;

@@ -75,7 +75,7 @@
     <div class="tutorial-box">
       <div class="tut-header">
         <div class="tut-title">⚔ How to Play</div>
-        <div class="tut-step-indicator" id="tutStepIndicator">1 / 7</div>
+        <div class="tut-step-indicator" id="tutStepIndicator">1 / 13</div>
       </div>
       <div class="tut-content" id="tutContent"></div>
       <div class="tut-footer">
@@ -100,7 +100,20 @@
       <button class="btn-craft btn-chests" onclick="showChestShop()">📦 Chests</button>
       <button class="btn-craft btn-sets" onclick="showSetsPanel()">🎯 Sets</button>
       <button class="btn-rulebook" onclick="showRulebook()">📖 Rules</button>
-      <button class="btn-ghost-sm" id="logoutBtn" onclick="logout()" style="display:none">Sign out</button>
+      <div class="user-info-wrap" id="userInfoWrap" style="display:none">
+        <button class="btn-user-info" id="userInfoBtn" onclick="toggleUserCatalog()">
+          <span id="userInfoAvatar" class="ui-avatar-sm">⚔</span>
+          <span id="userInfoName" class="ui-name">Player</span>
+          <span class="ui-chevron">▾</span>
+        </button>
+        <div class="user-catalog" id="userCatalog">
+          <div class="uc-avatar-display" id="ucAvatarDisplay">⚔</div>
+          <div class="uc-username" id="ucUsername">Player</div>
+          <div class="uc-pics-title">Choose Profile Picture</div>
+          <div class="uc-pics-grid" id="ucPicsGrid"></div>
+          <button class="btn-ghost uc-signout-btn" onclick="logout()">Sign Out</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -163,7 +176,7 @@
         <div class="mode-card-bg mode-card-bg-boss"></div>
         <div class="mode-icon">💀</div>
         <h3>Boss Battle</h3>
-        <p>Both players face the<br>Warlord. Slay it first.</p>
+        <p>Solo vs the Warlord.<br>Hyper-intelligent AI.</p>
         <div class="mode-badge mode-badge-boss">+300 🪙 Reward</div>
       </div>
       <div class="mode-card mode-card-ranked" onclick="selectMode('ranked')">
