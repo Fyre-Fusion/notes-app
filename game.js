@@ -1799,7 +1799,7 @@ function renderShopUI(){
       </div>
       <button class="btn-primary" onclick="buyPotion()" ${canBuy?"":"disabled"}>${localPotions>=9?"Max (9)":"Buy — 15 🪙"}</button>
     </div>
-    <p class="shop-hint">Earn tokens: +200 per win · +50 per loss · +300 boss kill · +30 special round.</p>`;
+    <p class="shop-hint">Earn tokens: +200 per win · +50 per loss · +900 boss kill · +30 special round.</p>`;
   }else if(shopTab==="accessories"){
     let html=bal+`<div class="weapon-shop-list"><p class="shop-hint" style="text-align:left;margin-bottom:8px">Accessories drop randomly in battles (8–15% chance on win/boss kill). Equip one for passive bonuses!</p><div class="ws-tier-grid">`;
     for(const acc of ALL_ACCESSORIES){
