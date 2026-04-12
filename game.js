@@ -93,6 +93,110 @@ const BOSS_HP_MAX=300,BOSS_TOKENS=900,SPECIAL_CHANCE=0.001,SPECIAL_WINS_NEED=3,S
 const TRAIT_ROLL_COST=500,CLAN_REROLL_COST=4000,CLAN_UPGRADE_COST=1000,RACE_REROLL_COST=3000;
 
 // ══════════════════════════════════════════════
+// POTION TYPES
+// ══════════════════════════════════════════════
+const POTION_TYPES = [
+  {
+    id:"health",name:"Health Potion",emoji:"🧪",color:"#4ade80",
+    cost:15,maxStack:9,
+    desc:"Restore +10 HP instead of attacking.",
+    battleDesc:"+10 HP",
+    effect:(player)=>{
+      if(player==="A"){gs.hpA=Math.min(MAX_HP,gs.hpA+10);}
+      else{gs.hpB=Math.min(MAX_HP,gs.hpB+10);}
+      return{heal:10,text:"+10 HP 🧪"};
+    }
+  },
+  {
+    id:"shield",name:"Iron Shield Potion",emoji:"🛡️",color:"#60a5fa",
+    cost:40,maxStack:5,
+    desc:"Block ALL damage this shot — take 0 damage no matter what.",
+    battleDesc:"BLOCK ALL",
+    effect:(player,cA,cB,dmgToThisPlayer)=>{
+      return{block:true,text:"🛡️ All damage blocked!"};
+    }
+  },
+  {
+    id:"rage",name:"Rage Potion",emoji:"🔴",color:"#f43f5e",
+    cost:50,maxStack:5,
+    desc:"Deal +5 bonus damage this shot.",
+    battleDesc:"+5 dmg",
+    effect:(player)=>({extraDmg:5,text:"🔴 +5 RAGE damage!"})
+  },
+  {
+    id:"ghost",name:"Ghost Potion",emoji:"👻",color:"#a855f7",
+    cost:60,maxStack:3,
+    desc:"50% chance to completely dodge all damage this shot.",
+    battleDesc:"50% dodge",
+    effect:(player)=>{
+      const dodged=Math.random()<0.50;
+      return{block:dodged,text:dodged?"👻 GHOST DODGE!":"👻 Ghost failed..."};
+    }
+  },
+  {
+    id:"berserk",name:"Berserk Potion",emoji:"💢",color:"#fb923c",
+    cost:80,maxStack:3,
+    desc:"Deal double weapon damage this shot, but take double damage too.",
+    battleDesc:"2x dmg / 2x taken",
+    effect:(player)=>({doubleDmg:true,doubleReceived:true,text:"💢 BERSERK!"})
+  },
+  {
+    id:"lifesteal",name:"Lifesteal Potion",emoji:"🩸",color:"#e11d48",
+    cost:70,maxStack:3,
+    desc:"Drain 8 HP from opponent and add to your own.",
+    battleDesc:"steal 8 HP",
+    effect:(player)=>{
+      const steal=8;
+      if(player==="A"){gs.hpA=Math.min(MAX_HP,gs.hpA+steal);gs.hpB=Math.max(0,gs.hpB-steal);}
+      else{gs.hpB=Math.min(MAX_HP,gs.hpB+steal);gs.hpA=Math.max(0,gs.hpA-steal);}
+      return{skipNormal:true,text:`🩸 Stole ${steal} HP!`};
+    }
+  },
+  {
+    id:"barrier",name:"Barrier Potion",emoji:"🔵",color:"#38bdf8",
+    cost:55,maxStack:4,
+    desc:"Reduce damage taken this shot by 50% (rounded down).",
+    battleDesc:"-50% dmg",
+    effect:(player,cA,cB,dmg)=>({halfDmg:true,text:"🔵 Barrier! -50% damage!"})
+  },
+  {
+    id:"overdrive",name:"Overdrive Potion",emoji:"⚡",color:"#facc15",
+    cost:90,maxStack:2,
+    desc:"Deal weapon damage TWICE this shot (hit twice).",
+    battleDesc:"attack twice",
+    effect:(player)=>({doubleDmg:true,text:"⚡ OVERDRIVE! Hit twice!"})
+  },
+];
+
+// Player potion inventory: {potionId: count}
+let playerPotionInventory = {health:0};
+
+function getPotionType(id){return POTION_TYPES.find(p=>p.id===id);}
+function getTotalPotions(){return Object.values(playerPotionInventory).reduce((s,v)=>s+(v||0),0);}
+
+// For backwards compat: localPotions = health potion count
+function syncLegacyPotions(){
+  // If old localPotions > 0 and health slot empty, migrate
+  if(localPotions>0&&!(playerPotionInventory.health>0)){
+    playerPotionInventory.health=(playerPotionInventory.health||0)+localPotions;
+    localPotions=0;
+  }
+}
+
+function loadPotionInventory(data){
+  try{
+    const raw=data?.potion_inventory;
+    if(raw)playerPotionInventory=JSON.parse(raw);
+    else{playerPotionInventory={health:data?.potions||0};}
+  }catch(e){playerPotionInventory={health:data?.potions||0};}
+  localPotions=playerPotionInventory.health||0;
+}
+function savePotionInventory(){
+  // keep localPotions in sync for legacy
+  localPotions=playerPotionInventory.health||0;
+}
+
+// ══════════════════════════════════════════════
 // ACCESSORIES (random drops)
 // ══════════════════════════════════════════════
 const ALL_ACCESSORIES=[
@@ -820,6 +924,8 @@ function loadInventoryFromData(data){
   try{equippedAccessory=data?.equipped_accessory||null;}catch(e){equippedAccessory=null;}
   try{playerAchievements=data?.achievements?JSON.parse(data.achievements):{};}catch(e){playerAchievements={};}
   try{playerStats=data?.stats?JSON.parse(data.stats):defaultStats();}catch(e){playerStats=defaultStats();}
+  // Load typed potion inventory
+  loadPotionInventory(data);
   // Daily quests
   const todayKey=getDailyQuestKey();
   try{
@@ -877,6 +983,10 @@ function saveTokenData(){
       daily_quests:JSON.stringify({key:dailyQuestKey,quests:dailyQuests}),
       last_roll_time:getLastRollTime(),
       fused_weapons:JSON.stringify(fusedWeaponsList),
+      ores:JSON.stringify(playerOres),
+      pickaxe:playerPickaxe,
+      ore_powers:JSON.stringify(playerOreWeaponPowers),
+      potion_inventory:JSON.stringify(playerPotionInventory),
     };
     for(let attempt=0;attempt<3;attempt++){
       try{
@@ -897,7 +1007,7 @@ function saveTokenData(){
 // ══════════════════════════════════════════════
 function updateTokenDisplay(){
   document.querySelectorAll(".token-count").forEach(el=>el.textContent=localTokens);
-  document.querySelectorAll(".potion-count").forEach(el=>el.textContent=localPotions);
+  document.querySelectorAll(".potion-count").forEach(el=>el.textContent=getTotalPotions());
   const lvl=getCurrentLevelNum(localXP);
   const color=getLevelColor(lvl),badge=getLevelBadge(lvl);
   const thisXp=LEVEL_XP_THRESHOLDS[lvl-1]||0;
@@ -1789,17 +1899,26 @@ function renderShopUI(){
   </div>`;
 
   if(shopTab==="potions"){
-    const canBuy=currentUser&&localTokens>=POTION_COST&&localPotions<9;
-    body.innerHTML=bal+`<div class="shop-item-card">
-      <div class="shop-item-icon">🧪</div>
-      <div class="shop-item-info">
-        <div class="shop-item-name">Health Potion</div>
-        <div class="shop-item-desc">Use in combat to restore +${POTION_HEAL} HP instead of attacking. Max 9.</div>
-        <div class="shop-item-cost">15 🪙 each</div>
-      </div>
-      <button class="btn-primary" onclick="buyPotion()" ${canBuy?"":"disabled"}>${localPotions>=9?"Max (9)":"Buy — 15 🪙"}</button>
-    </div>
-    <p class="shop-hint">Earn tokens: +200 per win · +50 per loss · +900 boss kill · +30 special round.</p>`;
+    let html=bal+`<div class="potion-shop-grid">`;
+    for(const pt of POTION_TYPES){
+      const have=playerPotionInventory[pt.id]||0;
+      const full=have>=pt.maxStack;
+      const canBuy=currentUser&&localTokens>=pt.cost&&!full;
+      html+=`<div class="potion-shop-card" style="border-color:${pt.color}44">
+        <div class="psc-emoji" style="filter:drop-shadow(0 0 8px ${pt.color})">${pt.emoji}</div>
+        <div class="psc-name" style="color:${pt.color}">${pt.name}</div>
+        <div class="psc-desc">${pt.desc}</div>
+        <div class="psc-meta">
+          <span class="psc-have" style="color:${pt.color}">${have}/${pt.maxStack}</span>
+          <span class="psc-cost">${pt.cost} 🪙</span>
+        </div>
+        <button class="btn-primary psc-buy-btn" onclick="buyPotionType('${pt.id}')" ${canBuy?"":"disabled"} style="background:linear-gradient(135deg,${pt.color},${pt.color}99);color:#000">
+          ${full?"Full":"Buy"}
+        </button>
+      </div>`;
+    }
+    html+=`</div><p class="shop-hint">Earn tokens: +200 per win · +50 per loss · +900 boss kill · +30 special round.</p>`;
+    body.innerHTML=html;
   }else if(shopTab==="accessories"){
     let html=bal+`<div class="weapon-shop-list"><p class="shop-hint" style="text-align:left;margin-bottom:8px">Accessories drop randomly in battles (8–15% chance on win/boss kill). Equip one for passive bonuses!</p><div class="ws-tier-grid">`;
     for(const acc of ALL_ACCESSORIES){
@@ -1853,11 +1972,19 @@ function renderShopUI(){
 }
 
 async function buyPotion(){
+  await buyPotionType("health");
+}
+async function buyPotionType(id){
   if(!currentUser){showToast("Sign in to buy potions!","red");return;}
-  if(localTokens<POTION_COST){showToast("Not enough tokens!","red");return;}
-  if(localPotions>=9){showToast("Max 9 potions!","red");return;}
-  localTokens-=POTION_COST;localPotions+=1;
-  updateTokenDisplay();await saveTokenData();renderShopUI();showToast("Potion purchased! 🧪","green");
+  const pt=getPotionType(id);if(!pt)return;
+  if(localTokens<pt.cost){showToast(`Need ${pt.cost} 🪙!`,"red");return;}
+  const have=playerPotionInventory[id]||0;
+  if(have>=pt.maxStack){showToast(`Max ${pt.maxStack} ${pt.name}!`,"red");return;}
+  localTokens-=pt.cost;
+  playerPotionInventory[id]=(playerPotionInventory[id]||0)+1;
+  savePotionInventory();localPotions=playerPotionInventory.health||0;
+  updateTokenDisplay();await saveTokenData();renderShopUI();
+  showToast(`${pt.emoji} ${pt.name} purchased!`,"green");
 }
 
 async function buyWeapon(name){
@@ -2552,9 +2679,10 @@ function selectMode(mode){
 // ══════════════════════════════════════════════
 let gs={};
 function freshGameState(names){
+  const totalPots=getTotalPotions();
   return{hpA:MAX_HP,hpB:MAX_HP,round:1,shot:1,phase:"A",usedWeapons:[],pendingA:null,
     isSuddenDeath:false,names:names||{A:"Player A",B:"Player B"},totalHpA:0,totalHpB:0,
-    potionsA:localPotions,potionsB:localPotions,specialScoreA:0,specialScoreB:0,
+    potionsA:totalPots,potionsB:totalPots,specialScoreA:0,specialScoreB:0,
     raceAbilityAUsedRound:false,raceAbilityBUsedRound:false,
     raceAbilityAUsedMatch:false,raceAbilityBUsedMatch:false};
 }
@@ -2684,33 +2812,98 @@ function renderBossGame(){
 }
 
 function resolveBossShot(cA){
+  // ── Race ability in boss mode ──
+  if(cA.raceAbility){
+    const ab=getRaceAbility("A");
+    const race=playerRace||"human";
+    if(ab&&ab.cooldown==="round")gs.raceAbilityAUsedRound=true;
+    if(ab&&ab.cooldown==="match")gs.raceAbilityAUsedMatch=true;
+    // Inversion Rift: instantly kills the boss
+    if(race==="fluxion"&&ab&&ab.endGame){
+      triggerScreenShake(20,700);
+      const overlay=document.createElement('div');
+      overlay.style.cssText='position:fixed;inset:0;background:white;z-index:99999;pointer-events:none;animation:inversionFlash 0.6s ease-out forwards;';
+      document.head.insertAdjacentHTML('beforeend',`<style>@keyframes inversionFlash{0%{opacity:1}100%{opacity:0}}</style>`);
+      document.body.appendChild(overlay);
+      setTimeout(()=>overlay.remove(),700);
+      showToast('💥 INVERSION RIFT! Boss obliterated!','gold');
+      bossHp=0;
+      setTimeout(()=>{
+        document.getElementById("rdNameA").textContent=gs.names.A;
+        document.getElementById("rdNameB").textContent="💀 Warlord";
+        document.getElementById("rdWeaponA").textContent="💥 Inversion Rift";
+        document.getElementById("rdWeaponB").textContent="...";
+        document.getElementById("rdShieldA").textContent="Reality ends";
+        document.getElementById("rdShieldB").textContent="💀 Boss HP: 0";
+        document.getElementById("rdDmgA").textContent="✦ Immune";document.getElementById("rdDmgA").className="rd-dmg no-dmg";
+        document.getElementById("rdDmgB").textContent="💥 OBLITERATED";document.getElementById("rdDmgB").className="rd-dmg";
+        document.getElementById("resultHpSummary").innerHTML="🏆 INVERSION RIFT! Boss destroyed instantly!";
+        const nBtn=document.getElementById("resultNextBtn");nBtn.textContent="Claim Reward →";nBtn.onclick=()=>claimBossReward("A");
+        showScreen("screen-result");
+      },800);
+      return;
+    }
+    // Bullseye/Human: ignore boss shield this shot
+    if(race==="human"){
+      const dmgToBoss=cA.weapon?cA.weapon.dmg:0;
+      bossHp=Math.max(0,bossHp-dmgToBoss);
+      showToast("🎯 Bullseye! Ignored boss shield!","gold");
+      showBossSoloResult(cA,{emoji:"💀",name:"Warlord"},{dmg:0},0,dmgToBoss,bossHp+dmgToBoss);return;
+    }
+    // Heavenly: God's Grace — full HP + deal full weapon dmg ignoring shield
+    if(race==="heavenly"){
+      const dmgToBoss=cA.weapon?cA.weapon.dmg:0;
+      bossHp=Math.max(0,bossHp-dmgToBoss);gs.hpA=MAX_HP;
+      showToast("🌟 God's Grace! Full HP restored + boss takes full dmg!","gold");
+      showBossSoloResult(cA,{emoji:"💀",name:"Warlord"},{dmg:0},0,dmgToBoss,bossHp+dmgToBoss);return;
+    }
+    // Oni: Lifesteal boss HP
+    if(race==="oni"){
+      const steal=Math.min(15,bossHp);bossHp=Math.max(0,bossHp-steal);gs.hpA=Math.min(MAX_HP,gs.hpA+steal);
+      showToast("🩸 Lifesteal! Drained "+steal+" from Boss!","gold");
+      showBossSoloResult(cA,{emoji:"💀",name:"Warlord"},{dmg:0},0,steal,bossHp+steal);return;
+    }
+    // Supernatural: EnMagicked
+    if(race==="supernatural"){
+      const missingHp=MAX_HP-gs.hpA;const bonusDmg=Math.floor(missingHp*0.5);
+      const dmgToBoss=(cA.weapon?cA.weapon.dmg:0)+bonusDmg;
+      bossHp=Math.max(0,bossHp-dmgToBoss);
+      showToast("🌀 EnMagicked! +"+bonusDmg+" bonus!","gold");
+      showBossSoloResult(cA,{emoji:"💀",name:"Warlord"},{dmg:0},0,dmgToBoss,bossHp+dmgToBoss);return;
+    }
+  }
+
   const bossChoice=bossAIMakeChoice(cA.weapon);
   const bW=bossChoice.weapon, bS=bossChoice.shield;
 
-  // Update boss memory with player's choice
+  // Update boss memory
   if(cA.weapon){bossMemory.weaponHistory.push(cA.weapon.name);}
   if(cA.shield!=null){bossMemory.shieldHistory.push(cA.shield);}
 
-  // Damage calc: player vs boss
-  const dmgBossFromPlayer=cA.weapon?Math.abs(bS-cA.weapon.dmg):0;
-  const dmgToPlayer=cA.shield!=null?Math.abs(cA.shield-bW.dmg):bW.dmg;
+  let dmgBossFromPlayer=cA.weapon?Math.abs(bS-cA.weapon.dmg):0;
+  let dmgToPlayer=cA.shield!=null?Math.abs(cA.shield-bW.dmg):bW.dmg;
 
-  // Spirit clan bonus for boss
+  // Spirit clan bonus
   let spiritBonus=0;
   if(playerClan&&playerClan.key==="spirit"){
     const v=playerClan.version;
     spiritBonus=v>=4?3:v>=2?2:1;
-    // Negate chance
     const negateChance=v>=4?0.35:v>=3?0.25:v>=2?0.20:0.10;
     if(Math.random()<negateChance&&dmgToPlayer>0){
       showToast("👻 Spirit Clan negated damage!","gold");
-      // dmgToPlayer = 0 handled below with flag
       const prevHp=bossHp;bossHp=Math.max(0,bossHp-dmgBossFromPlayer-spiritBonus);
-      if(!cA.potion)gs.hpA=gs.hpA; // damage negated
-      else gs.hpA=Math.min(MAX_HP,gs.hpA+POTION_HEAL);
-      showBossSoloResult(cA,bW,bS,0,dmgBossFromPlayer+spiritBonus,prevHp);
-      return;
+      if(cA.potion)gs.hpA=Math.min(MAX_HP,gs.hpA+POTION_HEAL);
+      showBossSoloResult(cA,bW,bS,0,dmgBossFromPlayer+spiritBonus,prevHp);return;
     }
+  }
+
+  // Ore weapon power bonuses
+  if(cA.weapon&&playerOreWeaponPowers[cA.weapon.name]){
+    const pow=playerOreWeaponPowers[cA.weapon.name];
+    const bonus=applyOreWeaponPower(pow,"attack",dmgBossFromPlayer,cA,null);
+    dmgBossFromPlayer+=bonus.extraDmg||0;
+    if(bonus.negate)dmgToPlayer=0;
+    if(bonus.heal)gs.hpA=Math.min(MAX_HP,gs.hpA+(bonus.heal||0));
   }
 
   const prevHp=bossHp;
@@ -2721,7 +2914,6 @@ function resolveBossShot(cA){
   if(dmgToPlayer===0)bossMemory.consecutivePerfectBlocks++;
   else bossMemory.consecutivePerfectBlocks=0;
   bossMemory.damageDealt+=dmgToPlayer;
-
   showBossSoloResult(cA,bW,bS,dmgToPlayer,dmgBossFromPlayer+spiritBonus,prevHp);
 }
 
@@ -2906,16 +3098,58 @@ function toggleRaceAbility(player){
   }
 }
 
+function renderSetAbilityRow(player){
+  // Inject set ability button into the game screen (after raceAbilityRow)
+  let row=document.getElementById("setAbilityRow");
+  if(!row){
+    row=document.createElement("div");row.id="setAbilityRow";row.className="choice-section";
+    const refRow=document.getElementById("raceAbilityRowB");
+    if(refRow&&refRow.parentNode)refRow.parentNode.insertBefore(row,refRow.nextSibling);
+  }
+  const abilities=getAvailableSetAbilities(player);
+  if(!abilities.length){row.innerHTML="";return;}
+
+  let html=`<div class="set-ability-battle-wrap">`;
+  html+=`<button class="btn-set-ability-toggle" onclick="toggleSetAbilityMenu('${player}')">
+    ⚔️ Set Abilities <span class="set-ability-count-badge">${abilities.length}</span>
+  </button>
+  <div class="set-ability-popup" id="setAbilityPopup${player}" style="display:none">`;
+  for(const {set,ability,key} of abilities){
+    html+=`<button class="set-ability-popup-item" onclick="useSetAbility('${set.id}','${player}')" style="border-color:${set.color}44">
+      <span class="sap-emoji">${ability.emoji}</span>
+      <div class="sap-info">
+        <span class="sap-name" style="color:${set.color}">${ability.name}</span>
+        <span class="sap-from" style="color:${set.color}88">${set.name}</span>
+        <span class="sap-desc">${ability.desc}</span>
+      </div>
+    </button>`;
+  }
+  html+=`</div></div>`;
+  row.innerHTML=html;
+}
+
+function toggleSetAbilityMenu(player){
+  const popup=document.getElementById(`setAbilityPopup${player}`);
+  if(!popup)return;
+  const isOpen=popup.style.display!=="none";
+  popup.style.display=isOpen?"none":"flex";
+  if(!isOpen){
+    popup.style.opacity="0";popup.style.transform="translateY(8px)";
+    requestAnimationFrame(()=>{popup.style.transition="opacity 0.15s,transform 0.15s";popup.style.opacity="1";popup.style.transform="translateY(0)";});
+  }
+}
+
 function renderPlayerATurn(isBoss){
   selWeaponA=null;selShieldA=null;usingPotionA=false;usingRaceAbilityA=false;
   const badge=document.getElementById("turnBadge"),phase=document.getElementById("turnPhase");
   if(badge)badge.textContent=gs.names.A+"'s Turn";
-  if(phase)phase.textContent=isBoss?"Choose your weapon & shield to attack the Boss!":"Choose your weapon & shield — hidden from your opponent.";
+  if(phase)phase.textContent=isBoss?"Choose your weapon & shield to attack the Boss!":"Choose your weapon & shield.";
   const cb=document.getElementById("confirmBtn");if(cb)cb.disabled=true;
   renderWeaponGrid("weaponGrid",WEAPONS,w=>{selWeaponA=w;usingPotionA=false;usingRaceAbilityA=false;checkAReady();});
   renderShieldGrid("shieldGrid",SHIELD_VALUES_A.length?SHIELD_VALUES_A:getShieldValues(WEAPONS),v=>{selShieldA=v;checkAReady();},null);
   renderPotionRow("potionRow","A");
   renderRaceAbilityRow("raceAbilityRowA","A");
+  renderSetAbilityRow("A");
 }
 function checkAReady(){const cb=document.getElementById("confirmBtn");if(cb)cb.disabled=!(usingPotionA||usingRaceAbilityA||(selWeaponA&&selShieldA!==null));}
 
@@ -2931,37 +3165,113 @@ function renderPlayerBTurn(isBoss){
   const bPool=WEAPONS; // always use the shared loadout for local modes
   const bAvail=isBoss?bPool:bPool.filter(w=>w.name!==(gs.pendingA&&gs.pendingA.weapon?gs.pendingA.weapon.name:null));
   renderWeaponGrid("weaponGrid",bAvail,w=>{selWeaponB=w;usingPotionB=false;usingRaceAbilityB=false;checkBReady();});
-  // Shield hint: if A's pending weapon exists, highlight the perfect counter shield for B
-  const aW=gs.pendingA&&gs.pendingA.weapon?gs.pendingA.weapon:null;
-  const perfectShield=aW?aW.dmg:null;
-  // Always include a block option for opponent's weapon (critical for T7 weapons like Getsuga)
-  const bShieldVals=getShieldValuesForPlayer(WEAPONS,aW);
-  renderShieldGrid("shieldGrid",bShieldVals,v=>{selShieldB=v;checkBReady();},perfectShield);
+  const bShieldVals=getShieldValuesForPlayer(WEAPONS,null);
+  renderShieldGrid("shieldGrid",bShieldVals,v=>{selShieldB=v;checkBReady();},null);
   renderPotionRow("potionRow","B");
   renderRaceAbilityRow("raceAbilityRowB","B");
 }
 function checkBReady(){const cb=document.getElementById("confirmBtn");if(cb)cb.disabled=!(usingPotionB||usingRaceAbilityB||(selWeaponB&&selShieldB!==null));}
 
-function renderPotionRow(rowId,player){
+// ── Which potion type selected in battle ──
+let selectedPotionId = null; // null = no potion selected
+
+function renderPotionRow(rowId, player){
   const row=document.getElementById(rowId);if(!row)return;
-  const count=player==="A"?gs.potionsA:gs.potionsB;
-  if(!count||count<=0){row.innerHTML="";return;}
-  row.innerHTML=`<label class="choice-label">Potions (${count} left)</label><button class="btn-potion" id="potionBtn${player}" onclick="togglePotion('${player}')">🧪 Use Potion (+${POTION_HEAL} HP)</button>`;
+  // Count total potions across all types
+  const totalPots=getTotalPotions();
+  if(!totalPots){row.innerHTML="";return;}
+
+  const usingPotion=player==="A"?usingPotionA:usingPotionB;
+  const sel=selectedPotionId;
+  const pt=sel?getPotionType(sel):null;
+
+  row.innerHTML=`<div class="potion-battle-row">
+    <button class="btn-potion-toggle ${usingPotion?"potion-active":""}" id="potionToggleBtn${player}" onclick="togglePotionMenu('${player}')">
+      ${usingPotion&&pt?`${pt.emoji} ${pt.battleDesc}`:"🧪 Use Potion"}
+      <span class="potion-count-badge">${totalPots}</span>
+    </button>
+    ${usingPotion?`<button class="btn-potion-cancel" onclick="cancelPotion('${player}')">✕</button>`:""}
+    <div class="potion-popup" id="potionPopup${player}" style="display:none">
+      ${POTION_TYPES.filter(p=>(playerPotionInventory[p.id]||0)>0).map(p=>`
+        <button class="potion-popup-item ${sel===p.id&&usingPotion?"pop-selected":""}" 
+          onclick="selectPotionInBattle('${player}','${p.id}')" style="border-color:${p.color}44">
+          <span class="ppi-emoji">${p.emoji}</span>
+          <div class="ppi-info">
+            <span class="ppi-name" style="color:${p.color}">${p.name}</span>
+            <span class="ppi-effect">${p.battleDesc}</span>
+          </div>
+          <span class="ppi-count" style="color:${p.color}">×${playerPotionInventory[p.id]||0}</span>
+        </button>`).join("")}
+    </div>
+  </div>`;
 }
-function togglePotion(player){
+
+function togglePotionMenu(player){
+  const popup=document.getElementById(`potionPopup${player}`);
+  if(!popup)return;
+  const isOpen=popup.style.display!=="none";
+  popup.style.display=isOpen?"none":"flex";
+  if(!isOpen){
+    // Animate in
+    popup.style.opacity="0";popup.style.transform="translateY(8px)";
+    requestAnimationFrame(()=>{popup.style.transition="opacity 0.15s,transform 0.15s";popup.style.opacity="1";popup.style.transform="translateY(0)";});
+  }
+}
+
+function selectPotionInBattle(player, potionId){
+  selectedPotionId=potionId;
   if(player==="A"){
-    usingPotionA=!usingPotionA;if(usingPotionA){selWeaponA=null;selShieldA=null;}
-    const btn=document.getElementById("potionBtnA");if(btn)btn.classList.toggle("potion-active",usingPotionA);
-    document.querySelectorAll("#weaponGrid .weapon-btn").forEach(b=>b.classList.toggle("weapon-dimmed",usingPotionA));
-    document.querySelectorAll("#shieldGrid .shield-btn").forEach(b=>b.classList.toggle("weapon-dimmed",usingPotionA));
+    usingPotionA=true;selWeaponA=null;selShieldA=null;usingRaceAbilityA=false;
+    document.querySelectorAll("#weaponGrid .weapon-btn").forEach(b=>b.classList.add("weapon-dimmed"));
+    document.querySelectorAll("#shieldGrid .shield-btn").forEach(b=>b.classList.add("weapon-dimmed"));
     checkAReady();
   }else{
-    usingPotionB=!usingPotionB;if(usingPotionB){selWeaponB=null;selShieldB=null;}
-    const btn=document.getElementById("potionBtnB");if(btn)btn.classList.toggle("potion-active",usingPotionB);
-    document.querySelectorAll("#weaponGrid .weapon-btn").forEach(b=>b.classList.toggle("weapon-dimmed",usingPotionB));
-    document.querySelectorAll("#shieldGrid .shield-btn").forEach(b=>b.classList.toggle("weapon-dimmed",usingPotionB));
+    usingPotionB=true;selWeaponB=null;selShieldB=null;usingRaceAbilityB=false;
+    document.querySelectorAll("#weaponGrid .weapon-btn").forEach(b=>b.classList.add("weapon-dimmed"));
+    document.querySelectorAll("#shieldGrid .shield-btn").forEach(b=>b.classList.add("weapon-dimmed"));
     checkBReady();
   }
+  renderPotionRow(`potionRow`,player);
+  const popup=document.getElementById(`potionPopup${player}`);
+  if(popup)popup.style.display="none";
+  const pt=getPotionType(potionId);
+  if(pt)showToast(`${pt.emoji} ${pt.name} selected!`,"green");
+}
+
+function cancelPotion(player){
+  selectedPotionId=null;
+  if(player==="A"){
+    usingPotionA=false;
+    document.querySelectorAll("#weaponGrid .weapon-btn").forEach(b=>b.classList.remove("weapon-dimmed"));
+    document.querySelectorAll("#shieldGrid .shield-btn").forEach(b=>b.classList.remove("weapon-dimmed"));
+    checkAReady();
+  }else{
+    usingPotionB=false;
+    document.querySelectorAll("#weaponGrid .weapon-btn").forEach(b=>b.classList.remove("weapon-dimmed"));
+    document.querySelectorAll("#shieldGrid .shield-btn").forEach(b=>b.classList.remove("weapon-dimmed"));
+    checkBReady();
+  }
+  renderPotionRow("potionRow",player);
+}
+
+function togglePotion(player){
+  // legacy compat — if no potion selected, open menu; else cancel
+  const using=player==="A"?usingPotionA:usingPotionB;
+  if(using){cancelPotion(player);}else{togglePotionMenu(player);}
+}
+
+// Apply the selected potion effect during shot resolution
+function applySelectedPotion(player, baseDmgDealt, baseDmgTaken){
+  const id=selectedPotionId||"health";
+  const pt=getPotionType(id);
+  if(!pt)return{heal:POTION_HEAL,text:"+10 HP 🧪"};
+  // Consume potion
+  if((playerPotionInventory[id]||0)>0){
+    playerPotionInventory[id]=Math.max(0,(playerPotionInventory[id]||0)-1);
+    if(id==="health")localPotions=playerPotionInventory.health||0;
+    savePotionInventory();saveTokenData();
+  }
+  return pt.effect(player);
 }
 
 function renderWeaponGrid(gridId,weapons,onSelect){
@@ -2980,12 +3290,11 @@ function renderWeaponGrid(gridId,weapons,onSelect){
     grid.appendChild(btn);
   });
 }
-function renderShieldGrid(gridId,values,onSelect,perfectValue){
+function renderShieldGrid(gridId,values,onSelect,_unused){
   const grid=document.getElementById(gridId);if(!grid)return;
   grid.innerHTML="";
   values.forEach(v=>{
     const btn=document.createElement("button");btn.className="shield-btn";
-    if(v===perfectValue)btn.classList.add("perfect-counter");
     btn.textContent=v;
     btn.onclick=function(){grid.querySelectorAll(".shield-btn").forEach(b=>b.classList.remove("selected"));btn.classList.add("selected");onSelect(v);};
     grid.appendChild(btn);
@@ -3014,8 +3323,13 @@ function confirmChoice(){
       resolveShot(gs.pendingA,aiChoice);
     }else if(gameMode==="boss"){
       // SOLO boss mode: player A only, boss AI responds
-      if(usingPotionA){gs.potionsA=Math.max(0,gs.potionsA-1);if(currentUser){localPotions=Math.max(0,localPotions-1);saveTokenData();updateDailyQuest("potion");}}
-      resolveBossShot(gs.pendingA);
+      const pid=selectedPotionId||"health";
+      if(usingPotionA){
+        if((playerPotionInventory[pid]||0)>0){playerPotionInventory[pid]=Math.max(0,(playerPotionInventory[pid]||0)-1);if(pid==="health")localPotions=playerPotionInventory.health||0;savePotionInventory();saveTokenData();}
+      }
+      const pendingWithPotion={...gs.pendingA,potionId:pid};
+      selectedPotionId=null;
+      resolveBossShot(pendingWithPotion);
     }else{gs.phase="B";renderGame();}
   }else{
     if(!usingPotionB&&!usingRaceAbilityB&&(!selWeaponB||selShieldB===null))return;
@@ -3095,10 +3409,44 @@ function resolveShot(cA,cB){
   if(!cA.potion&&!cB.potion){
     dmgToB=Math.abs(cB.shield-cA.weapon.dmg);
     dmgToA=Math.abs(cA.shield-cB.weapon.dmg);
-    // Resonance bonus — pierces through (even a perfect block gets +res bonus)
+    // Resonance bonus
     if(cA.weapon&&currentUser){const rb=getResonanceBonus(cA.weapon.name);dmgToB+=rb;}
-  }else if(cA.potion&&!cB.potion){dmgToA=0;dmgToB=Math.round(cB.weapon.dmg/2);}
-  else if(!cA.potion&&cB.potion){dmgToB=0;dmgToA=Math.round(cA.weapon.dmg/2);}
+  }else if(cA.potion&&!cB.potion){
+    // A used a potion — apply its effect
+    const eff=applySelectedPotion("A",0,0);
+    selectedPotionId=null;
+    if(eff.skipNormal){finishShot(cA,cB,0,0);return;}
+    if(eff.heal){gs.hpA=Math.min(MAX_HP,gs.hpA+eff.heal);}
+    if(eff.block){}
+    if(eff.extraDmg){dmgToB=eff.extraDmg;}
+    if(eff.doubleDmg&&cA.weapon){dmgToB=cA.weapon.dmg*2;}
+    // Opponent still attacks normally
+    dmgToA=Math.abs(cA.shield-cB.weapon.dmg);
+    if(eff.block)dmgToA=0;
+    if(eff.halfDmg)dmgToA=Math.floor(dmgToA/2);
+    if(!cB.potion)gs.hpB=Math.max(0,gs.hpB-dmgToB);
+    if(!eff.heal)gs.hpA=Math.max(0,gs.hpA-dmgToA);
+    if(cA.weapon&&!gs.usedWeapons.includes(cA.weapon.name))gs.usedWeapons.push(cA.weapon.name);
+    if(cB.weapon&&!gs.usedWeapons.includes(cB.weapon.name))gs.usedWeapons.push(cB.weapon.name);
+    if(currentUser){awardXP("shot");updateDailyQuest("shot");playerStats.totalShots=(playerStats.totalShots||0)+1;}
+    finishShot(cA,cB,dmgToA,dmgToB);return;
+  }else if(!cA.potion&&cB.potion){
+    const eff=applySelectedPotion("B",0,0);
+    selectedPotionId=null;
+    if(eff.skipNormal){finishShot(cA,cB,0,0);return;}
+    if(eff.heal){gs.hpB=Math.min(MAX_HP,gs.hpB+eff.heal);}
+    if(eff.extraDmg){dmgToA=eff.extraDmg;}
+    if(eff.doubleDmg&&cB.weapon){dmgToA=cB.weapon.dmg*2;}
+    dmgToB=Math.abs(cB.shield-cA.weapon.dmg);
+    if(eff.block)dmgToB=0;
+    if(eff.halfDmg)dmgToB=Math.floor(dmgToB/2);
+    if(!cA.potion)gs.hpA=Math.max(0,gs.hpA-dmgToA);
+    if(!eff.heal)gs.hpB=Math.max(0,gs.hpB-dmgToB);
+    if(cA.weapon&&!gs.usedWeapons.includes(cA.weapon.name))gs.usedWeapons.push(cA.weapon.name);
+    if(cB.weapon&&!gs.usedWeapons.includes(cB.weapon.name))gs.usedWeapons.push(cB.weapon.name);
+    if(currentUser){awardXP("shot");updateDailyQuest("shot");playerStats.totalShots=(playerStats.totalShots||0)+1;}
+    finishShot(cA,cB,dmgToA,dmgToB);return;
+  }
 
   if(dmgToA===0&&!cA.potion){playerStats.perfectBlocks=(playerStats.perfectBlocks||0)+1;updateDailyQuest("perfectBlock");if(currentUser)saveTokenData();}
 
@@ -3123,15 +3471,20 @@ function finishShot(cA,cB,dmgToA,dmgToB){
 
 function showShotResult(cA,cB,dmgA,dmgB){
   document.getElementById("rdNameA").textContent=gs.names.A;document.getElementById("rdNameB").textContent=gs.names.B;
-  document.getElementById("rdWeaponA").textContent=cA.raceAbility?(getRaceAbility("A")?.emoji||"⚡")+" "+(getRaceAbility("A")?.name||"Race Ability"):cA.potion?"🧪 Healed":((cA.weapon?.emoji||"")+" "+(cA.weapon?.name||"—"));
-  document.getElementById("rdWeaponB").textContent=cB.raceAbility?"⚡ Race Ability":cB.potion?"🧪 Healed":((cB.weapon?.emoji||"")+" "+(cB.weapon?.name||"—"));
-  document.getElementById("rdShieldA").textContent=cA.raceAbility?"—":cA.potion?"+"+POTION_HEAL+" HP":"🛡 "+cA.shield;
-  document.getElementById("rdShieldB").textContent=cB.raceAbility?"—":cB.potion?"+"+POTION_HEAL+" HP":"🛡 "+cB.shield;
+  const getPotionLabel=(c)=>{
+    if(!c.potion)return null;
+    const pt=c.potionId?getPotionType(c.potionId):null;
+    return pt?`${pt.emoji} ${pt.name}`:null;
+  };
+  document.getElementById("rdWeaponA").textContent=cA.raceAbility?(getRaceAbility("A")?.emoji||"⚡")+" "+(getRaceAbility("A")?.name||"Race Ability"):cA.potion?(getPotionLabel(cA)||"🧪 Potion"):((cA.weapon?.emoji||"")+" "+(cA.weapon?.name||"—"));
+  document.getElementById("rdWeaponB").textContent=cB.raceAbility?"⚡ Race Ability":cB.potion?(getPotionLabel(cB)||"🧪 Potion"):((cB.weapon?.emoji||"")+" "+(cB.weapon?.name||"—"));
+  document.getElementById("rdShieldA").textContent=cA.raceAbility?"—":cA.potion?(getPotionType(cA.potionId||"health")?.battleDesc||"Potion"):"🛡 "+cA.shield;
+  document.getElementById("rdShieldB").textContent=cB.raceAbility?"—":cB.potion?(getPotionType(cB.potionId||"health")?.battleDesc||"Potion"):"🛡 "+cB.shield;
   const eA=document.getElementById("rdDmgA"),eB=document.getElementById("rdDmgB");
   eA.className=(dmgA===0||cA.potion)?"rd-dmg no-dmg":"rd-dmg";
-  eA.textContent=cA.potion?"+"+POTION_HEAL+" HP 🧪":(dmgA===0?"✦ Perfect Block!":"−"+dmgA+" HP");
+  eA.textContent=cA.potion?(getPotionType(cA.potionId||"health")?.battleDesc||"+10 HP"):(dmgA===0?"✦ Perfect Block!":"−"+dmgA+" HP");
   eB.className=(dmgB===0||cB.potion)?"rd-dmg no-dmg":"rd-dmg";
-  eB.textContent=cB.potion?"+"+POTION_HEAL+" HP 🧪":(dmgB===0?"✦ Perfect Block!":"−"+dmgB+" HP");
+  eB.textContent=cB.potion?(getPotionType(cB.potionId||"health")?.battleDesc||"+10 HP"):(dmgB===0?"✦ Perfect Block!":"−"+dmgB+" HP");
   document.getElementById("resultHpSummary").innerHTML=gs.names.A+": <strong>"+gs.hpA+" HP</strong> | "+gs.names.B+": <strong>"+gs.hpB+" HP</strong>";
   showScreen("screen-result");
 }
@@ -3173,6 +3526,7 @@ function startNextRound(){
   gs.hpA=MAX_HP;gs.hpB=MAX_HP;gs.shot=1;gs.phase="A";gs.usedWeapons=[];gs.pendingA=null;
   // Reset round-based race abilities
   gs.raceAbilityAUsedRound=false;gs.raceAbilityBUsedRound=false;
+  resetRoundSetAbilities();
   if(gameMode==="online"){
     if(onlineRole==="A"){showScreen("screen-game");renderGame();db.from("game_rooms").update({turn_status:"a_choosing",move_a:null,move_b:null,state:JSON.stringify(gs)}).eq("code",onlineRoom);}
     else{showScreen("screen-game");document.getElementById("gsRound").textContent=gs.isSuddenDeath?"⚡ Sudden Death":"Round "+gs.round+" / "+TOTAL_ROUNDS;document.getElementById("gsShot").textContent="Shot 1 / "+SHOTS_PER_ROUND;updateHPBars();renderAvailableWeapons();showOnlineWaiting("Waiting for "+gs.names.A+" to choose…");}
@@ -3285,20 +3639,52 @@ function confirmQuit(){
 // ══════════════════════════════════════════════
 var onlineRoom=null,onlineSub=null,onlineRole=null,lobbyPoll=null;
 var lastHandledKey="",resultShownForKey="";
+var _pollFailCount=0; // count consecutive fetch failures before giving up
 
-function startGamePoll(){if(lobbyPoll){clearInterval(lobbyPoll);lobbyPoll=null;}lastHandledKey="";lobbyPoll=setInterval(pollTick,1500);}
+function startGamePoll(){if(lobbyPoll){clearInterval(lobbyPoll);lobbyPoll=null;}lastHandledKey="";_pollFailCount=0;lobbyPoll=setInterval(pollTick,2000);}
 
 async function pollTick(){
   if(!onlineRoom){clearInterval(lobbyPoll);lobbyPoll=null;return;}
-  var data;
-  try{var res=await db.from("game_rooms").select("turn_status,state,last_result,status,move_a").eq("code",onlineRoom).maybeSingle();data=res.data;}catch(e){return;}
-  if(!data)return;
+  // Only poll when on relevant screens — avoid ghost polls after navigating away
+  const activeScreen=document.querySelector(".screen.active");
+  const screenId=activeScreen?activeScreen.id:"";
+  const onGameScreens=["screen-game","screen-result","screen-roundover","screen-gameover"].includes(screenId);
+  if(!onGameScreens)return;
 
-  // Opponent quit — kick us back to menu with message
+  var data;
+  try{
+    var res=await db.from("game_rooms").select("turn_status,state,last_result,status,move_a").eq("code",onlineRoom).maybeSingle();
+    if(res.error){_pollFailCount++;if(_pollFailCount>8){console.warn("Poll: too many errors, stopping");clearInterval(lobbyPoll);lobbyPoll=null;}return;}
+    data=res.data;
+    _pollFailCount=0; // reset on success
+  }catch(e){_pollFailCount++;return;}
+
+  // Room deleted (null) — could be a transient DB issue; only treat as abandoned after 3 consecutive nulls
+  if(!data){
+    _pollFailCount++;
+    if(_pollFailCount>3){
+      clearInterval(lobbyPoll);lobbyPoll=null;cleanupOnline();destroyEmojiChat();restoreTurnPanel();
+      showScreen("screen-mode");showOpponentLeftMessage();
+    }
+    return;
+  }
+  _pollFailCount=0;
+
+  // Opponent quit OR Inversion Rift — only act if status is truly "abandoned"
   if(data.status==="abandoned"){
-    clearInterval(lobbyPoll);lobbyPoll=null;cleanupOnline();destroyEmojiChat();restoreTurnPanel();
+    // Make sure it's not our OWN abandon signal being caught in a race
+    // (we set onlineRoom=null in cleanupOnline, so if we're still here, it's the opponent's)
+    clearInterval(lobbyPoll);lobbyPoll=null;
+    try{
+      const lr=data.last_result?JSON.parse(data.last_result):null;
+      if(lr&&lr.inversionRift){
+        cleanupOnline();destroyEmojiChat();restoreTurnPanel();
+        triggerInversionRift(lr.inversionRift);
+        return;
+      }
+    }catch(e){}
+    cleanupOnline();destroyEmojiChat();restoreTurnPanel();
     showScreen("screen-mode");
-    // Show prominent overlay message
     showOpponentLeftMessage();
     return;
   }
@@ -3346,9 +3732,11 @@ async function pollTick(){
 }
 
 function cleanupOnline(){
+  const roomWas=onlineRoom;
+  onlineRoom=null;onlineRole=null; // null first so pollTick stops immediately
   if(lobbyPoll){clearInterval(lobbyPoll);lobbyPoll=null;}
-  if(onlineSub){onlineSub.unsubscribe();onlineSub=null;}
-  onlineRoom=null;onlineRole=null;lastHandledKey="";resultShownForKey="";
+  if(onlineSub){try{onlineSub.unsubscribe();}catch(e){}onlineSub=null;}
+  lastHandledKey="";resultShownForKey="";_pollFailCount=0;
 }
 
 function showOpponentLeftMessage(){
@@ -3407,13 +3795,39 @@ function subscribeToRoom(code){
 }
 
 function confirmOnlineChoice(){
-  if(onlineRole==="A"){if(!usingPotionA&&(!selWeaponA||selShieldA===null)){document.getElementById("gameError").textContent="Pick a weapon and shield first!";return;}submitOnlineMoveA();}
-  else{if(!usingPotionB&&(!selWeaponB||selShieldB===null)){document.getElementById("gameError").textContent="Pick a weapon and shield first!";return;}submitOnlineMoveB();}
+  if(onlineRole==="A"){
+    const hasRA=usingRaceAbilityA;
+    if(!hasRA&&!usingPotionA&&(!selWeaponA||selShieldA===null)){document.getElementById("gameError").textContent="Pick a weapon and shield first!";return;}
+    // Inversion Rift fires immediately for A in online — no need to wait for B
+    if(hasRA){
+      const ab=getRaceAbility("A");
+      if(ab&&ab.endGame&&playerRace==="fluxion"){
+        // Mark race ability used then trigger
+        gs.raceAbilityAUsedMatch=true;
+        db.from("game_rooms").update({status:"abandoned",last_result:JSON.stringify({inversionRift:"A",byName:gs.names.A})}).eq("code",onlineRoom).then(()=>{});
+        triggerInversionRift("A");return;
+      }
+    }
+    submitOnlineMoveA();
+  } else {
+    const hasRA=usingRaceAbilityB;
+    if(!hasRA&&!usingPotionB&&(!selWeaponB||selShieldB===null)){document.getElementById("gameError").textContent="Pick a weapon and shield first!";return;}
+    if(hasRA){
+      const ab=getRaceAbility("A"); // in online B uses same playerRace
+      if(ab&&ab.endGame&&playerRace==="fluxion"){
+        gs.raceAbilityBUsedMatch=true;
+        db.from("game_rooms").update({status:"abandoned",last_result:JSON.stringify({inversionRift:"B",byName:gs.names.B})}).eq("code",onlineRoom).then(()=>{});
+        triggerInversionRift("B");return;
+      }
+    }
+    submitOnlineMoveB();
+  }
 }
 
 async function submitOnlineMoveA(){
   if(usingPotionA){gs.potionsA=Math.max(0,gs.potionsA-1);localPotions=Math.max(0,localPotions-1);saveTokenData();updateTokenDisplay();}
-  const move=JSON.stringify({weapon:selWeaponA,shield:selShieldA,potion:usingPotionA});
+  if(usingRaceAbilityA){const ab=getRaceAbility("A");if(ab&&ab.cooldown==="round")gs.raceAbilityAUsedRound=true;if(ab&&ab.cooldown==="match")gs.raceAbilityAUsedMatch=true;}
+  const move=JSON.stringify({weapon:selWeaponA,shield:selShieldA,potion:usingPotionA,raceAbility:usingRaceAbilityA||false});
   const r=await db.from("game_rooms").update({move_a:move,turn_status:"b_choosing",state:JSON.stringify(gs)}).eq("code",onlineRoom);
   if(r.error){document.getElementById("gameError").textContent="Failed to submit move. Try again.";return;}
   showOnlineWaiting("Locked in. Waiting for "+gs.names.B+"…");
@@ -3423,14 +3837,37 @@ async function submitOnlineMoveB(){
   const res=await db.from("game_rooms").select("move_a,state").eq("code",onlineRoom).maybeSingle();
   if(res.error||!res.data||!res.data.move_a){document.getElementById("gameError").textContent="Could not read opponent's move. Try again.";return;}
   const cA=JSON.parse(res.data.move_a);
-  const cB=usingPotionB?{weapon:null,shield:selShieldB,potion:true}:{weapon:selWeaponB,shield:selShieldB,potion:false};
+  const cB=usingRaceAbilityB?{weapon:selWeaponB,shield:selShieldB,potion:false,raceAbility:true}
+           :usingPotionB?{weapon:null,shield:selShieldB,potion:true,raceAbility:false}
+           :{weapon:selWeaponB,shield:selShieldB,potion:false,raceAbility:false};
+
+  // Handle Inversion Rift from A's move (B sees it)
+  if(cA.raceAbility){
+    const aRace=gs._raceA||"fluxion"; // best effort
+    if(aRace==="fluxion"){
+      db.from("game_rooms").update({status:"abandoned"}).eq("code",onlineRoom).then(()=>{});
+      triggerInversionRift("A");return;
+    }
+  }
+  // B's own Inversion Rift already handled in confirmOnlineChoice
+
   let dmgToA=0,dmgToB=0;
-  if(!cA.potion&&!cB.potion){dmgToB=Math.abs(cB.shield-cA.weapon.dmg);dmgToA=Math.abs(cA.shield-cB.weapon.dmg);}
-  else if(cA.potion&&!cB.potion){dmgToA=0;dmgToB=Math.round(cB.weapon.dmg/2);}
+  // Race ability from A (non-rift)
+  if(cA.raceAbility){
+    // A used race ability — treat as full weapon damage ignoring B's shield (Bullseye default for online)
+    dmgToB=cA.weapon?cA.weapon.dmg:0;dmgToA=0;
+  } else if(cB.raceAbility){
+    dmgToA=cB.weapon?cB.weapon.dmg:0;dmgToB=0;
+  } else if(!cA.potion&&!cB.potion){
+    dmgToB=Math.abs(cB.shield-cA.weapon.dmg);
+    dmgToA=Math.abs(cA.shield-cB.weapon.dmg);
+  } else if(cA.potion&&!cB.potion){dmgToA=0;dmgToB=Math.round(cB.weapon.dmg/2);}
   else if(!cA.potion&&cB.potion){dmgToB=0;dmgToA=Math.round(cA.weapon.dmg/2);}
+
   if(!cA.potion)gs.hpA=Math.max(0,gs.hpA-dmgToA);else gs.hpA=Math.min(MAX_HP,gs.hpA+POTION_HEAL);
   if(!cB.potion)gs.hpB=Math.max(0,gs.hpB-dmgToB);else gs.hpB=Math.min(MAX_HP,gs.hpB+POTION_HEAL);
   if(usingPotionB){gs.potionsB=Math.max(0,gs.potionsB-1);localPotions=Math.max(0,localPotions-1);saveTokenData();updateTokenDisplay();}
+  if(usingRaceAbilityB){const ab=getRaceAbility("A");if(ab&&ab.cooldown==="round")gs.raceAbilityBUsedRound=true;if(ab&&ab.cooldown==="match")gs.raceAbilityBUsedMatch=true;}
   if(cA.weapon&&!gs.usedWeapons.includes(cA.weapon.name))gs.usedWeapons.push(cA.weapon.name);
   if(cB.weapon&&!gs.usedWeapons.includes(cB.weapon.name))gs.usedWeapons.push(cB.weapon.name);
   gs.phase="A";gs.pendingA=null;
@@ -3935,6 +4372,9 @@ async function openChest(chestId){
 // ══════════════════════════════════════════════
 // SETS SYSTEM (like Blox Fruits sets)
 // ══════════════════════════════════════════════
+// Set active ability state
+let setAbilityUsed={}; // {setId: true/false} reset each round
+
 const WEAPON_SETS = [
   {
     id:"moon_slayer", name:"Moon Slayer Set", emoji:"🌙",
@@ -3943,6 +4383,8 @@ const WEAPON_SETS = [
     weapons:["Lunar Scimitar","Nodachi","Eclipse Blade","Abyssal Katana"],
     bonus2:"🌙 Lunar Edge: +2 dmg on every shot when HP < 20",
     bonus4:"🌑 Eclipse Form: 30% dodge chance + all shots deal +3 bonus dmg",
+    ability:{name:"Crescent Slash",emoji:"🌙",desc:"Deal damage equal to 50% of your MISSING HP to opponent. Once per round.",cooldown:"round",
+      fn:(player)=>{const missing=MAX_HP-(player==="A"?gs.hpA:gs.hpB);const dmg=Math.floor(missing*0.5);if(player==="A")gs.hpB=Math.max(0,gs.hpB-dmg);else gs.hpA=Math.max(0,gs.hpA-dmg);showToast(`🌙 Crescent Slash! ${dmg} dmg from ${missing} missing HP!`,"gold");}},
     lore:"Forged under 1000 moons by the Eclipse Clan's ancestors.",
   },
   {
@@ -3952,6 +4394,8 @@ const WEAPON_SETS = [
     weapons:["Storm Halberd","Odachi","Daikyu","Kusarigama"],
     bonus2:"⚡ Static Field: +2 dmg on odd shots",
     bonus4:"🌩️ Thundergod's Wrath: 25% chance every shot to deal +5 bonus lightning dmg",
+    ability:{name:"Chain Lightning",emoji:"⚡",desc:"Deal 8 lightning damage that cannot be shielded. Once per round.",cooldown:"round",
+      fn:(player)=>{if(player==="A")gs.hpB=Math.max(0,gs.hpB-8);else gs.hpA=Math.max(0,gs.hpA-8);showToast("⚡ Chain Lightning! 8 unblockable dmg!","gold");}},
     lore:"Worn by the legendary Thunder Generals who once shook the heavens.",
   },
   {
@@ -3961,6 +4405,8 @@ const WEAPON_SETS = [
     weapons:["Void Reaper","Void Emperor Blade","Singularity Edge","Atom Scythe"],
     bonus2:"🌀 Void Touch: 15% chance to ignore enemy shield",
     bonus4:"💫 Singularity: First shot each round guaranteed perfect block + 3x dmg",
+    ability:{name:"Dimensional Rift",emoji:"🌀",desc:"Swap HP with opponent instantly. Once per match.",cooldown:"match",
+      fn:(player)=>{const tmp=gs.hpA;gs.hpA=gs.hpB;gs.hpB=tmp;showToast("🌀 Dimensional Rift! HP swapped!","gold");}},
     lore:"Created by the first Fluxion, these weapons warp space itself.",
   },
   {
@@ -3970,6 +4416,8 @@ const WEAPON_SETS = [
     weapons:["Draconic Lance","Phoenix Blade","Masakari","Bisento"],
     bonus2:"🐉 Dragon's Blood: +3 HP at start of each round",
     bonus4:"🔥 Dragonfire: Every 2nd shot burns enemy for -2 HP next turn + lifesteal 2 HP",
+    ability:{name:"Dragon Roar",emoji:"🐉",desc:"Intimidate opponent — their next attack deals half damage. Once per round.",cooldown:"round",
+      fn:(player)=>{if(player==="A")gs._dragonRoarB=true;else gs._dragonRoarA=true;showToast("🐉 Dragon Roar! Opponent's next attack halved!","gold");}},
     lore:"Tempered in dragon fire and cooled in their blood.",
   },
   {
@@ -3977,18 +4425,78 @@ const WEAPON_SETS = [
     color:"#4ade80",
     desc:"Precision instruments for the divine marksman.",
     weapons:["Celestial Bow","Yumi","Daikyu","Kestros"],
-    bonus2:"🏹 Eagle Eye: Always see opponent's shield range",
+    bonus2:"🏹 Eagle Eye: +1 dmg every shot",
     bonus4:"☄️ Heaven's Arrow: Ranged weapons deal +4 dmg + 20% chance to pierce all shields",
+    ability:{name:"Piercing Shot",emoji:"🏹",desc:"Your next weapon attack completely ignores the opponent's shield. Once per round.",cooldown:"round",
+      fn:(player)=>{if(player==="A")gs._piercingShotA=true;else gs._piercingShotB=true;showToast("🏹 Piercing Shot ready! Next attack ignores shield!","gold");}},
     lore:"Gifted to the greatest archers by the Heavenly Race.",
   },
   {
     id:"shadow_phantom", name:"Shadow Phantom Set", emoji:"👻",
     color:"#7c3aed",
     desc:"Strike from the shadows before your foe can react.",
-    weapons:["Shikomizue","Metsubushi","Kyoketsu-shoge","Ninja"],
+    weapons:["Shikomizue","Metsubushi","Kyoketsu-shoge","Wakizashi"],
     bonus2:"👻 Phase: 20% chance to dodge any attack",
     bonus4:"🌑 Phantom Strike: First 2 shots each round cannot be blocked",
+    ability:{name:"Vanish",emoji:"👻",desc:"Become untargetable — take 0 damage this shot. Once per round.",cooldown:"round",
+      fn:(player)=>{if(player==="A")gs._vanishA=true;else gs._vanishB=true;showToast("👻 Vanish! You take 0 damage this shot!","gold");}},
     lore:"The Shadow Clan's deadliest operatives carried these weapons.",
+  },
+  // ── 5 NEW SETS ──
+  {
+    id:"inferno_king", name:"Inferno King Set", emoji:"🔥",
+    color:"#ef4444",
+    desc:"Forged in the heart of a dying star. Everything burns.",
+    weapons:["Phoenix Blade","Kanemuchi","Jutte","Solar Spear"],
+    bonus2:"🔥 Burning Blade: +2 dmg + enemy takes 1 burn damage next shot",
+    bonus4:"☀️ Solar Flare: All attacks deal +4 fire dmg + 15% chance to stun (skip enemy shield)",
+    ability:{name:"Inferno Burst",emoji:"🔥",desc:"Set the battlefield ablaze — deal 10 fire damage that ignores all shields. Once per match.",cooldown:"match",
+      fn:(player)=>{if(player==="A")gs.hpB=Math.max(0,gs.hpB-10);else gs.hpA=Math.max(0,gs.hpA-10);showToast("🔥 Inferno Burst! 10 unblockable fire damage!","gold");}},
+    lore:"The Vulcryn Clan's most ancient warlords bathed in magma to forge these weapons.",
+  },
+  {
+    id:"frost_titan", name:"Frost Titan Set", emoji:"❄️",
+    color:"#93c5fd",
+    desc:"Arctic weapons that slow, freeze, and shatter.",
+    weapons:["Atom Scythe","Hoko Yari","Sarissa","Tanegashima"],
+    bonus2:"❄️ Frostbite: 20% chance to freeze opponent (they use same shield as last shot)",
+    bonus4:"🧊 Permafrost Armor: Reduce ALL incoming damage by 2",
+    ability:{name:"Flash Freeze",emoji:"❄️",desc:"Freeze opponent solid — they deal 0 damage next shot. Once per round.",cooldown:"round",
+      fn:(player)=>{if(player==="A")gs._frozenB=true;else gs._frozenA=true;showToast("❄️ Flash Freeze! Opponent frozen next shot!","gold");}},
+    lore:"Carved from glaciers that predate civilization itself.",
+  },
+  {
+    id:"blood_covenant", name:"Blood Covenant Set", emoji:"🩸",
+    color:"#f87171",
+    desc:"Dark pact weapons that trade HP for overwhelming power.",
+    weapons:["Wakizashi","Kusari-fundo","Kyoketsu-shoge","Void Reaper"],
+    bonus2:"🩸 Blood Price: +3 dmg but take 1 self-damage per shot",
+    bonus4:"💉 Crimson Pact: Lifesteal 3 HP on every hit + double lifesteal when below 10 HP",
+    ability:{name:"Blood Surge",emoji:"🩸",desc:"Sacrifice 8 HP to deal 16 damage to opponent (2:1 trade). Once per round.",cooldown:"round",
+      fn:(player)=>{if(player==="A"){gs.hpA=Math.max(1,gs.hpA-8);gs.hpB=Math.max(0,gs.hpB-16);}else{gs.hpB=Math.max(1,gs.hpB-8);gs.hpA=Math.max(0,gs.hpA-16);}showToast("🩸 Blood Surge! -8 HP → 16 dmg to opponent!","gold");}},
+    lore:"Warriors of the Blood Covenant swear upon their own life force.",
+  },
+  {
+    id:"divine_guardian", name:"Divine Guardian Set", emoji:"✨",
+    color:"#fbbf24",
+    desc:"Blessed weapons wielded by heaven's chosen protectors.",
+    weapons:["Celestial Bow","Gunbai","Rhomphaia","Hachiwari"],
+    bonus2:"✨ Holy Aura: Perfect blocks restore +3 HP",
+    bonus4:"👼 Divine Protection: 25% chance each shot to completely negate all incoming damage",
+    ability:{name:"Sacred Barrier",emoji:"✨",desc:"Create an impenetrable barrier — block 100% of damage for 2 consecutive shots. Once per match.",cooldown:"match",
+      fn:(player)=>{if(player==="A"){gs._sacredBarrierA=2;}else{gs._sacredBarrierB=2;}showToast("✨ Sacred Barrier! 2-shot immunity active!","gold");}},
+    lore:"Handed down by the Heavenly Race to their most devoted guardians.",
+  },
+  {
+    id:"soul_reaper", name:"Soul Reaper Set", emoji:"💀",
+    color:"#818cf8",
+    desc:"Weapons that harvest the very soul of the fallen.",
+    weapons:["Getsuga Tensho","Void Emperor Blade","Singularity Edge","Eclipse Blade"],
+    bonus2:"💀 Soul Drain: Each hit drains 1 HP from opponent on top of weapon damage",
+    bonus4:"🌌 Reaper's Harvest: On killing blow, restore to full HP (can trigger once per match)",
+    ability:{name:"Death Mark",emoji:"💀",desc:"Mark opponent — your next 3 attacks each deal +5 bonus soul damage. Once per match.",cooldown:"match",
+      fn:(player)=>{if(player==="A")gs._deathMarkA=3;else gs._deathMarkB=3;showToast("💀 Death Mark! Next 3 attacks +5 soul damage!","gold");}},
+    lore:"Ancient reapers carried exactly four weapons to harvest four souls at once.",
   },
 ];
 
@@ -3999,6 +4507,41 @@ function getActiveSetBonuses(){
     if(owned.length>=2)bonuses.push({set,count:owned.length,bonus:owned.length>=4?set.bonus4:set.bonus2});
   }
   return bonuses;
+}
+
+// Get all available set abilities for a player
+function getAvailableSetAbilities(player){
+  const available=[];
+  for(const set of WEAPON_SETS){
+    const equipped=set.weapons.filter(n=>myLoadout.includes(n));
+    if(equipped.length<2||!set.ability)continue;
+    const key=set.id+"_"+player;
+    const cd=set.ability.cooldown;
+    const used=(cd==="round"&&setAbilityUsed[key+"_round"])||(cd==="match"&&setAbilityUsed[key+"_match"]);
+    if(!used)available.push({set,ability:set.ability,key});
+  }
+  return available;
+}
+
+function useSetAbility(setId, player){
+  const set=WEAPON_SETS.find(s=>s.id===setId);
+  if(!set||!set.ability)return;
+  const key=set.id+"_"+player;
+  const cd=set.ability.cooldown;
+  if((cd==="round"&&setAbilityUsed[key+"_round"])||(cd==="match"&&setAbilityUsed[key+"_match"])){showToast("Ability already used!","red");return;}
+  if(cd==="round")setAbilityUsed[key+"_round"]=true;
+  else setAbilityUsed[key+"_match"]=true;
+  set.ability.fn(player);
+  updateHPBars();
+  // Close any open ability menu
+  const menu=document.getElementById("setAbilityMenu");
+  if(menu)menu.remove();
+}
+
+function resetRoundSetAbilities(){
+  // Clear round-cooldown abilities
+  const keys=Object.keys(setAbilityUsed);
+  for(const k of keys){if(k.endsWith("_round"))delete setAbilityUsed[k];}
 }
 
 function showSetsPanel(){renderSetsUI();document.getElementById("modal-sets").classList.remove("hidden");}
@@ -4035,6 +4578,11 @@ function renderSetsUI(){
         <div class="set-bonus ${equippedInSet.length>=4?"sb-active":"sb-locked"}">
           <span class="sb-req" style="color:${set.color}">4 pieces:</span> ${set.bonus4}
         </div>
+        ${set.ability?`<div class="set-bonus set-active-ability ${isActive?"sb-active":"sb-locked"}" style="border-color:${set.color}44;background:${set.color}0a">
+          <span class="sb-req" style="color:${set.color}">${set.ability.emoji} Active (2pc):</span>
+          <strong style="color:${set.color}">${set.ability.name}</strong> — ${set.ability.desc}
+          <span style="font-size:10px;color:${set.color}88;margin-left:4px">(${set.ability.cooldown==="match"?"Once/match":"Once/round"})</span>
+        </div>`:""}
       </div>
       <div class="set-weapons-list">`;
     for(const wName of set.weapons){
@@ -4469,8 +5017,394 @@ async function checkTournamentWin(){
 }
 
 // ══════════════════════════════════════════════
-// INIT
+// MINING EXPEDITION SYSTEM
 // ══════════════════════════════════════════════
+
+// ── 35 Ores ──
+const ALL_ORES = [
+  // Tier 1 — Common Surface Ores
+  {id:"coal",name:"Coal",emoji:"⬛",tier:1,rarity:"Common",desc:"Basic fuel. Abundant near the surface.",power:"Char Edge: +1 dmg for 1 battle",color:"#555"},
+  {id:"copper",name:"Copper",emoji:"🟫",tier:1,rarity:"Common",desc:"Soft metal, easy to mine.",power:"Copper Coat: Reduce first hit by 2",color:"#b87333"},
+  {id:"tin",name:"Tin",emoji:"⬜",tier:1,rarity:"Common",desc:"Brittle but useful in alloys.",power:"Tin Shell: +3 HP at round start",color:"#cccccc"},
+  {id:"iron_ore",name:"Iron Ore",emoji:"🔩",tier:1,rarity:"Common",desc:"The backbone of all smithing.",power:"Iron Will: +2 dmg when below 15 HP",color:"#8a8a8a"},
+  {id:"limestone",name:"Limestone",emoji:"🪨",tier:1,rarity:"Common",desc:"Layered rock rich in calcium.",power:"Stone Guard: Negate 1 damage per round",color:"#d4c5a9"},
+  {id:"sulfur",name:"Sulfur",emoji:"🟡",tier:1,rarity:"Common",desc:"Yellow crystals that burn.",power:"Sulfur Spark: 15% chance to burn enemy (-2 HP next turn)",color:"#e8e000"},
+  {id:"salt",name:"Rock Salt",emoji:"🤍",tier:1,rarity:"Common",desc:"Mineral salt from ancient seas.",power:"Salt Ward: Potions restore +3 extra HP",color:"#f0f0f0"},
+
+  // Tier 2 — Uncommon Cave Ores
+  {id:"silver_ore",name:"Silver Ore",emoji:"🔘",tier:2,rarity:"Uncommon",desc:"Gleaming silver veins deep in rock.",power:"Silver Strike: +2 dmg against clan ability users",color:"#c0c0c0"},
+  {id:"gold_ore",name:"Gold Ore",emoji:"🟡",tier:2,rarity:"Uncommon",desc:"Precious and dense, sought by all.",power:"Gold Rush: +40 coins on win",color:"#ffd700"},
+  {id:"zinc",name:"Zinc",emoji:"🔵",tier:2,rarity:"Uncommon",desc:"Blue-grey metal that resists corrosion.",power:"Zinc Barrier: First 4 HP lost per match negated",color:"#7ba7bc"},
+  {id:"quartz",name:"Quartz Crystal",emoji:"🔷",tier:2,rarity:"Uncommon",desc:"Sharp crystal that focuses energy.",power:"Quartz Focus: +1 dmg on shots 1, 3, and 5",color:"#a8d8ea"},
+  {id:"obsidian",name:"Obsidian",emoji:"⬛",tier:2,rarity:"Uncommon",desc:"Volcanic glass sharper than steel.",power:"Obsidian Edge: Weapon ignores 1 shield point",color:"#1a1a2e"},
+  {id:"magnetite",name:"Magnetite",emoji:"🧲",tier:2,rarity:"Uncommon",desc:"Naturally magnetic iron ore.",power:"Magnetic Pull: 20% chance to learn opponent's weapon choice",color:"#4a4a6a"},
+
+  // Tier 3 — Rare Deep Ores
+  {id:"amethyst",name:"Amethyst",emoji:"💜",tier:3,rarity:"Rare",desc:"Purple gem with mystical energy.",power:"Amethyst Aura: +15% XP from all battles",color:"#9b59b6"},
+  {id:"sapphire_ore",name:"Sapphire Ore",emoji:"💙",tier:3,rarity:"Rare",desc:"Deep blue gem pulsing with cold magic.",power:"Sapphire Freeze: 25% chance to freeze shield (enemy can't change it)",color:"#1e6fd9"},
+  {id:"ruby_ore",name:"Ruby Ore",emoji:"❤️",tier:3,rarity:"Rare",desc:"Blood-red crystal of scorching power.",power:"Ruby Blaze: Every 2nd shot deals +3 fire damage",color:"#c0392b"},
+  {id:"tungsten",name:"Tungsten",emoji:"⚙️",tier:3,rarity:"Rare",desc:"Dense metal almost indestructible.",power:"Tungsten Armor: Reduce all incoming damage by 1",color:"#5d6d7e"},
+  {id:"cobalt",name:"Cobalt",emoji:"🔵",tier:3,rarity:"Rare",desc:"Blue metallic element of great hardness.",power:"Cobalt Rush: +2 dmg on shots after a perfect block",color:"#0040ff"},
+  {id:"mithril_ore",name:"Mithril Ore",emoji:"🌀",tier:3,rarity:"Rare",desc:"Ancient ore of legendary lightness.",power:"Mithril Grace: 20% dodge chance per shot",color:"#5dade2"},
+  {id:"platinum_ore",name:"Platinum Ore",emoji:"⬜",tier:3,rarity:"Rare",desc:"Rarest of the precious metals.",power:"Platinum Shield: Perfect blocks restore +2 HP",color:"#e5e8e8"},
+
+  // Tier 4 — Epic Cavern Ores
+  {id:"darksteel",name:"Darksteel",emoji:"🌑",tier:4,rarity:"Epic",desc:"Black steel forged in volcanic depths.",power:"Darksteel Edge: +3 dmg and ignore 2 shield points",color:"#2c3e50"},
+  {id:"shadowite",name:"Shadowite",emoji:"👁️",tier:4,rarity:"Epic",desc:"Ore that absorbs light itself.",power:"Shadow Sight: See opponent's last used weapon each shot",color:"#4a235a"},
+  {id:"bloodstone",name:"Bloodstone",emoji:"🩸",tier:4,rarity:"Epic",desc:"Red-veined ore that drinks vitality.",power:"Bloodstone Drain: Lifesteal 2 HP on every hit",color:"#922b21"},
+  {id:"voidcrystal",name:"Void Crystal",emoji:"🌌",tier:4,rarity:"Epic",desc:"Crystal torn from between dimensions.",power:"Void Pierce: Weapon damage always deals at least 5 (can't be fully blocked)",color:"#1a0033"},
+  {id:"stormite",name:"Stormite",emoji:"⚡",tier:4,rarity:"Epic",desc:"Crackling ore charged with storm energy.",power:"Stormite Surge: Every 3rd shot deals double damage",color:"#f4d03f"},
+  {id:"glacite",name:"Glacite",emoji:"❄️",tier:4,rarity:"Epic",desc:"Frozen ore from the deepest glacier.",power:"Glacite Slow: Enemy deals -2 damage for the next 2 shots after you hit",color:"#aed6f1"},
+
+  // Tier 5 — Legendary Abyss Ores
+  {id:"dragonite",name:"Dragonite",emoji:"🐉",tier:5,rarity:"Legendary",desc:"Ore crystallized from ancient dragon fire.",power:"Dragonite Wrath: +4 dmg + 10% chance to stun (enemy loses shield)",color:"#ff6b35"},
+  {id:"soulstone",name:"Soulstone",emoji:"💀",tier:5,rarity:"Legendary",desc:"Ore formed from condensed spirit energy.",power:"Soulstone Pact: Gain HP equal to damage you deal each shot",color:"#7d3c98"},
+  {id:"celestite",name:"Celestite",emoji:"✨",tier:5,rarity:"Legendary",desc:"Ore fallen from the stars themselves.",power:"Celestite Blessing: +5 HP at the start of every round",color:"#fdfefe"},
+  {id:"helium_crystal",name:"Helium Crystal",emoji:"🌟",tier:5,rarity:"Legendary",desc:"Featherlight crystal of pure refined energy.",power:"Helium Burst: First shot each round deals +6 bonus damage",color:"#f9e79f"},
+  {id:"etherstone",name:"Etherstone",emoji:"🔮",tier:5,rarity:"Legendary",desc:"Pure solidified magic beyond comprehension.",power:"Ether Transcend: Weapon bypasses ALL shields on every 5th shot",color:"#e8daef"},
+  {id:"voidheart",name:"Void Heart",emoji:"🫀",tier:5,rarity:"Legendary",desc:"The beating core of a dead dimension.",power:"Void Heart: Every perfect block you deal 5 damage back to enemy",color:"#1c2833"},
+  {id:"prismite",name:"Prismite",emoji:"🌈",tier:5,rarity:"Legendary",desc:"Ore refracting reality into infinite colors.",power:"Prism Shift: Random bonus each shot (+1 to +6 bonus damage)",color:"#ff69b4"},
+  {id:"aethermetal",name:"Aethermetal",emoji:"💎",tier:5,rarity:"Legendary",desc:"Transcendent metal existing in all planes at once.",power:"Aether Surge: +3 dmg + 30% negate ALL damage taken",color:"#abebc6"},
+  {id:"chronostone",name:"Chronostone",emoji:"⌛",tier:5,rarity:"Legendary",desc:"Ore frozen outside of time itself.",power:"Chrono Rewind: Once per match, undo last shot's damage to you",color:"#e8daef"},
+];
+
+// ── 5 Pickaxes ──
+const PICKAXES = [
+  {id:"stone_pick",name:"Stone Pickaxe",emoji:"⛏️",tier:1,cost:0,desc:"Basic stone pickaxe. Mines Tier 1-2 ores.",maxTier:2,power:1,color:"#9e9e9e"},
+  {id:"iron_pick",name:"Iron Pickaxe",emoji:"🔨",tier:2,cost:300,desc:"Sturdy iron construction. Mines Tier 1-3 ores. Slightly more ore per run.",maxTier:3,power:2,color:"#78909c"},
+  {id:"gold_pick",name:"Gold Pickaxe",emoji:"🔱",tier:3,cost:800,desc:"Fast and flashy. Mines Tier 1-4 ores. Finds bonus rare veins.",maxTier:4,power:3,color:"#ffd700"},
+  {id:"diamond_pick",name:"Diamond Pickaxe",emoji:"💎",tier:4,cost:2000,desc:"Precision-cut diamond head. Mines all ores. Higher legendary chance.",maxTier:5,power:4,color:"#00e5ff"},
+  {id:"void_pick",name:"Void Pickaxe",emoji:"🌌",tier:5,cost:6000,desc:"Forged from Void Crystal. Mines all tiers. Guaranteed 1 legendary per run.",maxTier:5,power:5,color:"#b8aaff"},
+];
+
+// Player mining state
+let playerOres = {};         // {ore_id: count}
+let playerPickaxe = "stone_pick";
+let playerOreWeaponPowers = {}; // {weaponName: {oreId, powerName, powerDesc}}
+let miningTab = "expedition";
+
+function loadMiningData(data){
+  try{playerOres=data?.ores?JSON.parse(data.ores):{};}catch(e){playerOres={};}
+  try{playerPickaxe=data?.pickaxe||"stone_pick";}catch(e){playerPickaxe="stone_pick";}
+  try{playerOreWeaponPowers=data?.ore_powers?JSON.parse(data.ore_powers):{};}catch(e){playerOreWeaponPowers={};}
+}
+function saveMiningData(){
+  if(!currentUser)return;
+  const payload={
+    ores:JSON.stringify(playerOres),
+    pickaxe:playerPickaxe,
+    ore_powers:JSON.stringify(playerOreWeaponPowers),
+  };
+  db.from("players").update(payload).eq("id",currentUser.id).then(()=>{});
+}
+
+function showMiningExpedition(){
+  miningTab="expedition";
+  renderMiningUI();
+  showScreen("screen-mining");
+}
+
+function setMiningTab(t){miningTab=t;renderMiningUI();}
+
+const CAVE_DEPTHS = [
+  {name:"Crystal Caverns",emoji:"💎",depth:1,desc:"Shallow caves with basic ores.",minTier:1,maxTier:2,staminaCost:10},
+  {name:"Iron Depths",emoji:"⚙️",depth:2,desc:"Deeper tunnels with harder stone.",minTier:1,maxTier:3,staminaCost:20},
+  {name:"Shadow Mines",emoji:"🌑",depth:3,desc:"Dark passages where rare veins gleam.",minTier:2,maxTier:4,staminaCost:35},
+  {name:"Dragon's Maw",emoji:"🐉",depth:4,desc:"Ancient volcanic tunnels of legend.",minTier:3,maxTier:5,staminaCost:50},
+  {name:"The Abyss",emoji:"🌌",depth:5,desc:"The deepest place. Beyond mortal comprehension.",minTier:4,maxTier:5,staminaCost:80},
+];
+
+let miningStamina = 100;
+let miningStaminaMax = 100;
+let lastMineTime = 0;
+
+function getMiningStamina(){
+  // Stamina regens over time (1 per 30 seconds, up to max)
+  const now=Date.now();
+  const elapsed=Math.floor((now-lastMineTime)/30000);
+  miningStamina=Math.min(miningStaminaMax,miningStamina+elapsed);
+  if(elapsed>0)lastMineTime=now;
+  return miningStamina;
+}
+
+function renderMiningUI(){
+  const body=document.getElementById("miningBody");if(!body)return;
+  const pick=PICKAXES.find(p=>p.id===playerPickaxe)||PICKAXES[0];
+  const stamina=getMiningStamina();
+
+  const tabs=`<div class="mine-tabs">
+    <button class="mine-tab${miningTab==="expedition"?" active":""}" onclick="setMiningTab('expedition')">⛏️ Expedition</button>
+    <button class="mine-tab${miningTab==="ores"?" active":""}" onclick="setMiningTab('ores')">📦 My Ores</button>
+    <button class="mine-tab${miningTab==="forge"?" active":""}" onclick="setMiningTab('forge')">⚒️ Ore Forge</button>
+    <button class="mine-tab${miningTab==="pickaxes"?" active":""}" onclick="setMiningTab('pickaxes')">🪚 Pickaxes</button>
+    <button class="mine-tab${miningTab==="powers"?" active":""}" onclick="setMiningTab('powers')">⚡ Active Powers</button>
+  </div>`;
+
+  let html=tabs;
+
+  if(miningTab==="expedition"){
+    html+=`<div class="mine-header-card">
+      <div class="mine-hc-left">
+        <div class="mine-pick-display" style="color:${pick.color}">${pick.emoji} ${pick.name}</div>
+        <div class="mine-pick-tier">Tier ${pick.tier} · Mines up to T${pick.maxTier} ores</div>
+      </div>
+      <div class="mine-hc-right">
+        <div class="mine-stamina-label">Stamina</div>
+        <div class="mine-stamina-bar-wrap"><div class="mine-stamina-bar" style="width:${(stamina/miningStaminaMax)*100}%"></div></div>
+        <div class="mine-stamina-text">${stamina} / ${miningStaminaMax}</div>
+      </div>
+    </div>
+    <div class="mine-caves-title">Choose Your Cave Depth</div>
+    <div class="mine-caves-grid">`;
+    for(const cave of CAVE_DEPTHS){
+      const canMine=stamina>=cave.staminaCost&&(cave.maxTier<=pick.maxTier||(pick.maxTier>=cave.minTier));
+      const pickOk=pick.maxTier>=cave.minTier;
+      html+=`<div class="mine-cave-card ${canMine?"":"mine-cave-locked"}">
+        <div class="mine-cave-emoji">${cave.emoji}</div>
+        <div class="mine-cave-name">${cave.name}</div>
+        <div class="mine-cave-desc">${cave.desc}</div>
+        <div class="mine-cave-meta">
+          <span class="mine-tier-range">T${cave.minTier}–T${cave.maxTier} ores</span>
+          <span class="mine-stamina-cost">⚡ ${cave.staminaCost} stamina</span>
+        </div>
+        ${!pickOk?`<div class="mine-cave-need">Needs T${cave.minTier}+ pickaxe</div>`:""}
+        <button class="btn-primary mine-go-btn" onclick="startMiningRun(${cave.depth})" ${canMine?"":"disabled"}>
+          ${canMine?"⛏️ Descend":"${stamina<cave.staminaCost?'Not enough stamina':'Need better pickaxe'}"}
+        </button>
+      </div>`;
+    }
+    html+=`</div>`;
+
+  }else if(miningTab==="ores"){
+    const oresByTier={};
+    ALL_ORES.forEach(o=>{if(!oresByTier[o.tier])oresByTier[o.tier]=[];oresByTier[o.tier].push(o);});
+    const totalOres=Object.values(playerOres).reduce((s,v)=>s+(v||0),0);
+    html+=`<div class="mine-ores-summary">📦 ${totalOres} ores collected · ${Object.keys(playerOres).filter(k=>(playerOres[k]||0)>0).length} types</div>`;
+    const RARITY_ORE_COLORS={Common:"#94a3b8",Uncommon:"#4ade80",Rare:"#22d3ee",Epic:"#a855f7",Legendary:"#facc15"};
+    for(let t=5;t>=1;t--){
+      const ores=oresByTier[t]||[];
+      const tierLabel=["","Common","Uncommon","Rare","Epic","Legendary"][t];
+      html+=`<div class="mine-ore-tier-header" style="color:${RARITY_ORE_COLORS[tierLabel]}">Tier ${t} — ${tierLabel}</div><div class="mine-ore-grid">`;
+      for(const o of ores){
+        const have=playerOres[o.id]||0;
+        html+=`<div class="mine-ore-card ${have>0?"mine-ore-has":"mine-ore-empty"}">
+          <div class="mine-ore-emoji">${o.emoji}</div>
+          <div class="mine-ore-name" style="color:${o.color}">${o.name}</div>
+          <div class="mine-ore-rarity" style="color:${RARITY_ORE_COLORS[o.rarity]}">${o.rarity}</div>
+          <div class="mine-ore-power">${o.power}</div>
+          <div class="mine-ore-count ${have>0?"have":""}">${have>0?"×"+have:"Not found"}</div>
+        </div>`;
+      }
+      html+=`</div>`;
+    }
+
+  }else if(miningTab==="forge"){
+    html+=`<div class="mine-forge-intro">
+      <p>Combine an ore with a weapon to grant it a special power for battles. Each weapon can hold one ore power at a time.</p>
+      <p style="color:var(--accent2)">Powers persist until you overwrite them with a new ore.</p>
+    </div>`;
+    const ownedWithOres=ALL_ORES.filter(o=>(playerOres[o.id]||0)>0);
+    if(!ownedWithOres.length){html+=`<div class="mine-empty">Mine some ores first! Head to the Expedition tab.</div>`;body.innerHTML=html;return;}
+    html+=`<div class="mine-forge-grid">`;
+    for(const ore of ownedWithOres){
+      html+=`<div class="mine-forge-ore-block">
+        <div class="mine-forge-ore-header">
+          <span style="font-size:1.5rem">${ore.emoji}</span>
+          <div>
+            <div class="mine-forge-ore-name" style="color:${ore.color}">${ore.name} ×${playerOres[ore.id]}</div>
+            <div class="mine-forge-ore-power">${ore.power}</div>
+          </div>
+        </div>
+        <div class="mine-forge-weapon-select-label">Apply to weapon:</div>
+        <div class="mine-forge-weapons-list">`;
+      ownedWeapons.slice(0,20).forEach(wn=>{
+        const w=ALL_WEAPONS.find(x=>x.name===wn);if(!w)return;
+        const hasPower=playerOreWeaponPowers[wn];
+        html+=`<button class="mine-forge-weapon-btn ${hasPower?"has-power":""}" onclick="applyOrePower('${ore.id}','${wn.replace(/'/g,"\\'")}')">
+          ${w.emoji} ${wn} ${hasPower?`<span style="font-size:9px;color:${ALL_ORES.find(o=>o.id===hasPower.oreId)?.color||"#aaa"}">[${hasPower.oreName}]</span>`:""}
+        </button>`;
+      });
+      html+=`</div></div>`;
+    }
+    html+=`</div>`;
+
+  }else if(miningTab==="pickaxes"){
+    html+=`<div class="mine-pickaxes-grid">`;
+    for(const p of PICKAXES){
+      const owned=playerPickaxe===p.id;
+      const canBuy=!owned&&localTokens>=p.cost;
+      html+=`<div class="mine-pick-card ${owned?"mine-pick-owned":""}">
+        <div class="mine-pick-emoji" style="color:${p.color}">${p.emoji}</div>
+        <div class="mine-pick-name" style="color:${p.color}">${p.name}</div>
+        <div class="mine-pick-tier">Tier ${p.tier} · Max ore tier: T${p.maxTier}</div>
+        <div class="mine-pick-desc">${p.desc}</div>
+        ${owned?`<div class="mine-pick-equipped">✓ Equipped</div>`:
+          p.cost===0?`<button class="btn-primary" onclick="equipPickaxe('${p.id}')">Equip (Free)</button>`:
+          `<button class="btn-primary" onclick="buyPickaxe('${p.id}')" ${canBuy?"":"disabled"}>${canBuy?`Buy — ${p.cost} 🪙`:`Need ${p.cost} 🪙`}</button>`}
+      </div>`;
+    }
+    html+=`</div>`;
+
+  }else if(miningTab==="powers"){
+    const powered=Object.entries(playerOreWeaponPowers).filter(([,v])=>v);
+    if(!powered.length){html+=`<div class="mine-empty">No ore powers active. Forge ores onto weapons in the Ore Forge tab!</div>`;}
+    else{
+      html+=`<div class="mine-powers-list">`;
+      for(const [wn,pow] of powered){
+        const w=ALL_WEAPONS.find(x=>x.name===wn);
+        const ore=ALL_ORES.find(o=>o.id===pow.oreId);
+        html+=`<div class="mine-power-row">
+          <span class="mpr-weapon">${w?.emoji||"⚔"} ${wn}</span>
+          <span class="mpr-arrow">→</span>
+          <span class="mpr-ore" style="color:${ore?.color||"#aaa"}">${ore?.emoji||""} ${ore?.name||pow.oreId}</span>
+          <span class="mpr-power">${pow.powerDesc}</span>
+          <button class="btn-ghost-sm" onclick="removeOrePower('${wn.replace(/'/g,"\\'")}')">✕</button>
+        </div>`;
+      }
+      html+=`</div>`;
+    }
+  }
+  body.innerHTML=html;
+}
+
+function startMiningRun(depth){
+  const cave=CAVE_DEPTHS.find(c=>c.depth===depth);if(!cave)return;
+  const pick=PICKAXES.find(p=>p.id===playerPickaxe)||PICKAXES[0];
+  if(miningStamina<cave.staminaCost){showToast("Not enough stamina!","red");return;}
+  miningStamina-=cave.staminaCost;lastMineTime=Date.now();
+
+  // Determine ore drops based on pickaxe power and cave
+  const minTier=cave.minTier,maxTier=Math.min(cave.maxTier,pick.maxTier);
+  const drops=[];
+  const numDrops=3+pick.power+(depth>=4?1:0);
+
+  // Void pickaxe guarantees one legendary
+  if(pick.id==="void_pick"){
+    const legendaryPool=ALL_ORES.filter(o=>o.tier===5);
+    const legOre=legendaryPool[Math.floor(Math.random()*legendaryPool.length)];
+    drops.push(legOre);
+  }
+
+  for(let i=drops.length;i<numDrops;i++){
+    // Weighted random tier (lower tiers more common)
+    const weights=[0,60,25,10,4,1];
+    let tierPool=[];
+    for(let t=minTier;t<=maxTier;t++){
+      const w=weights[t]||1;
+      for(let j=0;j<w;j++)tierPool.push(t);
+    }
+    // Diamond pick boosts higher tier chance
+    if(pick.tier>=4){const bonusTier=maxTier;for(let b=0;b<3;b++)tierPool.push(bonusTier);}
+    const chosenTier=tierPool[Math.floor(Math.random()*tierPool.length)];
+    const orePool=ALL_ORES.filter(o=>o.tier===chosenTier);
+    if(orePool.length){drops.push(orePool[Math.floor(Math.random()*orePool.length)]);}
+  }
+
+  // Apply drops
+  drops.forEach(o=>{playerOres[o.id]=(playerOres[o.id]||0)+1;});
+  saveMiningData();
+
+  // Show result overlay
+  const overlay=document.createElement("div");
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:24px;";
+  const RARITY_ORE_COLORS={Common:"#94a3b8",Uncommon:"#4ade80",Rare:"#22d3ee",Epic:"#a855f7",Legendary:"#facc15"};
+  const dropsHtml=drops.map(o=>`<div class="mine-drop-item" style="border-color:${RARITY_ORE_COLORS[o.rarity]}33;background:${RARITY_ORE_COLORS[o.rarity]}0a">
+    <span style="font-size:1.8rem">${o.emoji}</span>
+    <div>
+      <div style="color:${o.color};font-weight:700;font-size:14px">${o.name}</div>
+      <div style="font-size:11px;color:${RARITY_ORE_COLORS[o.rarity]}">${o.rarity} · T${o.tier}</div>
+      <div style="font-size:11px;color:#aaa">${o.power}</div>
+    </div>
+  </div>`).join("");
+  overlay.innerHTML=`<div style="font-size:3rem">${cave.emoji}</div>
+    <div style="font-family:var(--font-d);font-size:1.3rem;color:var(--accent)">Expedition Complete!</div>
+    <div style="font-size:13px;color:var(--text2)">${cave.name} — ${drops.length} ores found</div>
+    <div class="mine-drops-grid">${dropsHtml}</div>
+    <button class="btn-primary" onclick="this.parentNode.remove();renderMiningUI()">✓ Collect</button>`;
+  document.body.appendChild(overlay);
+}
+
+function applyOrePower(oreId,weaponName){
+  const ore=ALL_ORES.find(o=>o.id===oreId);if(!ore)return;
+  if((playerOres[oreId]||0)<=0){showToast("No "+ore.name+" left!","red");return;}
+  playerOres[oreId]=Math.max(0,(playerOres[oreId]||0)-1);
+  playerOreWeaponPowers[weaponName]={oreId,oreName:ore.name,powerDesc:ore.power};
+  saveMiningData();
+  showToast(`${ore.emoji} ${ore.name} forged onto ${weaponName}!`,"gold");
+  renderMiningUI();
+}
+
+function removeOrePower(weaponName){
+  delete playerOreWeaponPowers[weaponName];
+  saveMiningData();
+  showToast("Ore power removed","info");
+  renderMiningUI();
+}
+
+function equipPickaxe(id){
+  playerPickaxe=id;saveMiningData();
+  showToast(PICKAXES.find(p=>p.id===id)?.emoji+" Pickaxe equipped!","green");
+  renderMiningUI();
+}
+
+async function buyPickaxe(id){
+  const p=PICKAXES.find(x=>x.id===id);if(!p)return;
+  if(!currentUser){showToast("Sign in first!","red");return;}
+  if(localTokens<p.cost){showToast(`Need ${p.cost} 🪙!`,"red");return;}
+  localTokens-=p.cost;playerPickaxe=id;updateTokenDisplay();
+  saveMiningData();await saveTokenData();
+  showToast(`${p.emoji} ${p.name} purchased & equipped!`,"gold");
+  renderMiningUI();
+}
+
+// Ore weapon power application during combat
+function applyOreWeaponPower(pow,_context,baseDmg,cA,_cB){
+  if(!pow)return{extraDmg:0};
+  const ore=ALL_ORES.find(o=>o.id===pow.oreId);
+  if(!ore)return{extraDmg:0};
+  const result={extraDmg:0,negate:false,heal:0};
+  const id=ore.id;
+
+  if(id==="coal")result.extraDmg=1;
+  else if(id==="iron_ore"&&gs.hpA<15)result.extraDmg=2;
+  else if(id==="sulfur"&&Math.random()<0.15){showToast("🔥 Sulfur Burn!","gold");result.extraDmg=2;}
+  else if(id==="salt")result.heal=3;
+  else if(id==="quartz"&&[1,3,5].includes(gs.shot))result.extraDmg=1;
+  else if(id==="obsidian")result.extraDmg=1; // ignores 1 shield — simplified as +1
+  else if(id==="ruby_ore"&&gs.shot%2===0)result.extraDmg=3;
+  else if(id==="cobalt")result.extraDmg=2; // bonus after perfect block handled separately
+  else if(id==="mithril_ore"&&Math.random()<0.20){showToast("🌀 Mithril Dodge!","gold");result.negate=true;}
+  else if(id==="platinum_ore")result.heal=2;
+  else if(id==="darksteel")result.extraDmg=3;
+  else if(id==="bloodstone")result.heal=2;
+  else if(id==="voidcrystal"){if(baseDmg<5)result.extraDmg=5-baseDmg;}
+  else if(id==="stormite"&&gs.shot%3===0)result.extraDmg=baseDmg; // double
+  else if(id==="dragonite"){result.extraDmg=4;if(Math.random()<0.10)showToast("🐉 Dragonite Stun!","gold");}
+  else if(id==="soulstone")result.heal=Math.min(baseDmg,8);
+  else if(id==="celestite")result.heal=0; // applied at round start
+  else if(id==="helium_crystal"&&gs.shot===1)result.extraDmg=6;
+  else if(id==="etherstone"&&gs.shot%5===0){showToast("🔮 Ether Transcend! All shields bypassed!","gold");result.extraDmg=baseDmg;}
+  else if(id==="voidheart")result.extraDmg=0; // handled on perfect block
+  else if(id==="prismite")result.extraDmg=Math.floor(Math.random()*6)+1;
+  else if(id==="aethermetal"){result.extraDmg=3;if(Math.random()<0.30)result.negate=true;}
+  else if(id==="chronostone")result.extraDmg=0; // special handled via UI
+  return result;
+}
+
+// Ore forge show/hide
+function showOreForge(){showMiningExpedition();setMiningTab("forge");}
+function hideOreForge(){document.getElementById("modal-oreforge").classList.add("hidden");}
+function closeOreForgeIfOutside(e){if(e.target===document.getElementById("modal-oreforge"))hideOreForge();}
+
+// ── Extend saveTokenData / loadInventoryFromData for mining ──
+// Hooked via the existing save/load functions
+const _origLoadInventory = loadInventoryFromData;
+function loadInventoryFromData(data){
+  _origLoadInventory(data);
+  loadMiningData(data);
+}
+
+
 (async function init(){
   spawnAuthParticles();
   const session=loadSession();
@@ -4502,24 +5436,109 @@ function triggerScreenShake(intensity=15, duration=600){
 }
 
 // ══════════════════════════════════════════════
-// INVERSION RIFT — end match with shake
+// INVERSION RIFT — Dramatic multi-phase animation
 // ══════════════════════════════════════════════
 function triggerInversionRift(byPlayer){
-  // Screen shake
-  triggerScreenShake(20, 700);
-  // Flash overlay
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:white;z-index:99999;pointer-events:none;animation:inversionFlash 0.6s ease-out forwards;';
-  document.head.insertAdjacentHTML('beforeend',`<style>@keyframes inversionFlash{0%{opacity:1}100%{opacity:0}}</style>`);
-  document.body.appendChild(overlay);
-  setTimeout(()=>overlay.remove(), 700);
-
-  showToast('💥 INVERSION RIFT! Reality ends!','gold');
-
-  // Force HP to 0 for loser
+  // Force HP
   if(byPlayer==='A'){ gs.hpB=0; gs.totalHpB=0; }
   else { gs.hpA=0; gs.totalHpA=0; }
 
-  _gameOverFired=false;
-  setTimeout(()=>showGameOver(), 800);
+  // Build the full-screen rift overlay
+  const overlay=document.createElement('div');
+  overlay.id='riftOverlay';
+  overlay.style.cssText='position:fixed;inset:0;z-index:999999;pointer-events:none;overflow:hidden;';
+
+  // Particle canvas
+  overlay.innerHTML=`
+    <canvas id="riftCanvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+    <div id="riftText" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;opacity:0;transition:opacity 0.3s">
+      <div style="font-size:5rem;filter:drop-shadow(0 0 40px #fff);animation:riftPulse 0.4s ease-in-out infinite alternate">💥</div>
+      <div style="font-family:'Cinzel',serif;font-size:3rem;font-weight:900;color:#fff;text-shadow:0 0 60px #fff,0 0 120px rgba(255,255,255,0.8);letter-spacing:4px;text-transform:uppercase">INVERSION RIFT</div>
+      <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:rgba(255,255,255,0.85);letter-spacing:6px;text-transform:uppercase">Reality collapses</div>
+    </div>
+    <style>
+      @keyframes riftPulse{0%{transform:scale(1)}100%{transform:scale(1.2)}}
+      @keyframes riftColorShift{
+        0%{filter:hue-rotate(0deg) brightness(1)}
+        25%{filter:hue-rotate(180deg) brightness(2)}
+        50%{filter:hue-rotate(360deg) brightness(0.5) invert(1)}
+        75%{filter:hue-rotate(270deg) brightness(3)}
+        100%{filter:hue-rotate(0deg) brightness(1)}
+      }
+    </style>
+  `;
+  document.body.appendChild(overlay);
+
+  // Phase 1: screen shake + color distortion on body
+  document.body.style.animation='riftColorShift 1.2s ease-in-out forwards';
+  triggerScreenShake(30, 1200);
+
+  // Phase 2: particle explosion on canvas
+  requestAnimationFrame(()=>{
+    const canvas=document.getElementById('riftCanvas');
+    if(!canvas)return;
+    canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+    const ctx=canvas.getContext('2d');
+    const cx=canvas.width/2,cy=canvas.height/2;
+    const particles=[];
+    // Spawn shockwave ring + particles
+    for(let i=0;i<200;i++){
+      const angle=Math.random()*Math.PI*2;
+      const speed=2+Math.random()*8;
+      const hue=Math.random()*360;
+      particles.push({
+        x:cx,y:cy,
+        vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,
+        life:1,decay:0.01+Math.random()*0.02,
+        size:2+Math.random()*6,
+        color:`hsl(${hue},100%,${50+Math.random()*50}%)`
+      });
+    }
+
+    let shockR=0;
+    function drawFrame(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      // Shockwave ring
+      shockR+=20;
+      if(shockR<Math.max(canvas.width,canvas.height)){
+        const alpha=Math.max(0,1-shockR/600);
+        ctx.beginPath();ctx.arc(cx,cy,shockR,0,Math.PI*2);
+        ctx.strokeStyle=`rgba(255,255,255,${alpha})`;ctx.lineWidth=6;ctx.stroke();
+        ctx.beginPath();ctx.arc(cx,cy,shockR*0.7,0,Math.PI*2);
+        ctx.strokeStyle=`rgba(180,100,255,${alpha*0.6})`;ctx.lineWidth=3;ctx.stroke();
+      }
+      // Particles
+      let alive=false;
+      for(const p of particles){
+        if(p.life<=0)continue;alive=true;
+        p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.life-=p.decay;
+        ctx.globalAlpha=p.life;
+        ctx.fillStyle=p.color;
+        ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2);ctx.fill();
+      }
+      ctx.globalAlpha=1;
+      if(alive||shockR<800)requestAnimationFrame(drawFrame);
+    }
+    drawFrame();
+  });
+
+  // Phase 3: Show text
+  setTimeout(()=>{
+    const txt=document.getElementById('riftText');
+    if(txt)txt.style.opacity='1';
+    // White flash
+    const flash=document.createElement('div');
+    flash.style.cssText='position:absolute;inset:0;background:white;opacity:1;transition:opacity 1s ease-out;pointer-events:none;';
+    overlay.appendChild(flash);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{flash.style.opacity='0';}));
+  },400);
+
+  // Phase 4: Cleanup + proceed to game over
+  setTimeout(()=>{
+    document.body.style.animation='';
+    overlay.style.transition='opacity 0.5s';overlay.style.opacity='0';
+    setTimeout(()=>{if(overlay.parentNode)overlay.remove();},500);
+    _gameOverFired=false;
+    showGameOver();
+  },2800);
 }

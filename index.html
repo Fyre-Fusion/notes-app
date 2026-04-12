@@ -177,7 +177,7 @@
         <div class="mode-icon">💀</div>
         <h3>Boss Battle</h3>
         <p>Solo vs the Warlord.<br>Hyper-intelligent AI.</p>
-        <div class="mode-badge mode-badge-boss">+900 🪙 Reward</div>
+        <div class="mode-badge mode-badge-boss">+300 🪙 Reward</div>
       </div>
       <div class="mode-card mode-card-ranked" onclick="selectMode('ranked')">
         <div class="mode-card-bg mode-card-bg-ranked"></div>
@@ -185,6 +185,13 @@
         <h3>Ranked</h3>
         <p>Fight for rating.<br>Climb the leaderboard.</p>
         <div class="mode-badge mode-badge-ranked">Competitive</div>
+      </div>
+      <div class="mode-card mode-card-mining" onclick="showMiningExpedition()">
+        <div class="mode-card-bg mode-card-bg-mining"></div>
+        <div class="mode-icon">⛏️</div>
+        <h3>Mining Expedition</h3>
+        <p>Descend into caves.<br>Mine ores, forge powers.</p>
+        <div class="mode-badge mode-badge-mining">Ore Powers</div>
       </div>
       <div class="mode-card mode-card-tourney" onclick="selectMode('tournament')">
         <div class="mode-card-bg mode-card-bg-tourney"></div>
@@ -710,6 +717,29 @@
       <button class="modal-close" onclick="hideSetsPanel()">✕</button>
     </div>
     <div class="modal-body" id="setsBody"></div>
+  </div>
+</div>
+
+<!-- ═══════ MINING EXPEDITION ═══════ -->
+<div id="screen-mining" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="showScreen('screen-mode')">← Back</button>
+    <div class="logo-small">⛏️ Mining Expedition</div>
+    <div style="width:80px"></div>
+  </div>
+  <div class="mining-content">
+    <div id="miningBody"></div>
+  </div>
+</div>
+
+<!-- ═══════ ORE FORGE MODAL ═══════ -->
+<div id="modal-oreforge" class="modal-overlay hidden" onclick="closeOreForgeIfOutside(event)">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 class="modal-title">⚒️ Ore Forge</h2>
+      <button class="modal-close" onclick="hideOreForge()">✕</button>
+    </div>
+    <div class="modal-body" id="oreForgeBody"></div>
   </div>
 </div>
 
