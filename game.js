@@ -901,6 +901,10 @@ let playerAchievements={}; // {ach_id: true}
 let playerStats=defaultStats();
 let dailyQuests=null;
 let dailyQuestKey="";
+// Mining state (declared here so loadMiningData can reference them at login)
+let playerOres={};
+let playerPickaxe="stone_pick";
+let playerOreWeaponPowers={};
 
 function defaultStats(){return{wins:0,losses:0,perfectBlocks:0,bossKills:0,weaponsBought:0,traitsCrafted:0,tradesCompleted:0,dailyCompleted:0,totalTokensEarned:0,onlineWins:0,rankedWins:0,rankedLosses:0,rankedRating:1000,tournamentsWon:0,tournamentsPlayed:0,itemsRolled:0,materialsSold:0,fusionsPerformed:0,traitsRolled:0,clanUpgrades:0,accessoriesOwned:0,totalShots:0,totalDamageDealt:0,totalRoundsPlayed:0,consecutiveWins:0,maxConsecutiveWins:0,dailyStreak:0,lastStreakDate:''};}
 
@@ -926,6 +930,8 @@ function loadInventoryFromData(data){
   try{playerStats=data?.stats?JSON.parse(data.stats):defaultStats();}catch(e){playerStats=defaultStats();}
   // Load typed potion inventory
   loadPotionInventory(data);
+  // Load mining data
+  loadMiningData(data);
   // Daily quests
   const todayKey=getDailyQuestKey();
   try{
@@ -5077,10 +5083,7 @@ const PICKAXES = [
   {id:"void_pick",name:"Void Pickaxe",emoji:"🌌",tier:5,cost:6000,desc:"Forged from Void Crystal. Mines all tiers. Guaranteed 1 legendary per run.",maxTier:5,power:5,color:"#b8aaff"},
 ];
 
-// Player mining state
-let playerOres = {};         // {ore_id: count}
-let playerPickaxe = "stone_pick";
-let playerOreWeaponPowers = {}; // {weaponName: {oreId, powerName, powerDesc}}
+// Player mining state (variables declared near top of inventory state)
 let miningTab = "expedition";
 
 function loadMiningData(data){
@@ -5395,14 +5398,6 @@ function applyOreWeaponPower(pow,_context,baseDmg,cA,_cB){
 function showOreForge(){showMiningExpedition();setMiningTab("forge");}
 function hideOreForge(){document.getElementById("modal-oreforge").classList.add("hidden");}
 function closeOreForgeIfOutside(e){if(e.target===document.getElementById("modal-oreforge"))hideOreForge();}
-
-// ── Extend saveTokenData / loadInventoryFromData for mining ──
-// Hooked via the existing save/load functions
-const _origLoadInventory = loadInventoryFromData;
-function loadInventoryFromData(data){
-  _origLoadInventory(data);
-  loadMiningData(data);
-}
 
 
 (async function init(){
